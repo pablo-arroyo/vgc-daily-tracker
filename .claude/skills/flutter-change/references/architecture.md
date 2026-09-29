@@ -98,7 +98,12 @@ View (widget) ──calls commands──▶ ViewModel ──▶ Repository ─�
   repository implementation, not a UI change.
 - **Time and IDs are injected.** Use `package:clock` for anything that
   depends on "now", and an `IdGenerator` for new IDs, so tests can control
-  both.
+  both. Store instants in **UTC**, e.g. `GameLog.playedAt =
+  clock.now().toUtc()`, and derive local days only for display.
+- **Stored JSON is pinned by tests.** Every stored model has a test with its
+  exact JSON. `build.yaml` sets `explicit_to_json: true`, so nested models
+  become plain maps (sembast can't store Dart objects). A breaking shape
+  change bumps `appSchemaVersion` and adds a migration with a test.
 - **Navigation. [Rec] — Decision: `go_router`.** All routes are defined in
   `lib/routing/`, and route paths are constants.
 - **Naming. [Rec]** Name classes after their architectural role:
@@ -134,6 +139,10 @@ testing/           fakes and fixtures shared across tests (FakePokemonRepository
 - **Test components separately and together. [Strong]**
   - Unit test every service, repository and view model, method by method.
   - Widget test every view. Routing and DI wiring deserve explicit tests.
+- **Integration tests are journeys.** `integration_test/app_test.dart` is
+  the only integration entry point. Desktop runs relaunch the app per test
+  file, and the second launch fails on macOS. Add each flow as a function
+  in `integration_test/journeys/` and register it there as a `group`.
 - **Fakes, not mocks. [Strong]** Write `Fake<Name>Repository` /
   `Fake<Name>Service` classes in `testing/` that implement the abstract class
   with in-memory data. Tests check inputs and outputs, not calls. Service

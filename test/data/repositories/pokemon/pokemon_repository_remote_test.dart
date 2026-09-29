@@ -9,14 +9,18 @@ import 'package:vgc_daily_tracker/domain/models/pokemon_ref.dart';
 import 'package:vgc_daily_tracker/utils/result.dart';
 
 import '../../../../testing/fakes/fake_poke_api_service.dart';
+import '../../../../testing/storage.dart';
 
 void main() {
   late FakePokeApiService service;
   late PokemonRepositoryRemote repository;
 
-  setUp(() {
+  setUp(() async {
     service = FakePokeApiService();
-    repository = PokemonRepositoryRemote(service: service);
+    repository = PokemonRepositoryRemote(
+      service: service,
+      storage: await memoryStorage(),
+    );
   });
 
   group('getPokemon', () {
@@ -245,5 +249,59 @@ void main() {
         isA<PokeApiNetworkUnavailable>(),
       );
     });
+  });
+
+  group('persisted index', () {
+    test('a new repository instance (an app restart) reuses the stored '
+        'index without a network call', () async {
+      final storage = await memoryStorage();
+      service.useFullIndexFixture();
+      final firstLaunch = PokemonRepositoryRemote(
+        service: service,
+        storage: storage,
+      );
+      await firstLaunch.search('king');
+
+      final secondLaunch = PokemonRepositoryRemote(
+        service: service,
+        storage: storage,
+      );
+      final result = await secondLaunch.search('kingam');
+
+      expect(service.indexRequests, 1, reason: 'only the first launch');
+      expect((result as Ok<List<PokemonRef>>).value.map((r) => r.slug), [
+        'kingambit',
+      ]);
+    });
+
+    test(
+      'after a restart, an expired stored index still works offline',
+      () async {
+        final storage = await memoryStorage();
+        service.useFullIndexFixture();
+        final loadedAt = DateTime(2026, 9, 29, 12);
+        await withClock(
+          Clock.fixed(loadedAt),
+          () => PokemonRepositoryRemote(
+            service: service,
+            storage: storage,
+          ).search('king'),
+        );
+
+        service.offline = true;
+        final result = await withClock(
+          Clock.fixed(loadedAt.add(const Duration(days: 5))),
+          () => PokemonRepositoryRemote(
+            service: service,
+            storage: storage,
+          ).search('kingam'),
+        );
+
+        expect(service.indexRequests, 2, reason: 'it did try to refresh');
+        expect((result as Ok<List<PokemonRef>>).value.map((r) => r.slug), [
+          'kingambit',
+        ]);
+      },
+    );
   });
 }

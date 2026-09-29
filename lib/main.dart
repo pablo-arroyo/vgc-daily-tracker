@@ -4,11 +4,17 @@ import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 
 import 'config/dependencies.dart';
+import 'data/services/storage/database_location.dart';
+import 'data/services/storage/local_storage_service.dart';
 import 'routing/router.dart';
 import 'ui/core/theme/app_theme.dart';
 
-void main() {
-  runApp(VgcApp(providers: providersRemote()));
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final storage = LocalStorageService(
+    await openAppDatabase(appDatabaseFactory, await appDatabasePath()),
+  );
+  runApp(VgcApp(providers: providersRemote(storage: storage)));
 }
 
 class VgcApp extends StatefulWidget {

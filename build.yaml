@@ -8,3 +8,5 @@ targets:
           # Bad shapes throw CheckedFromJsonException (an Exception naming the
           # field) instead of a bare TypeError, so they can become a Failure.
           checked: true
+          # Nested models become plain maps in toJson(), as storage needs.
+          explicit_to_json: true

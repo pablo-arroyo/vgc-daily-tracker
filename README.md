@@ -31,13 +31,14 @@ The project is built test-first. Test levels and where they live:
 | Unit + widget | `test/` | `flutter test` |
 | Single file / single test | | `flutter test test/main_test.dart` / `flutter test --plain-name "<test name>"` |
 | Golden (screenshots) | `test/goldens/` | `flutter test --tags golden` (update with `--update-goldens`) |
-| Integration (real app on a device) | `integration_test/` | `flutter test integration_test -d macos` |
+| Integration (real app on a device) | `integration_test/` (journeys in `journeys/`, one entry point `app_test.dart`) | `flutter test integration_test -d macos` |
 | Contract (live PokéAPI) | `test/contract/` | `flutter test --tags network --run-skipped` |
 | Coverage | | `flutter test --coverage` → `coverage/lcov.info` |
 
 Contract tests are skipped by default (see `dart_test.yaml`), so a normal
 `flutter test` run never touches the network. Shared test support lives in
 `testing/`:
-- `app.dart`: `pumpApp(tester)` builds the whole app.
+- `app.dart`: `pumpApp(tester)` builds the whole app, with fakes.
+- `storage.dart`: `memoryStorage()`, a fresh in-memory database.
 - `fakes/`: in-memory fakes of repositories and services.
 - `fixtures/`: recorded PokéAPI JSON.

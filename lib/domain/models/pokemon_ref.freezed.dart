@@ -12,6 +12,7 @@ part of 'pokemon_ref.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
+
 /// @nodoc
 mixin _$PokemonRef {
 
@@ -22,6 +23,8 @@ mixin _$PokemonRef {
 @pragma('vm:prefer-inline')
 $PokemonRefCopyWith<PokemonRef> get copyWith => _$PokemonRefCopyWithImpl<PokemonRef>(this as PokemonRef, _$identity);
 
+  /// Serializes this PokemonRef to a JSON map.
+  Map<String, dynamic> toJson();
 
 
 @override
@@ -30,7 +33,7 @@ bool operator ==(Object other) {
   return identical(this, other) || (other.runtimeType == runtimeType&&other is PokemonRef&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.slug, _this.slug) || other.slug == _this.slug)&&(identical(other.displayName, _this.displayName) || other.displayName == _this.displayName));
 }
 
-
+@JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as PokemonRef;
@@ -211,11 +214,11 @@ return $default(_that.id,_that.slug,_that.displayName);case _:
 }
 
 /// @nodoc
-
+@JsonSerializable()
 
 class _PokemonRef implements PokemonRef {
   const _PokemonRef({required this.id, required this.slug, required this.displayName});
-  
+  factory _PokemonRef.fromJson(Map<String, dynamic> json) => _$PokemonRefFromJson(json);
 
 @override final  int id;
 @override final  String slug;
@@ -227,14 +230,17 @@ class _PokemonRef implements PokemonRef {
 @pragma('vm:prefer-inline')
 _$PokemonRefCopyWith<_PokemonRef> get copyWith => __$PokemonRefCopyWithImpl<_PokemonRef>(this, _$identity);
 
-
+@override
+Map<String, dynamic> toJson() {
+  return _$PokemonRefToJson(this, );
+}
 
 @override
 bool operator ==(Object other) {
     return identical(this, other) || (other.runtimeType == runtimeType&&other is _PokemonRef&&(identical(other.id, id) || other.id == id)&&(identical(other.slug, slug) || other.slug == slug)&&(identical(other.displayName, displayName) || other.displayName == displayName));
 }
 
-
+@JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
     return Object.hash(runtimeType,id,slug,displayName);

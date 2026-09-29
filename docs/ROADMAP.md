@@ -194,20 +194,29 @@ Rules:
 
 ## Phase 2: Local persistence and core models (D1: sembast)
 
-### 2.1 Storage service and domain models
-- Persist the Pokémon name index cache from 1.2, with its 24-hour expiry and
+### ✅ 2.1 Storage service and domain models
+- The Pokémon name index from 1.2 is persisted, with its 24-hour expiry and
   offline fallback, so autocomplete works offline right after an app
   restart. **Tests:** a new repository instance reuses the stored index
-  without a network call.
-- `LocalStorageService` wraps sembast: `databaseFactoryMemory` in tests,
-  `databaseFactoryIo` on mobile and desktop, and `databaseFactoryWeb` on web. The schema is versioned from day one.
-- Domain models:
-  - `Team`: id, name, 6 `PokemonRef`s, and optional full sets (Phase 7).
-  - `GameLog`: every artifact field, but storing team *id* + slugs.
-  - `MistakeCategory` enum: the 9 artifact options, with `isPlayedWell`.
+  without a network call, and an expired stored index still works offline.
+- `LocalStorageService` wraps sembast with `get`/`put` (2.2 adds what it
+  needs). `database_location.dart` picks `databaseFactoryIo` plus an
+  app-support file via `path_provider` on mobile/desktop, and
+  `databaseFactoryWeb` on web. Tests use `databaseFactoryMemory`. The
+  database is opened once in `main()`, and an integration journey checks
+  the real macOS file.
+- The schema is versioned from day one (`appSchemaVersion = 1`). The
+  *migration* test arrives with the first v2 change, since v1 has nothing
+  to migrate from.
+- Domain models, each with pinned-JSON and round-trip tests:
+  - `Team`: id, name, `PokemonRef`s. (Optional full sets move to Phase 7,
+    their first user.)
+  - `GameLog`: every artifact field. It stores the team *id* plus a
+    `teamName` snapshot, Pokémon as slugs, and one UTC `playedAt`, with the
+    local day derived at display time. **4.1 must create it from
+    `clock.now().toUtc()`.**
+  - `MistakeCategory`: the 9 artifact labels verbatim, with `isPlayedWell`.
   - `GameResult`: win or loss.
-- **Tests (unit):** JSON round trips for every model, and a schema-version
-  migration from v1.
 
 ### 2.2 `TeamRepository` and `GameLogRepository`
 - Teams: `watchAll`, `add`, `update` (new: the artifact couldn't edit

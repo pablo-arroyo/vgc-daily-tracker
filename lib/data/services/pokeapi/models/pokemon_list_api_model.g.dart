@@ -22,4 +22,7 @@ _PokemonListApiModel _$PokemonListApiModelFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$PokemonListApiModelToJson(
   _PokemonListApiModel instance,
-) => <String, dynamic>{'count': instance.count, 'results': instance.results};
+) => <String, dynamic>{
+  'count': instance.count,
+  'results': instance.results.map((e) => e.toJson()).toList(),
+};

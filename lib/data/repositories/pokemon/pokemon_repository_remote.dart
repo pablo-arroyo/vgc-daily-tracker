@@ -7,18 +7,24 @@ import '../../services/pokeapi/models/named_api_resource.dart';
 import '../../services/pokeapi/models/pokemon_detail_api_model.dart';
 import '../../services/pokeapi/poke_api_exception.dart';
 import '../../services/pokeapi/poke_api_service.dart';
+import '../../services/storage/local_storage_service.dart';
 import 'pokemon_names.dart';
 import 'pokemon_repository.dart';
 
-/// [PokemonRepository] backed by PokéAPI, with in-memory caching:
+/// [PokemonRepository] backed by PokéAPI, with caching:
 /// - the name index is fetched once and kept for 24 hours (PokéAPI sends
-///   `Cache-Control: max-age=86400`); concurrent callers share one request,
-///   and an expired index is still served when the network is down;
-/// - details are cached per slug for the app session.
+///   `Cache-Control: max-age=86400`), in memory and in local storage so it
+///   survives app restarts; concurrent callers share one request, and an
+///   expired index is still served when the network is down;
+/// - details are cached in memory per slug for the app session.
 class PokemonRepositoryRemote implements PokemonRepository {
-  PokemonRepositoryRemote({required this._service});
+  PokemonRepositoryRemote({required this._service, required this._storage});
 
   final PokeApiService _service;
+  final LocalStorageService _storage;
+
+  static const _cacheStore = 'cache';
+  static const _indexKey = 'pokemon_index';
 
   static const _indexMaxAge = Duration(hours: 24);
 
@@ -82,6 +88,7 @@ class PokemonRepositoryRemote implements PokemonRepository {
       _index != null && clock.now().difference(_indexLoadedAt!) <= _indexMaxAge;
 
   Future<Result<List<PokemonRef>>> _loadIndex() async {
+    if (_index == null) await _restoreIndex();
     if (_indexIsFresh) return Result.ok(_index!);
     // Autocomplete fires on each keystroke: share the request in flight.
     return _indexRequest ??= _fetchIndex().whenComplete(
@@ -94,13 +101,33 @@ class PokemonRepositoryRemote implements PokemonRepository {
     switch (result) {
       case Ok(:final value):
         _indexLoadedAt = clock.now();
-        return Result.ok(_index = value.results.map(_toRef).toList());
+        _index = value.results.map(_toRef).toList();
+        await _persistIndex();
+        return Result.ok(_index!);
       case Failure(:final error):
         // Offline with an expired index: a day-old list beats no list.
         final stale = _index;
         return stale != null ? Result.ok(stale) : Result.failure(error);
     }
   }
+
+  /// Loads the index saved by an earlier app session, fresh or not: an
+  /// expired one still serves as the offline fallback.
+  Future<void> _restoreIndex() async {
+    final stored = await _storage.get(_cacheStore, _indexKey);
+    if (stored case Ok(value: final document?)) {
+      _indexLoadedAt = DateTime.parse(document['loaded_at']! as String);
+      _index = [
+        for (final entry in document['entries']! as List<Object?>)
+          PokemonRef.fromJson(entry! as Map<String, Object?>),
+      ];
+    }
+  }
+
+  Future<void> _persistIndex() => _storage.put(_cacheStore, _indexKey, {
+    'loaded_at': _indexLoadedAt!.toIso8601String(),
+    'entries': [for (final ref in _index!) ref.toJson()],
+  });
 
   static PokemonRef _toRef(NamedApiResource entry) => PokemonRef(
     // Entry URLs end in the id: https://pokeapi.co/api/v2/pokemon/983/

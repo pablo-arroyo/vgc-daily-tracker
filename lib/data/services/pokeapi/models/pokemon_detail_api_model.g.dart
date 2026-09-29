@@ -51,11 +51,11 @@ Map<String, dynamic> _$PokemonDetailApiModelToJson(
 ) => <String, dynamic>{
   'id': instance.id,
   'name': instance.name,
-  'species': instance.species,
-  'types': instance.types,
-  'stats': instance.stats,
-  'abilities': instance.abilities,
-  'sprites': instance.sprites,
+  'species': instance.species.toJson(),
+  'types': instance.types.map((e) => e.toJson()).toList(),
+  'stats': instance.stats.map((e) => e.toJson()).toList(),
+  'abilities': instance.abilities.map((e) => e.toJson()).toList(),
+  'sprites': instance.sprites.toJson(),
 };
 
 _PokemonTypeSlotApiModel _$PokemonTypeSlotApiModelFromJson(
@@ -73,7 +73,7 @@ _PokemonTypeSlotApiModel _$PokemonTypeSlotApiModelFromJson(
 
 Map<String, dynamic> _$PokemonTypeSlotApiModelToJson(
   _PokemonTypeSlotApiModel instance,
-) => <String, dynamic>{'slot': instance.slot, 'type': instance.type};
+) => <String, dynamic>{'slot': instance.slot, 'type': instance.type.toJson()};
 
 _PokemonStatApiModel _$PokemonStatApiModelFromJson(Map<String, dynamic> json) =>
     $checkedCreate('_PokemonStatApiModel', json, ($checkedConvert) {
@@ -93,7 +93,7 @@ Map<String, dynamic> _$PokemonStatApiModelToJson(
 ) => <String, dynamic>{
   'base_stat': instance.baseStat,
   'effort': instance.effort,
-  'stat': instance.stat,
+  'stat': instance.stat.toJson(),
 };
 
 _PokemonAbilityApiModel _$PokemonAbilityApiModelFromJson(
@@ -113,7 +113,7 @@ _PokemonAbilityApiModel _$PokemonAbilityApiModelFromJson(
 Map<String, dynamic> _$PokemonAbilityApiModelToJson(
   _PokemonAbilityApiModel instance,
 ) => <String, dynamic>{
-  'ability': instance.ability,
+  'ability': instance.ability.toJson(),
   'is_hidden': instance.isHidden,
   'slot': instance.slot,
 };
@@ -137,7 +137,7 @@ Map<String, dynamic> _$PokemonSpritesApiModelToJson(
   _PokemonSpritesApiModel instance,
 ) => <String, dynamic>{
   'front_default': instance.frontDefault,
-  'other': instance.other,
+  'other': instance.other?.toJson(),
 };
 
 _OtherSpritesApiModel _$OtherSpritesApiModelFromJson(
@@ -156,7 +156,7 @@ _OtherSpritesApiModel _$OtherSpritesApiModelFromJson(
 
 Map<String, dynamic> _$OtherSpritesApiModelToJson(
   _OtherSpritesApiModel instance,
-) => <String, dynamic>{'official-artwork': instance.officialArtwork};
+) => <String, dynamic>{'official-artwork': instance.officialArtwork?.toJson()};
 
 _OfficialArtworkApiModel _$OfficialArtworkApiModelFromJson(
   Map<String, dynamic> json,

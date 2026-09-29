@@ -1,36 +1,16 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:vgc_daily_tracker/ui/log_game/widgets/log_game_screen.dart';
-import 'package:vgc_daily_tracker/ui/progress/widgets/progress_screen.dart';
-import 'package:vgc_daily_tracker/ui/routine/widgets/routine_screen.dart';
-import 'package:vgc_daily_tracker/ui/teams/widgets/teams_screen.dart';
 
-import '../testing/app.dart';
+import 'journeys/smoke_journey.dart';
+import 'journeys/storage_journey.dart';
 
+/// The single integration entry point. Desktop test runs relaunch the app
+/// for every `*_test.dart` file, and the second launch fails to reconnect
+/// on macOS, so each journey is a function in `journeys/`, run here as a
+/// group in one app session. Add new journeys here, not as new test files.
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('smoke: launch the app and visit every tab', (tester) async {
-    await pumpApp(tester);
-    expect(find.text('🎮 VGC Daily Practice Tracker'), findsOneWidget);
-    expect(find.byType(RoutineScreen), findsOneWidget);
-
-    final tabs = {
-      'Teams': TeamsScreen,
-      'Log Game': LogGameScreen,
-      'Progress': ProgressScreen,
-      'Routine': RoutineScreen,
-    };
-    for (final MapEntry(key: label, value: screen) in tabs.entries) {
-      await tester.tap(
-        find.descendant(
-          of: find.byType(NavigationBar),
-          matching: find.text(label),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.byType(screen), findsOneWidget, reason: 'tab "$label"');
-    }
-  });
+  group('smoke', smokeJourney);
+  group('storage', storageJourney);
 }
