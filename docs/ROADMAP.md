@@ -148,28 +148,38 @@ Rules:
   through `MockClient`.
 - **Contract test (`network`):** the same slugs parse from the live API.
 
-### 1.2 `PokemonRepository` and name mapping
+### ✅ 1.2 `PokemonRepository` and name mapping
 - Domain models:
-  - `PokemonRef`: slug, display name.
-  - `Pokemon`: id, slug, display name, types, `BaseStats`, sprite URL,
-    `isMega`, base-form slug.
+  - `PokemonRef`: id, slug, display name.
+  - `Pokemon`: id, slug, display name, types, `BaseStats`, sprite URL.
+    (`isMega` and the base-form slug moved to Phase 7, which is the first
+    code that uses them. Floette, whose Mega comes from `floette-eternal`,
+    shows they can't be derived naively.)
 - `PokemonRepositoryRemote`:
-  - Loads the full name index once and caches it in memory and in storage
-    with a TTL, as PokéAPI's fair-use policy asks.
-  - Caches details on demand.
-  - `search(query)` for autocomplete.
-  - `resolve(displayOrShowdownName)` maps names to slugs, e.g.
-    "Basculegion" → `basculegion-male`, and "Metagross" + a Metagrossite →
-    `metagross-mega`.
-- **Tests (unit):** search ranking (prefix before substring), the name-mapping
-  table, a second lookup served from cache, and an offline fallback to the
-  cached index.
-- **Fake:** `FakePokemonRepository` backed by fixtures.
-- **DI (moved here from 0.3):** `lib/config/dependencies.dart` with two
-  setups, `remote` (real services) and `fake` (for tests, integration tests
-  and demos), wired into `VgcApp` with `provider`. **Tests:** the app builds
-  with the fake setup, and a widget can read `PokemonRepository` from the
-  tree.
+  - The name index is fetched once and cached **in memory** for 24 hours
+    (PokéAPI sends `max-age=86400`). Concurrent callers share one request.
+    When the network fails after expiry, the expired index is served.
+    Persisting the cache across app restarts moved to **2.1**, which adds
+    the storage it needs.
+  - Details are cached per slug.
+  - `search(query)`: prefix matches before substring matches, and a blank
+    query returns nothing.
+  - `resolve(name)` has no hand-kept table. It normalizes punctuation,
+    accents and ♀/♂, expands Showdown `-F`/`-M`, and picks a species'
+    default form as the lowest-id `name-*` entry (`Basculegion` →
+    `basculegion-male`). It never guesses from partial names. Mapping an
+    item to a Mega ("Metagross" + Metagrossite → `metagross-mega`) moved to
+    **7.1**, which introduces items.
+- **Tests (unit):** search ranking, the name-mapping tables (checked against
+  the recorded full index), a second lookup served from cache, the 24-hour
+  expiry, the offline fallback, and shared in-flight requests.
+- **Fake:** `FakePokemonRepository` in `testing/fakes/`. It holds in-memory
+  Dart data rather than fixture files, so it also works on a device, and it
+  uses the real name rules.
+- **DI (moved here from 0.3):** `lib/config/dependencies.dart` contains only
+  `providersRemote()`. The fake setup is `providersFake()` in
+  `testing/app.dart`, so fakes never ship in the app. `VgcApp(providers:)`
+  wraps everything in `MultiProvider`.
 
 ### 1.3 Shared Pokémon UI widgets (`ui/core/`)
 - `PokemonAutocompleteField`: validates against the index, so typos can't be
@@ -185,6 +195,10 @@ Rules:
 ## Phase 2: Local persistence and core models (D1: sembast)
 
 ### 2.1 Storage service and domain models
+- Persist the Pokémon name index cache from 1.2, with its 24-hour expiry and
+  offline fallback, so autocomplete works offline right after an app
+  restart. **Tests:** a new repository instance reuses the stored index
+  without a network call.
 - `LocalStorageService` wraps sembast: `databaseFactoryMemory` in tests,
   `databaseFactoryIo` on mobile and desktop, and `databaseFactoryWeb` on web. The schema is versioned from day one.
 - Domain models:
@@ -304,6 +318,9 @@ tests:
 ## Phase 7: Team analysis (from the Reg M-C artifact)
 
 ### 7.1 Showdown import and export
+- Resolve Megas from their held item (moved from 1.2): "Metagross" +
+  Metagrossite → `metagross-mega`, "Charizard" + Charizardite Y →
+  `charizard-mega-y`.
 - A pure-Dart parser that turns a Showdown paste into a `PokemonSet`:
   species, item, ability (including the artifact's "A → B" mega notation),
   level, EVs, IVs, nature and 4 moves. It also handles nicknames, gender and

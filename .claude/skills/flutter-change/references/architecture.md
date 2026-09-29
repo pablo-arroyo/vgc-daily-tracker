@@ -77,9 +77,11 @@ View (widget) ──calls commands──▶ ViewModel ──▶ Repository ─�
 
 - **Dependency injection. [Strong] — Decision: the `provider` package.**
   Wire services, then repositories, then view models in one place
-  (`lib/config/dependencies.dart`). Don't use global singletons or
-  `static` instances. View models receive repositories through their
-  constructor.
+  (`lib/config/dependencies.dart`, which contains only the real
+  `providersRemote()`). Don't use global singletons or `static` instances.
+  View models receive repositories through their constructor. The fake setup
+  is `providersFake()` in `testing/app.dart`, which `pumpApp` uses, so test
+  fakes never ship in the app.
 - **State updates. [Cond] — Decision: `ChangeNotifier` + `ListenableBuilder`.**
   View models extend `ChangeNotifier`. Views rebuild with
   `ListenableBuilder` scoped as tightly as possible (see
