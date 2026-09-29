@@ -1,9 +1,11 @@
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import '../ui/core/app_shell.dart';
 import '../ui/log_game/widgets/log_game_screen.dart';
 import '../ui/progress/widgets/progress_screen.dart';
 import '../ui/routine/widgets/routine_screen.dart';
+import '../ui/teams/view_models/teams_view_model.dart';
 import '../ui/teams/widgets/teams_screen.dart';
 import 'routes.dart';
 
@@ -29,7 +31,12 @@ GoRouter createRouter() => GoRouter(
           routes: [
             GoRoute(
               path: Routes.teams,
-              builder: (context, state) => const TeamsScreen(),
+              // Created once per tab and disposed with it.
+              builder: (context, state) => ChangeNotifierProvider(
+                create: (context) =>
+                    TeamsViewModel(teamRepository: context.read()),
+                child: const TeamsScreen(),
+              ),
             ),
           ],
         ),

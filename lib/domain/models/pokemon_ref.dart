@@ -13,6 +13,13 @@ abstract class PokemonRef with _$PokemonRef {
     required String displayName,
   }) = _PokemonRef;
 
+  const PokemonRef._();
+
   factory PokemonRef.fromJson(Map<String, Object?> json) =>
       _$PokemonRefFromJson(json);
+
+  /// PokéAPI serves every sprite at this URL pattern, so lists can show
+  /// sprites without fetching each Pokémon's details.
+  String get spriteUrl =>
+      'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$id.png';
 }

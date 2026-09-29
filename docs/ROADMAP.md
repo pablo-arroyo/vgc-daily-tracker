@@ -237,13 +237,23 @@ Rules:
 
 ## Phase 3: Teams tab
 
-### 3.1 Team list
-- `TeamsViewModel` with a delete command (asks for confirmation and offers
-  undo) and an empty state.
-- The list shows the team name, 6 avatars and type badges.
+### ✅ 3.1 Team list
+- `TeamsViewModel` watches the team repository and exposes `loaded`,
+  `teams`, a `deleteTeam` command and `undoDelete`.
+- The list shows each team's name and six Pokémon (sprite plus name). The
+  sprites come from `PokemonRef.spriteUrl`, which derives PokéAPI's URL
+  from the id, so drawing the list needs no network calls.
+- **Type badges moved to the team detail screen (7.3).** Teams store
+  lightweight refs, so badges in the list would cost 6 detail lookups per
+  team.
+- Delete asks for confirmation ("Games logged with it are kept"), then
+  shows a snackbar with **Undo**. A failed delete says so and keeps the
+  team.
 - **Tests:**
-  - Unit: the view model.
-  - Widget: empty, list, delete with confirm and undo.
+  - Acceptance widget test through the whole app: list, confirm-delete,
+    undo.
+  - View model: loading, delete/undo, failure.
+  - Screen: spinner, empty, list, cancel, confirm+undo, failure.
 
 ### 3.2 Add and edit a team
 - `TeamEditorViewModel`:

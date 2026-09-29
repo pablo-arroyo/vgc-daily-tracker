@@ -106,6 +106,12 @@ View (widget) ──calls commands──▶ ViewModel ──▶ Repository ─�
   change bumps `appSchemaVersion` and adds a migration with a test.
 - **Navigation. [Rec] — Decision: `go_router`.** All routes are defined in
   `lib/routing/`, and route paths are constants.
+- **View models are created in the route**, with
+  `ChangeNotifierProvider(create: ... context.read() ..., child: Screen())`,
+  so each is built once per tab and disposed with it. Screens get it with
+  `context.read<XViewModel>()` and rebuild through `ListenableBuilder`.
+  Dialogs and snackbars that react to a command's result are UI flow and
+  live in the view; the operation itself lives in the view model.
 - **Naming. [Rec]** Name classes after their architectural role:
   `TeamBuilderScreen`, `TeamBuilderViewModel`, `PokemonRepository`,
   `PokeApiService`. Don't use names that clash with Flutter SDK names. Shared

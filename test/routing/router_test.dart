@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:vgc_daily_tracker/routing/router.dart';
 import 'package:vgc_daily_tracker/routing/routes.dart';
 import 'package:vgc_daily_tracker/ui/log_game/widgets/log_game_screen.dart';
 import 'package:vgc_daily_tracker/ui/progress/widgets/progress_screen.dart';
 import 'package:vgc_daily_tracker/ui/routine/widgets/routine_screen.dart';
 import 'package:vgc_daily_tracker/ui/teams/widgets/teams_screen.dart';
+
+import '../../testing/app.dart';
 
 void main() {
   late GoRouter router;
@@ -15,7 +18,12 @@ void main() {
   tearDown(() => router.dispose());
 
   Future<void> pumpRouter(WidgetTester tester) async {
-    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: providersFake(),
+        child: MaterialApp.router(routerConfig: router),
+      ),
+    );
     await tester.pumpAndSettle();
   }
 

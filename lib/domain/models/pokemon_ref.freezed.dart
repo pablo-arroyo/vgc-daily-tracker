@@ -216,8 +216,8 @@ return $default(_that.id,_that.slug,_that.displayName);case _:
 /// @nodoc
 @JsonSerializable()
 
-class _PokemonRef implements PokemonRef {
-  const _PokemonRef({required this.id, required this.slug, required this.displayName});
+class _PokemonRef extends PokemonRef {
+  const _PokemonRef({required this.id, required this.slug, required this.displayName}): super._();
   factory _PokemonRef.fromJson(Map<String, dynamic> json) => _$PokemonRefFromJson(json);
 
 @override final  int id;
