@@ -99,9 +99,9 @@ Rules:
 - **Done when:** the app builds and shows an empty `MaterialApp`, and one
   placeholder test passes.
 
-### 0.2 `Result<T>` and `Command`
-- Add `lib/utils/result.dart` (`Ok` / `Error`) and `lib/utils/command.dart`
-  (`Command0`, `Command1<T>`, which track running, error and completed, and
+### ✅ 0.2 `Result<T>` and `Command`
+- Add `lib/utils/result.dart` (`Ok` / `Failure`) and `lib/utils/command.dart`
+  (`Command0<T>`, `Command1<T, A>`, which track running, error and completed, and
   block double execution).
 - **Tests (unit):** state transitions, listener notifications, re-entrancy
   blocked, errors captured, and `clearResult`.

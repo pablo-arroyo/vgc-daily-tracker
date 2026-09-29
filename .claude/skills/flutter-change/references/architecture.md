@@ -62,10 +62,11 @@ View (widget) ──calls commands──▶ ViewModel ──▶ Repository ─�
   service. Domain models hold only what the app needs, and the repository maps
   API models to domain models. View models and widgets never see an API model.
 - **Commands for user events. [Rec] — Decision: YES.** View models expose
-  `Command0` / `Command1<T>` objects (running/error/completed state, and they
+  `Command0<T>` / `Command1<T, A>` objects (running/error/completed state, and they
   prevent double execution) instead of bare async methods. Views bind to
   `command.running` and `command.error`, not to ad-hoc booleans. Pair them with
-  a `Result<T>` type (`Ok` / `Error`) returned from repositories so errors are
+  a `Result<T>` type (`Ok` / `Failure`; not `Error`, which would shadow
+  `dart:core`) returned from repositories so errors are
   values, not thrown exceptions crossing layers. Both types live in `lib/utils/`.
 
 ## App structure
