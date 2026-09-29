@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 VGC Daily Tracker is a Flutter app that rebuilds an existing "VGC daily tracker" claude.ai artifact (a Pokémon VGC companion) from scratch. Its data comes from public Pokémon API endpoints. When building a feature meant to mimic the original, read that artifact first so the behavior and layout match.
 
-Current state: the code is still the `flutter create` scaffold (a counter app in `lib/main.dart`). The architecture below was confirmed by the user (2026-09-29) but hasn't been built yet, and none of its packages have been added. The step-by-step build plan is in `docs/ROADMAP.md`: work through it in order, one step per `flutter-change` run.
+Current state: the step-by-step build plan is in `docs/ROADMAP.md`. Work through it in order, one step per `flutter-change` run, and tick each step off (✅) there as it lands. That checklist is the source of truth for what exists.
 
 Source material: two claude.ai artifacts, read with the Artifact tool:
 - the VGC Daily Practice Tracker (https://claude.ai/artifact/Pthd6cY24xK8TkehiruMCE), which is the app being rebuilt
@@ -54,9 +54,10 @@ flutter run -d chrome                # run (or -d macos, or a device id from `fl
 flutter analyze                      # static analysis / lints
 dart format .                        # format
 flutter test                         # all tests
-flutter test test/widget_test.dart   # a single test file
-flutter test --plain-name "Counter increments smoke test"   # a single test by name
-dart run build_runner build --delete-conflicting-outputs    # regenerate freezed/json code (once added)
+flutter test test/main_test.dart     # a single test file
+flutter test --plain-name "VgcApp builds a MaterialApp titled VGC Daily Tracker"   # a single test by name
+flutter test --tags network --run-skipped   # contract tests against live PokéAPI (skipped by default, see dart_test.yaml)
+dart run build_runner build --delete-conflicting-outputs    # regenerate freezed/json code
 ```
 
 ## Lints

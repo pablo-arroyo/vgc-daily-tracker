@@ -69,7 +69,7 @@ read it as "**Tests (write first):**".
 | **Widget (UI)** | `test/ui/...` | `flutter test` (Stop hook) | every screen and shared widget: loading, empty, error and data states; user interaction; navigation | Fake repositories injected through `provider` |
 | **Golden (UI visuals)** | `test/goldens/` | `flutter test --tags golden` | key screens in light and dark theme | Fakes. Kept few, and only for stable screens. |
 | **Integration** | `integration_test/` | `flutter test integration_test -d macos` (D2) | full user journeys through the real app with real storage (in-memory or temp) | A fake `PokeApiService` only, so tests are deterministic and offline |
-| **Contract** | `test/contract/` tagged `network` | `flutter test --tags network` | the real PokéAPI still returns the shape our API models parse | none (live network) |
+| **Contract** | `test/contract/` tagged `network` | `flutter test --tags network --run-skipped` | the real PokéAPI still returns the shape our API models parse | none (live network) |
 
 Rules:
 - **Time is injected.** Use `package:clock` everywhere dates matter (streak,
@@ -88,7 +88,7 @@ Rules:
 
 ## Phase 0: Foundation
 
-### 0.1 Dependencies and project skeleton
+### ✅ 0.1 Dependencies and project skeleton
 - Add runtime packages: `provider`, `go_router`, `freezed_annotation`,
   `json_annotation`, `http`, `clock`, and the storage package from D1.
 - Add dev packages: `build_runner`, `freezed`, `json_serializable`, and the

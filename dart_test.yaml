@@ -1,0 +1,9 @@
+# Test tags. Declaring them here avoids "undefined tag" warnings.
+tags:
+  # Contract tests against the live PokéAPI. Skipped by default so
+  # `flutter test` (and the Stop hook) never touch the network.
+  # Run on purpose with: flutter test --tags network --run-skipped
+  network:
+    skip: "Calls the live PokéAPI. Run on purpose with: flutter test --tags network --run-skipped"
+  # Golden (screenshot) tests. Run by default; select alone with --tags golden.
+  golden:
