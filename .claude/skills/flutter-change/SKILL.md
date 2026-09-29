@@ -145,6 +145,9 @@ Run `git diff` and check the change against this list:
 
 - Run `flutter analyze` and `flutter test`. The Stop hook runs them too and
   blocks finishing if they fail.
+- Run `flutter test integration_test -d macos` before calling a roadmap step
+  done. The Stop hook skips it because it's slow, taking a minute or more to
+  build the macOS app.
 - If there's UI, offer to run the app (`flutter run -d chrome` or
   `-d macos`) so the user can see the change.
 - Summarize the change for the user:

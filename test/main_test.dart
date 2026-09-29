@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:vgc_daily_tracker/main.dart';
 import 'package:vgc_daily_tracker/ui/core/theme/app_theme.dart';
 import 'package:vgc_daily_tracker/ui/log_game/widgets/log_game_screen.dart';
 import 'package:vgc_daily_tracker/ui/progress/widgets/progress_screen.dart';
 import 'package:vgc_daily_tracker/ui/routine/widgets/routine_screen.dart';
 import 'package:vgc_daily_tracker/ui/teams/widgets/teams_screen.dart';
 
+import '../testing/app.dart';
+
 void main() {
   testWidgets('VgcApp builds a MaterialApp titled VGC Daily Tracker', (
     tester,
   ) async {
-    await tester.pumpWidget(const VgcApp());
+    await pumpApp(tester);
 
     final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
     expect(app.title, 'VGC Daily Tracker');
@@ -20,7 +21,7 @@ void main() {
   testWidgets('uses the app light and dark themes, following the system', (
     tester,
   ) async {
-    await tester.pumpWidget(const VgcApp());
+    await pumpApp(tester);
 
     final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
     expect(app.theme, same(AppTheme.light));
@@ -31,8 +32,7 @@ void main() {
   testWidgets('opens on Routine and switches screens from the tab bar', (
     tester,
   ) async {
-    await tester.pumpWidget(const VgcApp());
-    await tester.pumpAndSettle();
+    await pumpApp(tester);
 
     expect(find.byType(RoutineScreen), findsOneWidget);
     for (final label in ['Routine', 'Teams', 'Log Game', 'Progress']) {

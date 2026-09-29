@@ -57,6 +57,7 @@ flutter test                         # all tests
 flutter test test/main_test.dart     # a single test file
 flutter test --plain-name "VgcApp builds a MaterialApp titled VGC Daily Tracker"   # a single test by name
 flutter test --tags network --run-skipped   # contract tests against live PokéAPI (skipped by default, see dart_test.yaml)
+flutter test integration_test -d macos      # integration tests on the real app (not run by the Stop hook; run before finishing a roadmap step)
 dart run build_runner build --delete-conflicting-outputs    # regenerate freezed/json code
 ```
 

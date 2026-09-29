@@ -124,7 +124,7 @@ Rules:
 - **Done when:** the app runs on Chrome with 4 placeholder tabs in both
   themes.
 
-### 0.4 Test infrastructure
+### ✅ 0.4 Test infrastructure
 - Add `testing/fakes/` (empty at first; each later step adds its fakes here)
   and `testing/fixtures/`.
 - Add a pump helper, `pumpApp(tester, {overrides})`, that builds the app with
