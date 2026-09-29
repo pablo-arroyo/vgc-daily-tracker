@@ -6,7 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 VGC Daily Tracker is a Flutter app that rebuilds an existing "VGC daily tracker" claude.ai artifact (a Pokémon VGC companion) from scratch. Its data comes from public Pokémon API endpoints. When building a feature meant to mimic the original, read that artifact first so the behavior and layout match.
 
-Current state: the code is still the `flutter create` scaffold (a counter app in `lib/main.dart`). The architecture below has been decided but not built yet, and none of its packages have been added.
+Current state: the code is still the `flutter create` scaffold (a counter app in `lib/main.dart`). The architecture below was confirmed by the user (2026-09-29) but hasn't been built yet, and none of its packages have been added. The step-by-step build plan is in `docs/ROADMAP.md`: work through it in order, one step per `flutter-change` run.
+
+Source material: two claude.ai artifacts, read with the Artifact tool:
+- the VGC Daily Practice Tracker (https://claude.ai/artifact/Pthd6cY24xK8TkehiruMCE), which is the app being rebuilt
+- VGC Reg M-C Teams: EVs & Analysis (https://claude.ai/artifact/RmxUFFsocnwWQ894jYwBCm), which provides sample team sets and the stat numbers used as test oracles
 
 ## Every feature, bugfix or update: use the `flutter-change` skill
 
@@ -18,6 +22,7 @@ Rules that must always hold (details and reasoning are in the skill's references
 - **Widgets are dumb:** they contain only show/hide flags, animation, layout and simple routing. All other logic goes in the `ChangeNotifier` view model, and user actions go through `Command`s.
 - **Repositories:** each one is an abstract class with a real implementation and a fake. Repositories return `Result<T>` and map PokéAPI *API models* to *domain models*. API models never go past the repository.
 - **Models:** immutable, generated with `freezed` + `json_serializable`.
+- **Storage:** local-first `sembast`, used only by repositories. Time comes from `package:clock` and IDs from an injected generator, so tests can pin both.
 - **DI and routing:** dependencies are wired with `provider` in `lib/config/dependencies.dart` (no globals or singletons). Navigation uses `go_router`.
 - **Performance:**
   - Nothing expensive in `build()`.

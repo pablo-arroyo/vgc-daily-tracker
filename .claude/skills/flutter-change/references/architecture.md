@@ -4,6 +4,9 @@ Distilled from https://docs.flutter.dev/app-architecture/recommendations, plus
 the decisions this project made for each item. Flutter's level is in brackets:
 **[Strong]** = strongly recommend, **[Rec]** = recommend, **[Cond]** = conditional.
 
+**Status:** every "Decision:" below was confirmed by the user on 2026-09-29.
+They are settled; don't reopen them without the user asking.
+
 If a change needs to break one of these rules, stop and raise it with the user
 instead of quietly deviating. Record any new decision here.
 
@@ -76,6 +79,14 @@ View (widget) ──calls commands──▶ ViewModel ──▶ Repository ─�
   View models extend `ChangeNotifier`. Views rebuild with
   `ListenableBuilder` scoped as tightly as possible (see
   performance.md → build cost).
+- **Persistence — Decision: local-first with `sembast`** (roadmap D1). One
+  `LocalStorageService` wraps it: `databaseFactoryMemory` in tests,
+  `databaseFactoryIo` on mobile and desktop, and `databaseFactoryWeb` on web.
+  Repositories are the only callers. Cloud sync, if it comes later, is a new
+  repository implementation, not a UI change.
+- **Time and IDs are injected.** Use `package:clock` for anything that
+  depends on "now", and an `IdGenerator` for new IDs, so tests can control
+  both.
 - **Navigation. [Rec] — Decision: `go_router`.** All routes are defined in
   `lib/routing/`, and route paths are constants.
 - **Naming. [Rec]** Name classes after their architectural role:
