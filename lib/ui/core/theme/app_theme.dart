@@ -35,11 +35,13 @@ abstract final class AppTheme {
 }
 
 /// Semantic colors from the original tracker that Material's ColorScheme has
-/// no slot for: results (win/loss) and the picker chips (your lead,
-/// opponent's brought, opponent's lead). Each has a soft background variant.
+/// no slot for: the accent's soft background, results (win/loss) and the
+/// picker chips (your lead, opponent's brought, opponent's lead). Each has a
+/// soft background variant.
 @immutable
 class AppColors extends ThemeExtension<AppColors> {
   const AppColors({
+    required this.accentSoft,
     required this.win,
     required this.winSoft,
     required this.loss,
@@ -53,6 +55,7 @@ class AppColors extends ThemeExtension<AppColors> {
   });
 
   static const light = AppColors(
+    accentSoft: Color(0xFFEEEEFF),
     win: Color(0xFF1E9E5A),
     winSoft: Color(0xFFE6F7EE),
     loss: Color(0xFFD64545),
@@ -66,6 +69,7 @@ class AppColors extends ThemeExtension<AppColors> {
   );
 
   static const dark = AppColors(
+    accentSoft: Color(0xFF26264A),
     win: Color(0xFF4ADE8A),
     winSoft: Color(0xFF16301F),
     loss: Color(0xFFF27979),
@@ -78,6 +82,7 @@ class AppColors extends ThemeExtension<AppColors> {
     oppLeadSoft: Color(0xFF2E2140),
   );
 
+  final Color accentSoft;
   final Color win;
   final Color winSoft;
   final Color loss;
@@ -91,6 +96,7 @@ class AppColors extends ThemeExtension<AppColors> {
 
   @override
   AppColors copyWith({
+    Color? accentSoft,
     Color? win,
     Color? winSoft,
     Color? loss,
@@ -103,6 +109,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? oppLeadSoft,
   }) {
     return AppColors(
+      accentSoft: accentSoft ?? this.accentSoft,
       win: win ?? this.win,
       winSoft: winSoft ?? this.winSoft,
       loss: loss ?? this.loss,
@@ -120,6 +127,7 @@ class AppColors extends ThemeExtension<AppColors> {
   AppColors lerp(AppColors? other, double t) {
     if (other == null) return this;
     return AppColors(
+      accentSoft: Color.lerp(accentSoft, other.accentSoft, t)!,
       win: Color.lerp(win, other.win, t)!,
       winSoft: Color.lerp(winSoft, other.winSoft, t)!,
       loss: Color.lerp(loss, other.loss, t)!,

@@ -181,7 +181,7 @@ Rules:
   `testing/app.dart`, so fakes never ship in the app. `VgcApp(providers:)`
   wraps everything in `MultiProvider`.
 
-### 1.3 Shared Pokémon UI widgets (`ui/core/`)
+### ✅ 1.3 Shared Pokémon UI widgets (`ui/core/`)
 - `PokemonAutocompleteField`: validates against the index, so typos can't be
   stored.
 - `PokemonAvatar`: sprite via `FadeInImage` with a placeholder and a fallback

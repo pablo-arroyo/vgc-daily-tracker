@@ -40,6 +40,11 @@ View (widget) ──calls commands──▶ ViewModel ──▶ Repository ─�
 
   Everything else (filtering, sorting, formatting stats, deciding what to load)
   goes in the view model.
+- **Shared widgets (`ui/core/`) take data and callbacks, never repositories.**
+  For example, `PokemonAutocompleteField` gets a `search` function and an
+  `onChanged` callback from the screen's view model. That keeps it reusable
+  (your team and the opponent's use the same field) and testable with a
+  fake's `search`.
 - **Domain layer / use-cases. [Cond] — Decision: NOT used for now.** Add a
   use-case only when logic is duplicated across view models or crowds one. Team
   analysis across several repositories is the likely first candidate.
