@@ -1,0 +1,10 @@
+targets:
+  $default:
+    builders:
+      json_serializable:
+        options:
+          # PokéAPI (and our storage) use snake_case keys: base_stat, is_hidden.
+          field_rename: snake
+          # Bad shapes throw CheckedFromJsonException (an Exception naming the
+          # field) instead of a bare TypeError, so they can become a Failure.
+          checked: true

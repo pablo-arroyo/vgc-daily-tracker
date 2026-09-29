@@ -54,8 +54,12 @@ View (widget) ──calls commands──▶ ViewModel ──▶ Repository ─�
 - **freezed / built_value. [Rec] — Decision: `freezed` + `json_serializable`.**
   These generate equality, `copyWith` and JSON methods. Run
   `dart run build_runner build --delete-conflicting-outputs` after changing a
-  model. Generated `*.g.dart` and `*.freezed.dart` files are excluded from
-  analysis and formatting hooks.
+  model. Generated `*.g.dart` and `*.freezed.dart` files are **committed**
+  (a fresh clone builds and tests without running `build_runner`), and they're
+  excluded from analysis and the formatting hook. `build.yaml` sets
+  `field_rename: snake` and `checked: true`. With `checked`, a wrong JSON
+  shape throws `CheckedFromJsonException` (an `Exception`), which services
+  turn into a `Failure`.
 - **Separate API and domain models. [Cond] — Decision: YES.** PokéAPI
   responses are large and deeply nested (`pokemon`, `pokemon-species`, `move`,
   `type` and so on). API models mirror the JSON exactly and live next to their

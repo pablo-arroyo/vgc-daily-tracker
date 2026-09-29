@@ -136,7 +136,7 @@ Rules:
 
 ## Phase 1: PokéAPI data layer
 
-### 1.1 `PokeApiService`
+### ✅ 1.1 `PokeApiService`
 - `GET /pokemon?limit=…` returns a name index (name + URL). `GET /pokemon/{slug}`
   returns the detail. API models: `PokemonListApiModel` and
   `PokemonDetailApiModel` (id, name, types, stats, sprites, abilities, species
