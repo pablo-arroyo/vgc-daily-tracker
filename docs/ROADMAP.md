@@ -107,15 +107,15 @@ Rules:
   blocked, errors captured, and `clearResult`.
 - **Done when:** both types are fully covered.
 
-### 0.3 App shell: theme, routing and DI
+### ✅ 0.3 App shell: theme and routing (DI moved to 1.2)
 - **Theme:** a Material 3 light and dark theme using the artifact's
   semantic colors (accent, win, loss, lead, opponent, opponent-lead) as a
   `ThemeExtension`.
 - **Routing:** `go_router` with a `StatefulShellRoute` holding 4 tabs,
   Routine / Teams / Log / Progress, each on its own path. Content is capped
   at 640 px wide, like the original.
-- **DI:** `lib/config/dependencies.dart` with two setups: `remote` (real
-  services) and `fake` (for tests, integration tests and demos).
+- **DI:** moved to step 1.2. With no dependencies yet, no test could require
+  it, so writing it here would break the TDD rule.
 - **Tests:**
   - Widget: switching tabs shows the right screen and keeps each tab's
     state.
@@ -165,6 +165,11 @@ Rules:
   table, a second lookup served from cache, and an offline fallback to the
   cached index.
 - **Fake:** `FakePokemonRepository` backed by fixtures.
+- **DI (moved here from 0.3):** `lib/config/dependencies.dart` with two
+  setups, `remote` (real services) and `fake` (for tests, integration tests
+  and demos), wired into `VgcApp` with `provider`. **Tests:** the app builds
+  with the fake setup, and a widget can read `PokemonRepository` from the
+  tree.
 
 ### 1.3 Shared Pokémon UI widgets (`ui/core/`)
 - `PokemonAutocompleteField`: validates against the index, so typos can't be
