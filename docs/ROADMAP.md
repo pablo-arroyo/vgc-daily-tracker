@@ -218,15 +218,22 @@ Rules:
   - `MistakeCategory`: the 9 artifact labels verbatim, with `isPlayedWell`.
   - `GameResult`: win or loss.
 
-### 2.2 `TeamRepository` and `GameLogRepository`
-- Teams: `watchAll`, `add`, `update` (new: the artifact couldn't edit
-  teams), `delete`.
-- Games: `watchAll` (sorted newest first), `add`, `delete`.
-- **Tests (unit):** CRUD against in-memory storage, ordering, deleting a team
-  keeps its games (they still show the team name), and concurrent adds don't
-  overwrite each other (the artifact re-read before every write for this
-  reason).
-- **Fakes:** `FakeTeamRepository` and `FakeGameLogRepository`.
+### ✅ 2.2 `TeamRepository` and `GameLogRepository`
+- Teams: `watchAll` (alphabetical, ignoring case), `save` (insert or
+  replace, which covers the editing the artifact lacked; it replaces the
+  planned `add` + `update`, which were the same operation), `delete`.
+- Games: `watchAll` (newest first), `add`, `delete`.
+- Storage keeps **one document per team and per game**, keyed by id, instead
+  of the artifact's month-sized arrays. Concurrent saves can't overwrite
+  each other by design, with no re-read before writing. The guard test was
+  mutation-checked: with a shared key it fails.
+- The caller supplies ids (view models use the `IdGenerator`).
+- **Tests (unit):** shared *contract* suites run against the local
+  implementations **and** the fakes, covering save/add, edit, ordering,
+  live delete and concurrent adds. A cross-repository test checks that
+  deleting a team keeps its games with its name.
+- **Fakes:** `FakeTeamRepository` and `FakeGameLogRepository`, in
+  `providersFake()`. Both are wired in DI.
 
 ## Phase 3: Teams tab
 

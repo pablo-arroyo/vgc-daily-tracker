@@ -35,4 +35,33 @@ void main() {
     expect(db.version, 1);
     expect(appSchemaVersion, 1);
   });
+
+  test('watchAll emits every document, then again after each change', () async {
+    await storage.put('teams', 'a', {'name': 'A'});
+    final emissions = storage.watchAll('teams').take(2).toList();
+
+    await Future<void>.delayed(Duration.zero);
+    await storage.put('teams', 'b', {'name': 'B'});
+
+    final [first, second] = await emissions;
+    expect(first, [
+      {'name': 'A'},
+    ]);
+    expect(
+      second,
+      unorderedEquals([
+        {'name': 'A'},
+        {'name': 'B'},
+      ]),
+    );
+  });
+
+  test('delete removes a document', () async {
+    await storage.put('teams', 'a', {'name': 'A'});
+
+    final deleted = await storage.delete('teams', 'a');
+
+    expect(deleted, isA<Ok<void>>());
+    expect((await storage.get('teams', 'a') as Ok).value, isNull);
+  });
 }

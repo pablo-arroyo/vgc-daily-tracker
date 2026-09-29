@@ -22,12 +22,25 @@ class LocalStorageService {
   Future<Result<Map<String, Object?>?>> get(String store, String key) async =>
       Result.ok(await stringMapStoreFactory.store(store).record(key).get(_db));
 
+  /// Every document in [store], emitted now and again after each change.
+  Stream<List<Map<String, Object?>>> watchAll(String store) =>
+      stringMapStoreFactory
+          .store(store)
+          .query()
+          .onSnapshots(_db)
+          .map((records) => [for (final record in records) record.value]);
+
   Future<Result<void>> put(
     String store,
     String key,
     Map<String, Object?> document,
   ) async {
     await stringMapStoreFactory.store(store).record(key).put(_db, document);
+    return const Result.ok(null);
+  }
+
+  Future<Result<void>> delete(String store, String key) async {
+    await stringMapStoreFactory.store(store).record(key).delete(_db);
     return const Result.ok(null);
   }
 }

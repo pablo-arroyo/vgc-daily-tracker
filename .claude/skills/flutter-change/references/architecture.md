@@ -147,3 +147,11 @@ testing/           fakes and fixtures shared across tests (FakePokemonRepository
   `Fake<Name>Service` classes in `testing/` that implement the abstract class
   with in-memory data. Tests check inputs and outputs, not calls. Service
   tests use recorded PokéAPI JSON fixtures and never hit the network.
+- **Fakes pass the real contract.** Each repository's behavior lives in a
+  shared `<name>_repository_contract.dart` suite that runs against the real
+  implementation *and* its fake (see `test/data/repositories/team/`). Screen
+  tests can then trust the fake. Shared rules such as sort order are
+  functions next to the interface (`compareTeamsByName`), used by both.
+- **Local storage is one document per record**, keyed by id. There's no
+  read-modify-write of shared documents, so concurrent writes can't clobber
+  each other.
