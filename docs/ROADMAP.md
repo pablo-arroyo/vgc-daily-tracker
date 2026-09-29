@@ -52,6 +52,17 @@ How to use this plan:
 
 ## Testing strategy (applies to every step)
 
+**Development is test-driven (TDD).** In every step below:
+- The tests listed are written **before** the code they describe.
+- The first test is the step's acceptance test, taken from its **Done when**
+  (an integration or widget test).
+- Each layer is then built with red → green → refactor, from the service up
+  to the view.
+
+The full loop and its few exceptions (generated code, config, pure styling,
+goldens) are in the `flutter-change` skill. Where a step says "**Tests:**",
+read it as "**Tests (write first):**".
+
 | Level | Location | Runs with | What it covers | Test doubles |
 |---|---|---|---|---|
 | **Unit** | `test/` (mirrors `lib/`) | `flutter test` (Stop hook) | utils, services, repositories, view models, parsers and calculators | `testing/fakes/*`, `package:http/testing.dart` `MockClient` fed with JSON fixtures |
