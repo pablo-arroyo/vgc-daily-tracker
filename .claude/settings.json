@@ -1,0 +1,29 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/dart-format-analyze.sh",
+            "timeout": 60,
+            "statusMessage": "dart format + analyze"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/flutter-verify.sh",
+            "timeout": 300,
+            "statusMessage": "flutter analyze + test"
+          }
+        ]
+      }
+    ]
+  }
+}

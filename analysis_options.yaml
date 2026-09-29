@@ -18,6 +18,8 @@ analyzer:
     - windows/**
     - macos/**
     - linux/**
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
 
 linter:
   # The lint rules applied to this project can be customized in the
@@ -31,8 +33,22 @@ linter:
   # `// ignore_for_file: name_of_lint` syntax on the line or in the file
   # producing the lint.
   rules:
-    # avoid_print: false  # Uncomment to disable the `avoid_print` rule
-    # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
+    # Performance (docs.flutter.dev/perf/best-practices): const widgets let
+    # Flutter short-circuit rebuilds; StringBuffer instead of + in loops.
+    prefer_const_constructors: true
+    prefer_const_constructors_in_immutables: true
+    prefer_const_declarations: true
+    prefer_const_literals_to_create_immutables: true
+    use_string_buffers: true
+    # Architecture (docs.flutter.dev/app-architecture/recommendations):
+    # immutable models and unidirectional data flow.
+    prefer_final_fields: true
+    prefer_final_locals: true
+    avoid_setters_without_getters: true
+    # Async correctness for repository/service calls.
+    unawaited_futures: true
+    avoid_void_async: true
+    prefer_single_quotes: true
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
