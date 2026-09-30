@@ -7,7 +7,10 @@ import 'package:vgc_daily_tracker/utils/result.dart';
 /// In-memory [GameLogRepository]. Passes the same contract tests as the real
 /// one, so screen tests can rely on it.
 class FakeGameLogRepository implements GameLogRepository {
-  final _games = <String, GameLog>{};
+  FakeGameLogRepository({List<GameLog> games = const []})
+    : _games = {for (final game in games) game.id: game};
+
+  final Map<String, GameLog> _games;
 
   /// When set, `add` and `delete` fail with it and change nothing.
   Exception? failWith;

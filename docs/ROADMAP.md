@@ -331,26 +331,30 @@ Rules:
 
 ## Phase 5: Progress tab
 
-### 5.1 `ProgressViewModel`: statistics
-Everything is recomputed from the repository stream, with a pinned clock in
-tests:
-- **Totals:** number of games and overall win %.
-- **Last-7-days win %:** uses **local** dates (fixes the artifact's UTC bug).
-- **Day streak:** counts back from today, or from yesterday if nothing has
-  been logged today yet.
-- **Weekly focus:** the most common mistake in the last 14 days, not counting
-  "played well". The artifact's wording claimed "losses" while it counted
-  every game; the text is now accurate.
-- **Mistake breakdown:** all time.
-- **Win rate by team:** grouped by **team id** (fixes grouping by name).
-- **Opponent leads:** the 8 most frequent, each with your win % against it.
-- **Recent games** list.
-- **Tests (unit):** each stat with hand-built fixtures, including edge cases:
-  - an empty history
-  - games exactly at the 7- and 14-day limits
-  - the streak around midnight and a timezone offset
-  - ties in the most common mistake
-  - a deleted team that still has games
+### ✅ 5.1 `ProgressViewModel`: statistics
+Recomputed into an immutable `ProgressStats` whenever the game log changes,
+never in `build()`. A "local day" is the date of `playedAt` converted to
+the device timezone (injectable, so tests pin UTC-6).
+- **Totals and win %:** rounded like the original's `Math.round`, and
+  `null` with no games (shown as "–").
+- **Last 7 days:** today plus the 6 previous *local calendar* days. This
+  fixes the original's UTC bug, and a mutation check with UTC days fails
+  the test.
+- **Day streak:** consecutive local days, counting back from today, or
+  from yesterday if nothing is logged yet today.
+- **Weekly focus:** the most common real mistake (not "played well") in
+  the last 14 local days, reported as "N of M", where M = games in the
+  window with a real mistake picked. A tie goes to the most recent.
+- **Mistake breakdown:** every picked category including "played well",
+  all time. Ties are in option order (explicit, since `List.sort` isn't
+  stable).
+- **Win rate by team:** grouped by id, with the name from the most recent
+  game. Deleted teams are kept. Most games first, then name.
+- **Opponent leads:** the top 8 by times seen, with your win % against
+  each. A tie goes to the most recently seen (mutation-checked).
+- **Recent games:** all of them, newest first, updated live.
+- **Tests:** 15 unit tests, 100% line coverage. There's no UI yet (5.2),
+  so no `wip` acceptance test in this step.
 
 ### 5.2 Progress UI
 - **From 4.2:** extend the log-game integration journey so the logged game
