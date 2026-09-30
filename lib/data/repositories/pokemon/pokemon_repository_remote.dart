@@ -57,11 +57,11 @@ class PokemonRepositoryRemote implements PokemonRepository {
   }
 
   @override
-  Future<Result<PokemonRef>> resolve(String name) async {
+  Future<Result<PokemonRef>> resolve(String name, {String? item}) async {
     final index = await _loadIndex();
     switch (index) {
       case Ok(value: final refs):
-        final match = PokemonNames.resolve(refs, name);
+        final match = PokemonNames.resolve(refs, name, item: item);
         return match != null
             ? Result.ok(match)
             : Result.failure(PokeApiNotFound(name));

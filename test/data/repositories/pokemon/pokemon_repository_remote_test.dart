@@ -243,6 +243,46 @@ void main() {
       }
     });
 
+    Future<String> slugHolding(String name, String? item) async =>
+        ((await repository.resolve(
+          name,
+          item: item,
+        )) as Ok<PokemonRef>).value.slug;
+
+    test('a held Mega Stone resolves the Mega form', () async {
+      final cases = {
+        ('Metagross', 'Metagrossite'): 'metagross-mega',
+        ('Charizard', 'Charizardite Y'): 'charizard-mega-y',
+        ('Charizard', 'Charizardite X'): 'charizard-mega-x',
+        ('Raichu', 'Raichunite Y'): 'raichu-mega-y',
+        ('Floette', 'Floettite'): 'floette-mega',
+        ('Salamence', 'Salamencite'): 'salamence-mega',
+        ('Garchomp', 'Garchompite'): 'garchomp-mega',
+        ('Garchomp', 'Garchompite Z'): 'garchomp-mega-z',
+        ('Lucario', 'Lucarionite Z'): 'lucario-mega-z',
+      };
+      for (final MapEntry(key: (name, item), value: slug) in cases.entries) {
+        expect(await slugHolding(name, item), slug, reason: '$name @ $item');
+      }
+    });
+
+    test('any other item keeps the named form', () async {
+      final cases = {
+        ('Kingambit', 'Life Orb'): 'kingambit',
+        ('Metagross', null): 'metagross',
+        // Another species' stone, or an "-ite" item that isn't a stone.
+        ('Metagross', 'Charizardite Y'): 'metagross',
+        ('Metagross', 'Garchompite'): 'metagross',
+        ('Charizard', 'Mewtwonite X'): 'charizard',
+        ('Chansey', 'Eviolite'): 'chansey',
+        // Already named as the Mega.
+        ('Metagross-Mega', 'Metagrossite'): 'metagross-mega',
+      };
+      for (final MapEntry(key: (name, item), value: slug) in cases.entries) {
+        expect(await slugHolding(name, item), slug, reason: '$name @ $item');
+      }
+    });
+
     test('fails on unknown or partial names instead of guessing', () async {
       for (final name in ['Missingno', 'Char', 'Kingamb']) {
         final result = await repository.resolve(name);

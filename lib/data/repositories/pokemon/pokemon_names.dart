@@ -26,12 +26,41 @@ abstract final class PokemonNames {
 
   /// Finds the index entry a typed or Showdown-style [name] refers to, or
   /// null. Never guesses from a partial name; that's what search is for.
-  static PokemonRef? resolve(List<PokemonRef> refs, String name) {
+  /// When [item] is that Pokémon's Mega Stone, its Mega is returned instead.
+  static PokemonRef? resolve(
+    List<PokemonRef> refs,
+    String name, {
+    String? item,
+  }) {
     final slug = normalize(name);
     final expanded = _expandShowdownGender(slug);
-    PokemonRef? exact(String s) => refs.where((r) => r.slug == s).firstOrNull;
     // An exact slug wins, so real `nidoran-f` isn't "expanded".
-    return exact(slug) ?? exact(expanded) ?? _defaultForm(refs, expanded);
+    final named =
+        _exact(refs, slug) ??
+        _exact(refs, expanded) ??
+        _defaultForm(refs, expanded);
+    if (named == null || item == null) return named;
+    return _megaHolding(refs, named, item) ?? named;
+  }
+
+  static PokemonRef? _exact(List<PokemonRef> refs, String slug) =>
+      refs.where((r) => r.slug == slug).firstOrNull;
+
+  /// A stone is the species' name (sometimes minus its last letter, or plus
+  /// an `n`) + `ite`, with an optional X / Y / Z: `metagrossite`,
+  /// `salamencite`, `raichunite-y`, `garchompite-z`.
+  static final _megaStone = RegExp(r'^(.+?)n?ite(-[xyz])?$');
+
+  /// [named]'s Mega if [item] is its stone and the index has that Mega.
+  /// `Eviolite` or another species' stone matches nothing.
+  static PokemonRef? _megaHolding(
+    List<PokemonRef> refs,
+    PokemonRef named,
+    String item,
+  ) {
+    final stone = _megaStone.firstMatch(normalize(item));
+    if (stone == null || !named.slug.startsWith(stone.group(1)!)) return null;
+    return _exact(refs, '${named.slug}-mega${stone.group(2) ?? ''}');
   }
 
   /// Showdown writes gendered forms as `-F` / `-M`; PokéAPI spells them out.

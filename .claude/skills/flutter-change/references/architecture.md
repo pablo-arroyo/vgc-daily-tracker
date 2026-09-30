@@ -136,6 +136,7 @@ lib/
                    <name>/<name>_repository_remote.dart, _local.dart, ...
   domain/
     models/        immutable freezed domain models
+    showdown/      the Showdown paste format: pure parse/export, no I/O
   routing/         go_router config, route constants
   ui/
     core/          shared widgets, theme

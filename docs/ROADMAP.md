@@ -407,19 +407,40 @@ the device timezone (injectable, so tests pin UTC-6).
 
 ## Phase 7: Team analysis (from the Reg M-C artifact)
 
-### 7.1 Showdown import and export
-- Resolve Megas from their held item (moved from 1.2): "Metagross" +
-  Metagrossite → `metagross-mega`, "Charizard" + Charizardite Y →
-  `charizard-mega-y`.
-- A pure-Dart parser that turns a Showdown paste into a `PokemonSet`:
-  species, item, ability (including the artifact's "A → B" mega notation),
-  level, EVs, IVs, nature and 4 moves. It also handles nicknames, gender and
-  blank lines, and reports malformed input with line numbers.
-- A serializer for the reverse direction.
-- **Tests (unit):** all 3 artifact teams as fixtures parse correctly, a
-  parse → export → parse round trip gives the same result, and errors are
-  reported for bad EV totals (over 510, or over 252 on one stat), unknown
-  natures and more than 4 moves.
+### ✅ 7.1 Showdown import and export
+- **Megas from held items:** `PokemonRepository.resolve(name, item:)`.
+  A stone is the species' name + `ite` (sometimes minus its last letter,
+  or plus an `n`), with an optional X/Y/Z, and the Mega must exist in the
+  index. This covers Metagrossite, Salamencite, Raichunite Y and
+  Garchompite Z, and it rejects Eviolite and other species' stones.
+- **Parsing:** `ShowdownFormat.parse` (in `lib/domain/showdown/`) turns a
+  paste into `PokemonSet`s. `PokemonSet` is built from the new `Stat`,
+  `Nature` (all 25) and `StatSpread` models. The parser reads:
+  - nicknames, gender, item and level
+  - EVs and IVs, including partial IV lines
+  - the nature and up to 4 moves
+  - abilities, including the artifact's `A → B` (`->` also works)
+
+  When a line is missing, the parser uses VGC defaults: level 50,
+  31 IVs, Serious nature. It skips Showdown extras this app doesn't use
+  (Tera Type, Shiny and so on), and treats CRLF and extra blank lines as
+  normal. It lists every problem with its line number:
+  - EVs over 510 in total, or over 252 on one stat
+  - IVs over 31, or a level outside 1–100
+  - unknown natures or stats
+  - a 5th move
+  - unrecognised lines
+- **Exporting:** `ShowdownFormat.export` writes lines in Showdown's order,
+  listing only non-zero EVs and IVs below 31.
+- **Tests (unit):**
+  - The artifact's 3 teams as verbatim fixtures: each parses and exports
+    back to the exact same text.
+  - The parser and exporter rules, and the Nature and StatSpread models.
+  - The stone rule, checked against the recorded full PokéAPI index.
+  - I also broke each validation rule on purpose, one at a time, and a
+    test failed every time.
+- **Not included yet:** `PokemonSet` has no stored JSON yet. It gets
+  stored JSON and a pinned-JSON test in 7.3, when teams start saving sets.
 
 ### 7.2 Stat calculator
 - Level 50 (configurable level) stats from base stats + EVs + IVs + nature.

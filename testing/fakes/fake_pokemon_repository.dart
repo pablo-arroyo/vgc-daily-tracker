@@ -36,8 +36,8 @@ class FakePokemonRepository implements PokemonRepository {
   }
 
   @override
-  Future<Result<PokemonRef>> resolve(String name) async {
-    final match = PokemonNames.resolve(_refs, name);
+  Future<Result<PokemonRef>> resolve(String name, {String? item}) async {
+    final match = PokemonNames.resolve(_refs, name, item: item);
     return match != null
         ? Result.ok(match)
         : Result.failure(PokeApiNotFound(name));

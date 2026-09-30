@@ -10,8 +10,9 @@ abstract class PokemonRepository {
 
   /// Maps a typed or Showdown-style name to its entry, e.g. `Basculegion-F`
   /// → `basculegion-female`. Fails with `PokeApiNotFound` rather than
-  /// guessing from a partial name.
-  Future<Result<PokemonRef>> resolve(String name);
+  /// guessing from a partial name. Holding its Mega Stone as [item] picks
+  /// the Mega: `Metagross` + `Metagrossite` → `metagross-mega`.
+  Future<Result<PokemonRef>> resolve(String name, {String? item});
 
   /// Full details (types, base stats, sprite) for [slug].
   Future<Result<Pokemon>> getPokemon(String slug);
