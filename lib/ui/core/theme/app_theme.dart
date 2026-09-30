@@ -54,6 +54,15 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.oppLeadSoft,
   });
 
+  /// The theme's [AppColors], or the matching light/dark default if the
+  /// theme doesn't carry them (e.g. a bare ThemeData in a test), rather than
+  /// crashing on a missing color.
+  static AppColors of(BuildContext context) {
+    final theme = Theme.of(context);
+    return theme.extension<AppColors>() ??
+        (theme.brightness == Brightness.dark ? dark : light);
+  }
+
   static const light = AppColors(
     accentSoft: Color(0xFFEEEEFF),
     win: Color(0xFF1E9E5A),

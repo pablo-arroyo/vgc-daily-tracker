@@ -25,32 +25,36 @@ class _LogGameScreenState extends State<LogGameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          key: ValueKey(_formGeneration),
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: const [
-            _SectionLabel('Result'),
-            _ResultPicker(),
-            SizedBox(height: 16),
-            _TeamPicker(),
-            _YourPicks(),
-            _OpponentSection(),
-            Divider(height: 32),
-            _MistakePicker(),
-            SizedBox(height: 12),
-            _NotesField(),
-          ],
-        ),
-      ),
-      // Sticky, like the team editor's Save.
-      bottomNavigationBar: SafeArea(
-        child: Padding(
+    // Its own messenger: snackbars then show in this Scaffold, above the
+    // sticky Save bar. The shell's Scaffold would put them right over it.
+    return ScaffoldMessenger(
+      child: Scaffold(
+        body: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
-          child: _SaveGameButton(
-            onSaved: () => setState(() => _formGeneration++),
+          child: Column(
+            key: ValueKey(_formGeneration),
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: const [
+              _SectionLabel('Result'),
+              _ResultPicker(),
+              SizedBox(height: 16),
+              _TeamPicker(),
+              _YourPicks(),
+              _OpponentSection(),
+              Divider(height: 32),
+              _MistakePicker(),
+              SizedBox(height: 12),
+              _NotesField(),
+            ],
+          ),
+        ),
+        // Sticky, like the team editor's Save.
+        bottomNavigationBar: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: _SaveGameButton(
+              onSaved: () => setState(() => _formGeneration++),
+            ),
           ),
         ),
       ),

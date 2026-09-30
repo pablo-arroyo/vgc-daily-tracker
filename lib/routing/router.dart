@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../ui/core/app_shell.dart';
 import '../ui/log_game/view_models/log_game_view_model.dart';
 import '../ui/log_game/widgets/log_game_screen.dart';
+import '../ui/progress/view_models/progress_view_model.dart';
 import '../ui/progress/widgets/progress_screen.dart';
 import '../ui/routine/widgets/routine_screen.dart';
 import '../ui/teams/view_models/team_editor_view_model.dart';
@@ -75,7 +76,11 @@ GoRouter createRouter() => GoRouter(
           routes: [
             GoRoute(
               path: Routes.progress,
-              builder: (context, state) => const ProgressScreen(),
+              builder: (context, state) => ChangeNotifierProvider(
+                create: (context) =>
+                    ProgressViewModel(gameLogRepository: context.read()),
+                child: const ProgressScreen(),
+              ),
             ),
           ],
         ),

@@ -24,7 +24,7 @@ class PokemonChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final colors = Theme.of(context).extension<AppColors>()!;
+    final colors = AppColors.of(context);
     final (foreground, background) = switch (role) {
       PokemonChipRole.none => (scheme.outlineVariant, scheme.surface),
       PokemonChipRole.brought => (scheme.primary, colors.accentSoft),

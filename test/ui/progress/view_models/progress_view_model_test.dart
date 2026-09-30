@@ -295,4 +295,43 @@ void main() {
       expect(viewModel.stats.dayStreak, 1);
     },
   );
+
+  test('deleteGame removes a game and undoDelete brings it back', () async {
+    final games = FakeGameLogRepository(
+      games: [game('a', day: 29), game('b', day: 30)],
+    );
+    late ProgressViewModel viewModel;
+    await withClock(Clock.fixed(now), () async {
+      viewModel = ProgressViewModel(
+        gameLogRepository: games,
+        toLocal: costaRica,
+      );
+      await pumpEventQueue();
+
+      await viewModel.deleteGame.execute(viewModel.stats.recentGames.first);
+      await pumpEventQueue();
+      expect(viewModel.deleteGame.completed, isTrue);
+      expect(viewModel.stats.recentGames.map((g) => g.id), ['a']);
+
+      await viewModel.undoDelete.execute();
+      await pumpEventQueue();
+    });
+    addTearDown(viewModel.dispose);
+
+    expect(viewModel.stats.recentGames.map((g) => g.id), ['b', 'a']);
+  });
+
+  test(
+    'labels a game with its local date and Pokémon by display name',
+    () async {
+      final viewModel = await progressOf([]);
+
+      // 23:30 local on the 29th is already the 30th in UTC.
+      expect(
+        viewModel.dateLabel(game('late', day: 29, hour: 23)),
+        '2026-09-29',
+      );
+      expect(viewModel.pokemonName('raichu-mega-y'), 'Raichu-Mega-Y');
+    },
+  );
 }

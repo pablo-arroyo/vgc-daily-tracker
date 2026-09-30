@@ -112,6 +112,14 @@ View (widget) ──calls commands──▶ ViewModel ──▶ Repository ─�
   `context.read<XViewModel>()` and rebuild through `ListenableBuilder`.
   Dialogs and snackbars that react to a command's result are UI flow and
   live in the view; the operation itself lives in the view model.
+- **Each tab screen owns a `ScaffoldMessenger` plus `Scaffold`.** Otherwise
+  its snackbars show on the shell's `Scaffold`, right over the tab's sticky
+  buttons: this hid Save game and Add team for about 4 seconds after each
+  snackbar, caught by the macOS journey. Sticky bottom bars size to their
+  content (`mainAxisSize: min`).
+- **Visible means visible.** Any sticky or bottom-anchored control gets a
+  test that it's actually hit-testable (`hitTestOnBinding`), not just
+  present in the tree.
 - **Naming. [Rec]** Name classes after their architectural role:
   `TeamBuilderScreen`, `TeamBuilderViewModel`, `PokemonRepository`,
   `PokeApiService`. Don't use names that clash with Flutter SDK names. Shared

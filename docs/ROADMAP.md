@@ -356,18 +356,30 @@ the device timezone (injectable, so tests pin UTC-6).
 - **Tests:** 15 unit tests, 100% line coverage. There's no UI yet (5.2),
   so no `wip` acceptance test in this step.
 
-### 5.2 Progress UI
-- **From 4.2:** extend the log-game integration journey so the logged game
-  appears in Progress' recent games.
-- Stat grid, focus callout, bar chart (plain widgets, no chart package),
-  win-rate lists, and a lazy recent-games list with delete. The artifact only
-  showed 15 games; this adds "show all".
+### ✅ 5.2 Progress UI
+- `ProgressScreen`:
+  - **Overview:** stat boxes, "–" when empty.
+  - **This week's focus:** the accurate "N of the M games with a mistake
+    noted in the last 14 days" wording.
+  - Win rate by team, and the most common opponent leads.
+  - **Mistake breakdown:** plain-widget bars.
+  - **Recent games:** a lazy `SliverList.builder`, the first 15 plus
+    "Show all (N)", with delete and **Undo**.
+- `ProgressViewModel` gained `deleteGame`/`undoDelete`, `dateLabel` (local
+  date) and `pokemonName`.
+- `AppColors.of(context)` replaces `extension<AppColors>()!`, falling back
+  to the light/dark defaults instead of crashing.
+- **Bug found by the macOS journey, fixed with regression tests:**
+  snackbars were shown by the shell's `Scaffold`, right over the tabs'
+  sticky buttons (Save game, Add team) for about 4 seconds. Each tab now
+  owns a `ScaffoldMessenger`.
 - **Tests:**
-  - Widget: each card's empty and data states, and delete with undo.
-  - **Golden:** the full Progress screen in light and dark themes with a
-    fixed dataset.
-  - **Integration:** log several games → verify totals, streak and team win
-    rate on screen.
+  - An acceptance widget test through the app: totals, streak, focus, team
+    record, delete and undo.
+  - Card empty/data states, and Show all.
+  - **Goldens** (`test/goldens/`, light and dark, fixed data/clock/tz).
+  - **Integration:** the log-game journey logs two games and checks totals,
+    win rate, streak and the team record in Progress.
 
 ## Phase 6: Routine tab
 

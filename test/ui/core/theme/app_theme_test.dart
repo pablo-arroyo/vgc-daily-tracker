@@ -38,4 +38,35 @@ void main() {
       expect(changed.win, light.win);
     });
   });
+
+  group('AppColors.of', () {
+    Future<AppColors> colorsUnder(WidgetTester tester, ThemeData theme) async {
+      late AppColors colors;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: theme,
+          home: Builder(
+            builder: (context) {
+              colors = AppColors.of(context);
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      );
+      // MaterialApp animates between themes; read the settled value.
+      await tester.pumpAndSettle();
+      return colors;
+    }
+
+    testWidgets('reads the theme extension', (tester) async {
+      expect(await colorsUnder(tester, AppTheme.dark), AppColors.dark);
+    });
+
+    testWidgets('falls back to the matching default when the theme lacks it', (
+      tester,
+    ) async {
+      expect(await colorsUnder(tester, ThemeData.light()), AppColors.light);
+      expect(await colorsUnder(tester, ThemeData.dark()), AppColors.dark);
+    });
+  });
 }

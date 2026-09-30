@@ -15,28 +15,32 @@ class TeamsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.read<TeamsViewModel>();
-    return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        tooltip: 'Add team',
-        onPressed: () => context.push(Routes.newTeam),
-        child: const Icon(Icons.add),
-      ),
-      body: ListenableBuilder(
-        listenable: viewModel,
-        builder: (context, _) {
-          if (!viewModel.loaded) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (viewModel.teams.isEmpty) {
-            return const Center(child: Text('No teams saved yet.'));
-          }
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: viewModel.teams.length,
-            itemBuilder: (context, index) =>
-                _TeamCard(team: viewModel.teams[index]),
-          );
-        },
+    // Its own messenger: snackbars then show in this Scaffold, which moves
+    // the Add team button above them. The shell's would cover it.
+    return ScaffoldMessenger(
+      child: Scaffold(
+        floatingActionButton: FloatingActionButton(
+          tooltip: 'Add team',
+          onPressed: () => context.push(Routes.newTeam),
+          child: const Icon(Icons.add),
+        ),
+        body: ListenableBuilder(
+          listenable: viewModel,
+          builder: (context, _) {
+            if (!viewModel.loaded) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (viewModel.teams.isEmpty) {
+              return const Center(child: Text('No teams saved yet.'));
+            }
+            return ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: viewModel.teams.length,
+              itemBuilder: (context, index) =>
+                  _TeamCard(team: viewModel.teams[index]),
+            );
+          },
+        ),
       ),
     );
   }

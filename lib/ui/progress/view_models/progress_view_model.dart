@@ -4,8 +4,11 @@ import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../../data/repositories/game_log/game_log_repository.dart';
+import '../../../data/repositories/pokemon/pokemon_names.dart';
 import '../../../domain/models/game_log.dart';
 import '../../../domain/models/mistake_category.dart';
+import '../../../utils/command.dart';
+import '../../../utils/result.dart';
 import 'progress_stats.dart';
 
 /// State for the Progress tab: statistics recomputed from the game log each
@@ -14,7 +17,10 @@ class ProgressViewModel extends ChangeNotifier {
   ProgressViewModel({
     required GameLogRepository gameLogRepository,
     DateTime Function(DateTime utc)? toLocal,
-  }) : _toLocal = toLocal ?? ((utc) => utc.toLocal()) {
+  }) : _gameLogRepository = gameLogRepository,
+       _toLocal = toLocal ?? ((utc) => utc.toLocal()) {
+    deleteGame = Command1(_deleteGame);
+    undoDelete = Command0(_undoDelete);
     _subscription = gameLogRepository.watchAll().listen((games) {
       _stats = _compute(games);
       _loaded = true;
@@ -22,7 +28,38 @@ class ProgressViewModel extends ChangeNotifier {
     });
   }
 
+  final GameLogRepository _gameLogRepository;
   late final StreamSubscription<List<GameLog>> _subscription;
+
+  /// Deletes a logged game, remembering it so [undoDelete] can restore it.
+  late final Command1<void, GameLog> deleteGame;
+
+  /// Restores the game removed by the last [deleteGame].
+  late final Command0<void> undoDelete;
+
+  GameLog? _lastDeleted;
+
+  Future<Result<void>> _deleteGame(GameLog game) {
+    // Undo is only offered after a successful delete (see ProgressScreen).
+    _lastDeleted = game;
+    return _gameLogRepository.delete(game.id);
+  }
+
+  Future<Result<void>> _undoDelete() {
+    final game = _lastDeleted!;
+    _lastDeleted = null;
+    return _gameLogRepository.add(game);
+  }
+
+  /// The game's local date, e.g. `2026-09-30`.
+  String dateLabel(GameLog game) {
+    final day = _localDay(game.playedAt);
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${day.year}-${two(day.month)}-${two(day.day)}';
+  }
+
+  /// Display name for a stored slug, e.g. `Raichu-Mega-Y`.
+  String pokemonName(String slug) => PokemonNames.displayName(slug);
 
   /// Converts a UTC instant to the player's local time (injectable so tests
   /// can pin a timezone).
