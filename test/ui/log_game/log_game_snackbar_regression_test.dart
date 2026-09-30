@@ -21,9 +21,10 @@ void main() {
     // the button (the reset form then asks for a result).
     final save = find.widgetWithText(FilledButton, 'Save game');
     expect(
-      tester.hitTestOnBinding(tester.getCenter(save)).path.any(
-        (entry) => entry.target == tester.renderObject(save),
-      ),
+      tester
+          .hitTestOnBinding(tester.getCenter(save))
+          .path
+          .any((entry) => entry.target == tester.renderObject(save)),
       isTrue,
       reason: 'Save game is covered',
     );

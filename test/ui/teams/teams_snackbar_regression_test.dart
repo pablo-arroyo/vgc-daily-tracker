@@ -20,11 +20,21 @@ void main() {
 
     final addTeam = find.byTooltip('Add team');
     expect(
-      tester.hitTestOnBinding(tester.getCenter(addTeam)).path.any(
-        (entry) => entry.target == tester.renderObject(
-          find.descendant(of: addTeam, matching: find.byType(RawMaterialButton)).first,
-        ),
-      ),
+      tester
+          .hitTestOnBinding(tester.getCenter(addTeam))
+          .path
+          .any(
+            (entry) =>
+                entry.target ==
+                tester.renderObject(
+                  find
+                      .descendant(
+                        of: addTeam,
+                        matching: find.byType(RawMaterialButton),
+                      )
+                      .first,
+                ),
+          ),
       isTrue,
       reason: 'Add team is covered',
     );

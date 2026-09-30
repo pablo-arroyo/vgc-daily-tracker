@@ -7,6 +7,7 @@ import '../ui/log_game/view_models/log_game_view_model.dart';
 import '../ui/log_game/widgets/log_game_screen.dart';
 import '../ui/progress/view_models/progress_view_model.dart';
 import '../ui/progress/widgets/progress_screen.dart';
+import '../ui/routine/view_models/routine_view_model.dart';
 import '../ui/routine/widgets/routine_screen.dart';
 import '../ui/teams/view_models/team_editor_view_model.dart';
 import '../ui/teams/view_models/teams_view_model.dart';
@@ -28,7 +29,11 @@ GoRouter createRouter() => GoRouter(
           routes: [
             GoRoute(
               path: Routes.routine,
-              builder: (context, state) => const RoutineScreen(),
+              builder: (context, state) => ChangeNotifierProvider(
+                create: (context) =>
+                    RoutineViewModel(routineRepository: context.read()),
+                child: const RoutineScreen(),
+              ),
             ),
           ],
         ),

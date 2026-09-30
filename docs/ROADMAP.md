@@ -383,14 +383,27 @@ the device timezone (injectable, so tests pin UTC-6).
 
 ## Phase 6: Routine tab
 
-### 6.1 Checklists (D3: saved per day)
-- The artifact's 3 cards (before / during / after), 12 items total, as static
-  content.
-- `RoutineViewModel` saves the ticks per local day and resets them each new
-  day.
+### ✅ 6.1 Checklists (D3: saved per day)
+- The original's 3 cards (3 + 5 + 4 items) live in `domain/models/
+  routine.dart`, each item with a **stable id**. The wording is verbatim,
+  except the two items that said "below" now name the tab ("in Progress",
+  "in Log Game").
+- `RoutineRepository`, with a local implementation, a fake and a shared
+  contract: one small document per local day, so each day starts empty.
+- `RoutineViewModel` loads today's ticks by local date. `toggle` ticks
+  instantly, then saves, and a failed save puts the tick back with a
+  snackbar. A shared `isoDate` helper, also used by Progress, formats the
+  date.
 - **Tests:**
-  - Unit: ticks saved, and reset on a new day (with the pinned clock).
-  - Widget: ticking items, and the ticks surviving a rebuild.
+  - An acceptance test through the app: a tick survives an app restart.
+  - The repository contract (real and fake).
+  - The view model: the local day, toggle, the next day being empty, and
+    failure revert.
+  - The screen.
+  - A visual check at a desktop window size.
+- **Not included:** resetting at midnight while the app stays open (a
+  fresh load of the tab resets). One known uncovered line: the local
+  repository's "storage read failed" branch (in-memory storage can't fail).
 
 ## Phase 7: Team analysis (from the Reg M-C artifact)
 

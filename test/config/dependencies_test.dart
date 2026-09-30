@@ -6,6 +6,8 @@ import 'package:vgc_daily_tracker/data/repositories/game_log/game_log_repository
 import 'package:vgc_daily_tracker/data/repositories/game_log/game_log_repository_local.dart';
 import 'package:vgc_daily_tracker/data/repositories/pokemon/pokemon_repository.dart';
 import 'package:vgc_daily_tracker/data/repositories/pokemon/pokemon_repository_remote.dart';
+import 'package:vgc_daily_tracker/data/repositories/routine/routine_repository.dart';
+import 'package:vgc_daily_tracker/data/repositories/routine/routine_repository_local.dart';
 import 'package:vgc_daily_tracker/data/repositories/team/team_repository.dart';
 import 'package:vgc_daily_tracker/data/repositories/team/team_repository_local.dart';
 import 'package:vgc_daily_tracker/data/services/storage/local_storage_service.dart';
@@ -16,6 +18,7 @@ import '../../testing/app.dart';
 import '../../testing/fakes/fake_game_log_repository.dart';
 import '../../testing/fakes/fake_id_generator.dart';
 import '../../testing/fakes/fake_pokemon_repository.dart';
+import '../../testing/fakes/fake_routine_repository.dart';
 import '../../testing/fakes/fake_team_repository.dart';
 import '../../testing/storage.dart';
 
@@ -29,6 +32,7 @@ void main() {
     expect(context.read<TeamRepository>(), isA<FakeTeamRepository>());
     expect(context.read<GameLogRepository>(), isA<FakeGameLogRepository>());
     expect(context.read<IdGenerator>(), isA<SequentialIdGenerator>());
+    expect(context.read<RoutineRepository>(), isA<FakeRoutineRepository>());
   });
 
   testWidgets('providersRemote wires the real PokemonRepositoryRemote', (
@@ -40,6 +44,7 @@ void main() {
     late TeamRepository teams;
     late GameLogRepository games;
     late IdGenerator ids;
+    late RoutineRepository routine;
     await tester.pumpWidget(
       MultiProvider(
         providers: providersRemote(storage: storage),
@@ -50,6 +55,7 @@ void main() {
             teams = context.read<TeamRepository>();
             games = context.read<GameLogRepository>();
             ids = context.read<IdGenerator>();
+            routine = context.read<RoutineRepository>();
             return const SizedBox.shrink();
           },
         ),
@@ -61,5 +67,6 @@ void main() {
     expect(teams, isA<TeamRepositoryLocal>());
     expect(games, isA<GameLogRepositoryLocal>());
     expect(ids, isA<RandomIdGenerator>());
+    expect(routine, isA<RoutineRepositoryLocal>());
   });
 }

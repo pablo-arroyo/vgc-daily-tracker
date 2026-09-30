@@ -6,6 +6,8 @@ import '../data/repositories/game_log/game_log_repository.dart';
 import '../data/repositories/game_log/game_log_repository_local.dart';
 import '../data/repositories/pokemon/pokemon_repository.dart';
 import '../data/repositories/pokemon/pokemon_repository_remote.dart';
+import '../data/repositories/routine/routine_repository.dart';
+import '../data/repositories/routine/routine_repository_local.dart';
 import '../data/repositories/team/team_repository.dart';
 import '../data/repositories/team/team_repository_local.dart';
 import '../data/services/pokeapi/poke_api_service.dart';
@@ -40,5 +42,8 @@ List<SingleChildWidget> providersRemote({
   ),
   Provider<GameLogRepository>(
     create: (context) => GameLogRepositoryLocal(storage: context.read()),
+  ),
+  Provider<RoutineRepository>(
+    create: (context) => RoutineRepositoryLocal(storage: context.read()),
   ),
 ];

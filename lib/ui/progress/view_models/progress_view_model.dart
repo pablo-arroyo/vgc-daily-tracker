@@ -8,6 +8,7 @@ import '../../../data/repositories/pokemon/pokemon_names.dart';
 import '../../../domain/models/game_log.dart';
 import '../../../domain/models/mistake_category.dart';
 import '../../../utils/command.dart';
+import '../../../utils/iso_date.dart';
 import '../../../utils/result.dart';
 import 'progress_stats.dart';
 
@@ -52,11 +53,7 @@ class ProgressViewModel extends ChangeNotifier {
   }
 
   /// The game's local date, e.g. `2026-09-30`.
-  String dateLabel(GameLog game) {
-    final day = _localDay(game.playedAt);
-    String two(int n) => n.toString().padLeft(2, '0');
-    return '${day.year}-${two(day.month)}-${two(day.day)}';
-  }
+  String dateLabel(GameLog game) => isoDate(_localDay(game.playedAt));
 
   /// Display name for a stored slug, e.g. `Raichu-Mega-Y`.
   String pokemonName(String slug) => PokemonNames.displayName(slug);
