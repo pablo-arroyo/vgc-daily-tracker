@@ -8,6 +8,9 @@ import 'package:vgc_daily_tracker/utils/result.dart';
 /// one, so screen tests can rely on it.
 class FakeGameLogRepository implements GameLogRepository {
   final _games = <String, GameLog>{};
+
+  /// When set, `add` and `delete` fail with it and change nothing.
+  Exception? failWith;
   final _changes = StreamController<List<GameLog>>.broadcast();
 
   List<GameLog> get _current =>
@@ -21,6 +24,7 @@ class FakeGameLogRepository implements GameLogRepository {
 
   @override
   Future<Result<void>> add(GameLog game) async {
+    if (failWith case final error?) return Result.failure(error);
     _games[game.id] = game;
     _changes.add(_current);
     return const Result.ok(null);
@@ -28,6 +32,7 @@ class FakeGameLogRepository implements GameLogRepository {
 
   @override
   Future<Result<void>> delete(String id) async {
+    if (failWith case final error?) return Result.failure(error);
     _games.remove(id);
     _changes.add(_current);
     return const Result.ok(null);

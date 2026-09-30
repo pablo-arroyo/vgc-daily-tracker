@@ -285,23 +285,26 @@ Rules:
 
 ## Phase 4: Log Game tab
 
-### 4.1 `LogGameViewModel` (the rules engine)
-- Result is required.
-- If a team is chosen:
-  - **exactly 4** brought from its 6
-  - **exactly 2** leads, chosen from the brought 4
-  - un-bringing a Pokémon also removes it as a lead
-- Opponent:
-  - up to 6 Pokémon, validated through autocomplete
-  - **at most 4** brought
-  - **at most 2** leads, chosen from their brought
-  - removing a Pokémon from their team drops it from brought and leads
-- Mistake category and notes are optional.
-- The save command resets the form, using the timestamp and *local* date
-  from `clock`.
-- **Tests (unit):** every rule above with its limit cases (4th vs 5th pick,
-  lead removed with its brought Pokémon), save with and without a team, and a
-  save failure that keeps the form.
+### ✅ 4.1 `LogGameViewModel` (the rules engine)
+- Result (Win/Loss) is required.
+- Your team, optional; picking another team clears the picks:
+  - **exactly 4** brought, where a 5th is refused
+  - **exactly 2** leads, picked only once 4 are brought and only from them
+  - un-bringing a Pokémon also drops it as a lead
+- The opponent:
+  - 6 autocomplete slots
+  - **up to 4** brought and **up to 2** leads (from their brought)
+  - clearing a slot, or un-marking brought, drops that Pokémon from their
+    brought and leads
+- Refusals come back as messages from the toggle methods, for 4.2 to show
+  as snackbars. They're worded as in the original ("Only 4 Pokémon can be
+  brought.", "Pick Win or Loss first.", …).
+- Mistake and notes are optional (notes are trimmed).
+- Save stores UTC `playedAt` from `clock`, the team id plus a name
+  snapshot, and every pick as slugs, then resets the form. **A failed
+  save keeps everything entered** (mutation-checked).
+- **Tests (unit):** 22, covering every rule and limit, with and without a
+  team, and failure. 100% line coverage.
 
 ### 4.2 Log Game UI
 - Win/Loss toggle, team dropdown, chip pickers with "n / 4" hints, the

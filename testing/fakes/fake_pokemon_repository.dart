@@ -52,6 +52,12 @@ class FakePokemonRepository implements PokemonRepository {
         : Result.failure(PokeApiNotFound(slug));
   }
 
+  /// The [PokemonRef] of one of the [samplePokemon], by slug.
+  static PokemonRef sampleRef(String slug) {
+    final p = samplePokemon.singleWhere((p) => p.slug == slug);
+    return PokemonRef(id: p.id, slug: p.slug, displayName: p.displayName);
+  }
+
   /// Real PokéAPI data (fetched 2026-09-29): enough for a full team plus a
   /// Charizard / Charizard-Mega-Y pair for species-clause tests.
   static const samplePokemon = [
