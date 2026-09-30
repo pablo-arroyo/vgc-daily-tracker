@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../ui/core/app_shell.dart';
+import '../ui/log_game/view_models/log_game_view_model.dart';
 import '../ui/log_game/widgets/log_game_screen.dart';
 import '../ui/progress/widgets/progress_screen.dart';
 import '../ui/routine/widgets/routine_screen.dart';
@@ -58,7 +59,15 @@ GoRouter createRouter() => GoRouter(
           routes: [
             GoRoute(
               path: Routes.logGame,
-              builder: (context, state) => const LogGameScreen(),
+              builder: (context, state) => ChangeNotifierProvider(
+                create: (context) => LogGameViewModel(
+                  gameLogRepository: context.read(),
+                  teamRepository: context.read(),
+                  pokemonRepository: context.read(),
+                  idGenerator: context.read(),
+                ),
+                child: const LogGameScreen(),
+              ),
             ),
           ],
         ),

@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
+import 'journeys/log_game_journey.dart';
 import 'journeys/smoke_journey.dart';
 import 'journeys/storage_journey.dart';
 import 'journeys/teams_journey.dart';
@@ -15,4 +16,5 @@ void main() {
   group('smoke', smokeJourney);
   group('storage', storageJourney);
   group('teams', teamsJourney);
+  group('log game', logGameJourney);
 }

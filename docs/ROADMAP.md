@@ -306,14 +306,28 @@ Rules:
 - **Tests (unit):** 22, covering every rule and limit, with and without a
   team, and failure. 100% line coverage.
 
-### 4.2 Log Game UI
-- Win/Loss toggle, team dropdown, chip pickers with "n / 4" hints, the
-  opponent section, mistake dropdown and notes. Snackbars replace the
-  artifact's toasts.
-- **Tests (widget):** each picker's limits are enforced visibly, validation
-  messages, and the form resets after saving.
-- **Integration:** create a team → log a game with brought and leads → the
-  game appears in Progress' recent games.
+### ✅ 4.2 Log Game UI
+- `LogGameScreen` follows the original's layout:
+  - Win/Loss (`SegmentedButton`)
+  - "Your team used" dropdown
+  - brought and lead chips with "n / 4" and "n / 2" hints
+  - the opponent's section (6 autocomplete slots, then brought and lead
+    chips)
+  - "What decided this game?"
+  - Notes
+  - a **sticky Save game** button
+- Refusals and save errors show as snackbars, and success shows "Game
+  logged ✓". A new key rebuilds the form after each save, clearing text
+  fields and dropdowns.
+- **Tests:**
+  - Acceptance widget test through the app, checking every stored field.
+  - Screen tests: picker limits, the opponent section, validation, reset,
+    failure.
+  - **Integration journey on macOS:** create a team → log a game with it.
+- Visually checked at a desktop window size in dark mode (a probe render,
+  not committed).
+- **Moved to 5.2:** checking the logged game in Progress' recent games,
+  since the Progress screen doesn't exist until Phase 5.
 
 ## Phase 5: Progress tab
 
@@ -339,6 +353,8 @@ tests:
   - a deleted team that still has games
 
 ### 5.2 Progress UI
+- **From 4.2:** extend the log-game integration journey so the logged game
+  appears in Progress' recent games.
 - Stat grid, focus callout, bar chart (plain widgets, no chart package),
   win-rate lists, and a lazy recent-games list with delete. The artifact only
   showed 15 games; this adds "show all".

@@ -2,16 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Types [query] into the Pokémon field labelled [label] and picks [option]
-/// from the suggestions.
+/// from the suggestions. It taps the suggestion itself (the suggestions are
+/// a ListView), not another widget that happens to show the same name, such
+/// as a chip.
 Future<void> pickPokemon(
   WidgetTester tester, {
   required String label,
   required String query,
   required String option,
 }) async {
-  await tester.enterText(find.widgetWithText(TextField, label), query);
+  final field = find.widgetWithText(TextField, label);
+  await tester.ensureVisible(field);
+  await tester.enterText(field, query);
   await tester.pumpAndSettle();
-  await tester.tap(find.text(option));
+  await tester.tap(
+    find.descendant(of: find.byType(ListView), matching: find.text(option)),
+  );
   await tester.pumpAndSettle();
 }
 
