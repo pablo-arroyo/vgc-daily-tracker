@@ -7,6 +7,7 @@ import 'package:vgc_daily_tracker/routing/routes.dart';
 import 'package:vgc_daily_tracker/ui/log_game/widgets/log_game_screen.dart';
 import 'package:vgc_daily_tracker/ui/progress/widgets/progress_screen.dart';
 import 'package:vgc_daily_tracker/ui/routine/widgets/routine_screen.dart';
+import 'package:vgc_daily_tracker/ui/teams/widgets/team_editor_screen.dart';
 import 'package:vgc_daily_tracker/ui/teams/widgets/teams_screen.dart';
 
 import '../../testing/app.dart';
@@ -60,5 +61,25 @@ void main() {
 
     expect(find.byType(RoutineScreen), findsNothing);
     expect(find.byType(RoutineScreen, skipOffstage: false), findsOneWidget);
+  });
+
+  testWidgets('/teams/new opens the editor for a new team', (tester) async {
+    await pumpRouter(tester);
+
+    router.go(Routes.newTeam);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TeamEditorScreen), findsOneWidget);
+    expect(find.text('New team'), findsOneWidget);
+  });
+
+  testWidgets('/teams/:id/edit opens the editor for that team', (tester) async {
+    await pumpRouter(tester);
+
+    router.go(Routes.editTeam('t1'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TeamEditorScreen), findsOneWidget);
+    expect(find.text('Edit team'), findsOneWidget);
   });
 }

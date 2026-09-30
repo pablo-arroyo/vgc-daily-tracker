@@ -100,4 +100,40 @@ void main() {
 
     expect(find.text('Pick a Pokémon from the list'), findsNothing);
   });
+
+  testWidgets('starts from an initial Pokémon, which counts as picked', (
+    tester,
+  ) async {
+    changes = [];
+    const kingambit = PokemonRef(
+      id: 983,
+      slug: 'kingambit',
+      displayName: 'Kingambit',
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: PokemonAutocompleteField(
+            label: 'Pokémon 1',
+            search: search,
+            onChanged: changes.add,
+            initialValue: kingambit,
+          ),
+        ),
+      ),
+    );
+
+    expect(
+      tester.widget<TextField>(find.byType(TextField)).controller?.text,
+      'Kingambit',
+    );
+    await tester.showKeyboard(find.byType(TextField));
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+    expect(find.text('Pick a Pokémon from the list'), findsNothing);
+
+    await tester.enterText(find.byType(TextField), 'Kingam');
+    await tester.pump();
+    expect(changes.last, isNull, reason: 'editing withdraws the initial pick');
+  });
 }

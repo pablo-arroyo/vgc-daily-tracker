@@ -10,6 +10,7 @@ import '../data/repositories/team/team_repository.dart';
 import '../data/repositories/team/team_repository_local.dart';
 import '../data/services/pokeapi/poke_api_service.dart';
 import '../data/services/storage/local_storage_service.dart';
+import '../utils/id_generator.dart';
 
 /// The real app wiring: services first, then the repositories that use them.
 /// Providers are lazy, so nothing is created (or fetched) until first read.
@@ -20,6 +21,7 @@ List<SingleChildWidget> providersRemote({
   required LocalStorageService storage,
 }) => [
   Provider<LocalStorageService>.value(value: storage),
+  Provider<IdGenerator>(create: (_) => RandomIdGenerator()),
   Provider<http.Client>(
     create: (_) => http.Client(),
     dispose: (_, client) => client.close(),

@@ -30,6 +30,7 @@ Rules that must always hold (details and reasoning are in the skill's references
   - Use `.builder` for lists and grids.
   - Use widget classes, not functions that return widgets.
   - Avoid `Opacity`, clipping and intrinsic sizing. Use `FadeInImage` for sprites.
+- **`wip` acceptance tests:** while a roadmap step is in progress, its acceptance test file is tagged `@Tags(['wip'])`. The Stop hook skips it, and plain `flutter test` still shows it red. A step is only done once no file is tagged `wip`.
 - **TDD, always:** write a failing test first, run it and see it fail, then write only the code needed to pass it, then refactor. Never weaken or delete a test to get green. Start features from the roadmap step's acceptance test. The skill lists the few exceptions (generated code, config, pure styling, goldens).
 - **Tests:** unit tests for every service, repository and view model, and widget tests for views. Use fakes, not mocks. Tests never call the network.
 - **Changing a rule:** ask the user first, then update the skill's references.
@@ -37,7 +38,7 @@ Rules that must always hold (details and reasoning are in the skill's references
 ## Hooks (`.claude/settings.json`)
 
 - **PostToolUse on `Edit|Write`** (`.claude/hooks/dart-format-analyze.sh`): runs `dart format` and then `dart analyze` on the edited `.dart` file. It skips `*.g.dart` and `*.freezed.dart`. Issues in `lib/` are sent back as a blocking error. Issues in test files are reported without blocking, because missing symbols there are the expected TDD red step.
-- **Stop** (`.claude/hooks/flutter-verify.sh`): if any Dart files, `pubspec.yaml` or `analysis_options.yaml` changed since the last commit, it runs `flutter analyze` and then `flutter test`. A failure stops Claude from finishing. If it fails again on the retry, it only warns, so it can't loop.
+- **Stop** (`.claude/hooks/flutter-verify.sh`): if any Dart files, `pubspec.yaml` or `analysis_options.yaml` changed since the last commit, it runs `flutter analyze` and then `flutter test --exclude-tags wip`, ignoring analyzer issues in `wip`-tagged files and reminding (without blocking) when any remain. A failure stops Claude from finishing. If it fails again on the retry, it only warns, so it can't loop.
 
 ## Toolchain
 

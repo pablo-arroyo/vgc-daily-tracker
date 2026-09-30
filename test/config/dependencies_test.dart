@@ -10,9 +10,11 @@ import 'package:vgc_daily_tracker/data/repositories/team/team_repository.dart';
 import 'package:vgc_daily_tracker/data/repositories/team/team_repository_local.dart';
 import 'package:vgc_daily_tracker/data/services/storage/local_storage_service.dart';
 import 'package:vgc_daily_tracker/ui/routine/widgets/routine_screen.dart';
+import 'package:vgc_daily_tracker/utils/id_generator.dart';
 
 import '../../testing/app.dart';
 import '../../testing/fakes/fake_game_log_repository.dart';
+import '../../testing/fakes/fake_id_generator.dart';
 import '../../testing/fakes/fake_pokemon_repository.dart';
 import '../../testing/fakes/fake_team_repository.dart';
 import '../../testing/storage.dart';
@@ -26,6 +28,7 @@ void main() {
     expect(context.read<PokemonRepository>(), isA<FakePokemonRepository>());
     expect(context.read<TeamRepository>(), isA<FakeTeamRepository>());
     expect(context.read<GameLogRepository>(), isA<FakeGameLogRepository>());
+    expect(context.read<IdGenerator>(), isA<SequentialIdGenerator>());
   });
 
   testWidgets('providersRemote wires the real PokemonRepositoryRemote', (
@@ -36,6 +39,7 @@ void main() {
     late LocalStorageService providedStorage;
     late TeamRepository teams;
     late GameLogRepository games;
+    late IdGenerator ids;
     await tester.pumpWidget(
       MultiProvider(
         providers: providersRemote(storage: storage),
@@ -45,6 +49,7 @@ void main() {
             providedStorage = context.read<LocalStorageService>();
             teams = context.read<TeamRepository>();
             games = context.read<GameLogRepository>();
+            ids = context.read<IdGenerator>();
             return const SizedBox.shrink();
           },
         ),
@@ -55,5 +60,6 @@ void main() {
     expect(providedStorage, same(storage));
     expect(teams, isA<TeamRepositoryLocal>());
     expect(games, isA<GameLogRepositoryLocal>());
+    expect(ids, isA<RandomIdGenerator>());
   });
 }

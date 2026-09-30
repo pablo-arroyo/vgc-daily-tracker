@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -5,7 +6,9 @@ import '../ui/core/app_shell.dart';
 import '../ui/log_game/widgets/log_game_screen.dart';
 import '../ui/progress/widgets/progress_screen.dart';
 import '../ui/routine/widgets/routine_screen.dart';
+import '../ui/teams/view_models/team_editor_view_model.dart';
 import '../ui/teams/view_models/teams_view_model.dart';
+import '../ui/teams/widgets/team_editor_screen.dart';
 import '../ui/teams/widgets/teams_screen.dart';
 import 'routes.dart';
 
@@ -37,6 +40,17 @@ GoRouter createRouter() => GoRouter(
                     TeamsViewModel(teamRepository: context.read()),
                 child: const TeamsScreen(),
               ),
+              routes: [
+                GoRoute(
+                  path: 'new',
+                  builder: (context, state) => _teamEditor(),
+                ),
+                GoRoute(
+                  path: ':id/edit',
+                  builder: (context, state) =>
+                      _teamEditor(teamId: state.pathParameters['id']),
+                ),
+              ],
             ),
           ],
         ),
@@ -59,4 +73,14 @@ GoRouter createRouter() => GoRouter(
       ],
     ),
   ],
+);
+
+Widget _teamEditor({String? teamId}) => ChangeNotifierProvider(
+  create: (context) => TeamEditorViewModel(
+    teamRepository: context.read(),
+    pokemonRepository: context.read(),
+    idGenerator: context.read(),
+    teamId: teamId,
+  ),
+  child: const TeamEditorScreen(),
 );

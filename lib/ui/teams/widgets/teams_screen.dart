@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../domain/models/pokemon_ref.dart';
 import '../../../domain/models/team.dart';
+import '../../../routing/routes.dart';
 import '../../core/pokemon_avatar.dart';
 import '../view_models/teams_view_model.dart';
 
@@ -13,22 +15,29 @@ class TeamsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.read<TeamsViewModel>();
-    return ListenableBuilder(
-      listenable: viewModel,
-      builder: (context, _) {
-        if (!viewModel.loaded) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (viewModel.teams.isEmpty) {
-          return const Center(child: Text('No teams saved yet.'));
-        }
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: viewModel.teams.length,
-          itemBuilder: (context, index) =>
-              _TeamCard(team: viewModel.teams[index]),
-        );
-      },
+    return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        tooltip: 'Add team',
+        onPressed: () => context.push(Routes.newTeam),
+        child: const Icon(Icons.add),
+      ),
+      body: ListenableBuilder(
+        listenable: viewModel,
+        builder: (context, _) {
+          if (!viewModel.loaded) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (viewModel.teams.isEmpty) {
+            return const Center(child: Text('No teams saved yet.'));
+          }
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: viewModel.teams.length,
+            itemBuilder: (context, index) =>
+                _TeamCard(team: viewModel.teams[index]),
+          );
+        },
+      ),
     );
   }
 }
@@ -54,6 +63,11 @@ class _TeamCard extends StatelessWidget {
                     team.name,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
+                ),
+                IconButton(
+                  tooltip: 'Edit ${team.name}',
+                  icon: const Icon(Icons.edit_outlined),
+                  onPressed: () => context.push(Routes.editTeam(team.id)),
                 ),
                 IconButton(
                   tooltip: 'Delete ${team.name}',

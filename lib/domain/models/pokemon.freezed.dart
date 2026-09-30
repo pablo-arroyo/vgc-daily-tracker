@@ -16,7 +16,9 @@ T _$identity<T>(T value) => value;
 mixin _$Pokemon {
 
  int get id;/// PokéAPI identifier, e.g. `raichu-mega-y`.
- String get slug;/// Human-readable name, e.g. `Raichu-Mega-Y`.
+ String get slug;/// The species it belongs to, e.g. `raichu` for `raichu-mega-y`. Two
+/// forms of one species can't share a team (the VGC species clause).
+ String get speciesSlug;/// Human-readable name, e.g. `Raichu-Mega-Y`.
  String get displayName;/// Type names in slot order, e.g. `['dark', 'steel']`.
  List<String> get types; BaseStats get baseStats; String get spriteUrl;
 /// Create a copy of Pokemon
@@ -30,20 +32,20 @@ $PokemonCopyWith<Pokemon> get copyWith => _$PokemonCopyWithImpl<Pokemon>(this as
 @override
 bool operator ==(Object other) {
   final _this = this as Pokemon;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Pokemon&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.slug, _this.slug) || other.slug == _this.slug)&&(identical(other.displayName, _this.displayName) || other.displayName == _this.displayName)&&const DeepCollectionEquality().equals(other.types, _this.types)&&(identical(other.baseStats, _this.baseStats) || other.baseStats == _this.baseStats)&&(identical(other.spriteUrl, _this.spriteUrl) || other.spriteUrl == _this.spriteUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Pokemon&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.slug, _this.slug) || other.slug == _this.slug)&&(identical(other.speciesSlug, _this.speciesSlug) || other.speciesSlug == _this.speciesSlug)&&(identical(other.displayName, _this.displayName) || other.displayName == _this.displayName)&&const DeepCollectionEquality().equals(other.types, _this.types)&&(identical(other.baseStats, _this.baseStats) || other.baseStats == _this.baseStats)&&(identical(other.spriteUrl, _this.spriteUrl) || other.spriteUrl == _this.spriteUrl));
 }
 
 
 @override
 int get hashCode {
   final _this = this as Pokemon;
-  return Object.hash(runtimeType,_this.id,_this.slug,_this.displayName,const DeepCollectionEquality().hash(_this.types),_this.baseStats,_this.spriteUrl);
+  return Object.hash(runtimeType,_this.id,_this.slug,_this.speciesSlug,_this.displayName,const DeepCollectionEquality().hash(_this.types),_this.baseStats,_this.spriteUrl);
 }
 
 @override
 String toString() {
   final _this = this as Pokemon;
-  return 'Pokemon(id: ${_this.id}, slug: ${_this.slug}, displayName: ${_this.displayName}, types: ${_this.types}, baseStats: ${_this.baseStats}, spriteUrl: ${_this.spriteUrl})';
+  return 'Pokemon(id: ${_this.id}, slug: ${_this.slug}, speciesSlug: ${_this.speciesSlug}, displayName: ${_this.displayName}, types: ${_this.types}, baseStats: ${_this.baseStats}, spriteUrl: ${_this.spriteUrl})';
 }
 
 
@@ -54,7 +56,7 @@ abstract mixin class $PokemonCopyWith<$Res>  {
   factory $PokemonCopyWith(Pokemon value, $Res Function(Pokemon) _then) = _$PokemonCopyWithImpl;
 @useResult
 $Res call({
- int id, String slug, String displayName, List<String> types, BaseStats baseStats, String spriteUrl
+ int id, String slug, String speciesSlug, String displayName, List<String> types, BaseStats baseStats, String spriteUrl
 });
 
 
@@ -71,10 +73,11 @@ class _$PokemonCopyWithImpl<$Res>
 
 /// Create a copy of Pokemon
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? slug = null,Object? displayName = null,Object? types = null,Object? baseStats = null,Object? spriteUrl = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? slug = null,Object? speciesSlug = null,Object? displayName = null,Object? types = null,Object? baseStats = null,Object? spriteUrl = null,}) {
   return _then(Pokemon(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,slug: null == slug ? _self.slug : slug // ignore: cast_nullable_to_non_nullable
+as String,speciesSlug: null == speciesSlug ? _self.speciesSlug : speciesSlug // ignore: cast_nullable_to_non_nullable
 as String,displayName: null == displayName ? _self.displayName : displayName // ignore: cast_nullable_to_non_nullable
 as String,types: null == types ? _self.types : types // ignore: cast_nullable_to_non_nullable
 as List<String>,baseStats: null == baseStats ? _self.baseStats : baseStats // ignore: cast_nullable_to_non_nullable
@@ -173,10 +176,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String slug,  String displayName,  List<String> types,  BaseStats baseStats,  String spriteUrl)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String slug,  String speciesSlug,  String displayName,  List<String> types,  BaseStats baseStats,  String spriteUrl)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Pokemon() when $default != null:
-return $default(_that.id,_that.slug,_that.displayName,_that.types,_that.baseStats,_that.spriteUrl);case _:
+return $default(_that.id,_that.slug,_that.speciesSlug,_that.displayName,_that.types,_that.baseStats,_that.spriteUrl);case _:
   return orElse();
 
 }
@@ -194,10 +197,10 @@ return $default(_that.id,_that.slug,_that.displayName,_that.types,_that.baseStat
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String slug,  String displayName,  List<String> types,  BaseStats baseStats,  String spriteUrl)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String slug,  String speciesSlug,  String displayName,  List<String> types,  BaseStats baseStats,  String spriteUrl)  $default,) {final _that = this;
 switch (_that) {
 case _Pokemon():
-return $default(_that.id,_that.slug,_that.displayName,_that.types,_that.baseStats,_that.spriteUrl);case _:
+return $default(_that.id,_that.slug,_that.speciesSlug,_that.displayName,_that.types,_that.baseStats,_that.spriteUrl);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -214,10 +217,10 @@ return $default(_that.id,_that.slug,_that.displayName,_that.types,_that.baseStat
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String slug,  String displayName,  List<String> types,  BaseStats baseStats,  String spriteUrl)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String slug,  String speciesSlug,  String displayName,  List<String> types,  BaseStats baseStats,  String spriteUrl)?  $default,) {final _that = this;
 switch (_that) {
 case _Pokemon() when $default != null:
-return $default(_that.id,_that.slug,_that.displayName,_that.types,_that.baseStats,_that.spriteUrl);case _:
+return $default(_that.id,_that.slug,_that.speciesSlug,_that.displayName,_that.types,_that.baseStats,_that.spriteUrl);case _:
   return null;
 
 }
@@ -229,12 +232,15 @@ return $default(_that.id,_that.slug,_that.displayName,_that.types,_that.baseStat
 
 
 class _Pokemon implements Pokemon {
-  const _Pokemon({required this.id, required this.slug, required this.displayName, required  List<String> types, required this.baseStats, required this.spriteUrl}): _types = types;
+  const _Pokemon({required this.id, required this.slug, required this.speciesSlug, required this.displayName, required  List<String> types, required this.baseStats, required this.spriteUrl}): _types = types;
   
 
 @override final  int id;
 /// PokéAPI identifier, e.g. `raichu-mega-y`.
 @override final  String slug;
+/// The species it belongs to, e.g. `raichu` for `raichu-mega-y`. Two
+/// forms of one species can't share a team (the VGC species clause).
+@override final  String speciesSlug;
 /// Human-readable name, e.g. `Raichu-Mega-Y`.
 @override final  String displayName;
 /// Type names in slot order, e.g. `['dark', 'steel']`.
@@ -259,18 +265,18 @@ _$PokemonCopyWith<_Pokemon> get copyWith => __$PokemonCopyWithImpl<_Pokemon>(thi
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Pokemon&&(identical(other.id, id) || other.id == id)&&(identical(other.slug, slug) || other.slug == slug)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&const DeepCollectionEquality().equals(other.types, _types)&&(identical(other.baseStats, baseStats) || other.baseStats == baseStats)&&(identical(other.spriteUrl, spriteUrl) || other.spriteUrl == spriteUrl));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Pokemon&&(identical(other.id, id) || other.id == id)&&(identical(other.slug, slug) || other.slug == slug)&&(identical(other.speciesSlug, speciesSlug) || other.speciesSlug == speciesSlug)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&const DeepCollectionEquality().equals(other.types, _types)&&(identical(other.baseStats, baseStats) || other.baseStats == baseStats)&&(identical(other.spriteUrl, spriteUrl) || other.spriteUrl == spriteUrl));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,slug,displayName,const DeepCollectionEquality().hash(_types),baseStats,spriteUrl);
+    return Object.hash(runtimeType,id,slug,speciesSlug,displayName,const DeepCollectionEquality().hash(_types),baseStats,spriteUrl);
 }
 
 @override
 String toString() {
-    return 'Pokemon(id: $id, slug: $slug, displayName: $displayName, types: $types, baseStats: $baseStats, spriteUrl: $spriteUrl)';
+    return 'Pokemon(id: $id, slug: $slug, speciesSlug: $speciesSlug, displayName: $displayName, types: $types, baseStats: $baseStats, spriteUrl: $spriteUrl)';
 }
 
 
@@ -281,7 +287,7 @@ abstract mixin class _$PokemonCopyWith<$Res> implements $PokemonCopyWith<$Res> {
   factory _$PokemonCopyWith(_Pokemon value, $Res Function(_Pokemon) _then) = __$PokemonCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String slug, String displayName, List<String> types, BaseStats baseStats, String spriteUrl
+ int id, String slug, String speciesSlug, String displayName, List<String> types, BaseStats baseStats, String spriteUrl
 });
 
 
@@ -298,10 +304,11 @@ class __$PokemonCopyWithImpl<$Res>
 
 /// Create a copy of Pokemon
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? slug = null,Object? displayName = null,Object? types = null,Object? baseStats = null,Object? spriteUrl = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? slug = null,Object? speciesSlug = null,Object? displayName = null,Object? types = null,Object? baseStats = null,Object? spriteUrl = null,}) {
   return _then(_Pokemon(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,slug: null == slug ? _self.slug : slug // ignore: cast_nullable_to_non_nullable
+as String,speciesSlug: null == speciesSlug ? _self.speciesSlug : speciesSlug // ignore: cast_nullable_to_non_nullable
 as String,displayName: null == displayName ? _self.displayName : displayName // ignore: cast_nullable_to_non_nullable
 as String,types: null == types ? _self._types : types // ignore: cast_nullable_to_non_nullable
 as List<String>,baseStats: null == baseStats ? _self.baseStats : baseStats // ignore: cast_nullable_to_non_nullable

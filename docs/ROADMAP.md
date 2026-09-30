@@ -255,17 +255,33 @@ Rules:
   - View model: loading, delete/undo, failure.
   - Screen: spinner, empty, list, cancel, confirm+undo, failure.
 
-### 3.2 Add and edit a team
-- `TeamEditorViewModel`:
-  - The name is required.
-  - All 6 slots must be valid Pokémon.
-  - **Species clause:** no duplicate species. This is new; it's a VGC rule.
-  - Supports both edit and create.
+### ✅ 3.2 Add and edit a team
+- `TeamEditorViewModel` handles create and edit (`/teams/new`,
+  `/teams/:id/edit`). Its rules:
+  - the name is required
+  - all 6 slots must be filled
+  - no Pokémon twice
+  - the **species clause**: `Pokemon.speciesSlug` (from PokéAPI) catches
+    Charizard plus Charizard-Mega-Y. When the species lookups fail
+    offline, only exact duplicates are checked, so saving isn't blocked.
+    This fallback was mutation-checked.
+- IDs come from the injected `IdGenerator` (`RandomIdGenerator` in the app).
+- Editing a team that no longer exists (e.g. an old deep link) shows "This
+  team no longer exists." instead of crashing. This was found by a test.
+- UI:
+  - an **Add team** button and a per-team **Edit** button
+  - `PokemonAutocompleteField(initialValue:)` for pre-filled edits
+  - a **sticky Save** button: it was hidden under the tab bar on macOS,
+    so it no longer needs scrolling past six fields
 - **Tests:**
-  - Unit: every validation rule.
-  - Widget: the form flow.
-  - **Integration:** create a team → it appears in the list → edit it →
-    delete it.
+  - Acceptance (create → list → edit), tagged `wip` until green.
+  - View model: every rule.
+  - Screen: the form states.
+  - Router deep links.
+  - **Integration journey on macOS:** create → list → edit → delete.
+- Process change added during this step: acceptance tests in progress are
+  tagged `wip` (see CLAUDE.md). The Stop hook skips them, and a step isn't
+  done while any remain.
 
 ## Phase 4: Log Game tab
 

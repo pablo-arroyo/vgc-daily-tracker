@@ -3,6 +3,7 @@ import 'package:integration_test/integration_test.dart';
 
 import 'journeys/smoke_journey.dart';
 import 'journeys/storage_journey.dart';
+import 'journeys/teams_journey.dart';
 
 /// The single integration entry point. Desktop test runs relaunch the app
 /// for every `*_test.dart` file, and the second launch fails to reconnect
@@ -13,4 +14,5 @@ void main() {
 
   group('smoke', smokeJourney);
   group('storage', storageJourney);
+  group('teams', teamsJourney);
 }

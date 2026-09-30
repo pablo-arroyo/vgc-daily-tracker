@@ -144,6 +144,7 @@ class PokemonRepositoryRemote implements PokemonRepository {
     return Pokemon(
       id: api.id,
       slug: api.name,
+      speciesSlug: api.species.name,
       displayName: PokemonNames.displayName(api.name),
       types: [for (final slot in api.types) slot.type.name],
       baseStats: BaseStats(

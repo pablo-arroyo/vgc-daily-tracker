@@ -11,6 +11,10 @@ abstract class Pokemon with _$Pokemon {
     /// PokéAPI identifier, e.g. `raichu-mega-y`.
     required String slug,
 
+    /// The species it belongs to, e.g. `raichu` for `raichu-mega-y`. Two
+    /// forms of one species can't share a team (the VGC species clause).
+    required String speciesSlug,
+
     /// Human-readable name, e.g. `Raichu-Mega-Y`.
     required String displayName,
 

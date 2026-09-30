@@ -71,6 +71,15 @@ the integration or widget test for the roadmap step's "Done when". It stays
 red while you TDD the layers underneath it (service → repository →
 view model → view), and goes green last.
 
+Put it in its own file and tag the file `@Tags(['wip'])` (followed by
+`library;`) while the step is in progress. The Stop hook then excludes it
+and ignores its analyzer errors, so a turn can end mid-step, for example to
+answer a question, without hiding real failures anywhere else. The hook
+lists `wip` files in a reminder. Plain `flutter test` still runs them, so
+the red is always visible. **Remove the tag the moment the test goes
+green.** `wip` is only for the current step's acceptance test, never for
+"a test I can't fix right now".
+
 What each layer's tests use:
 - Services: unit tests against JSON fixtures. Never call the real network in
   tests.
@@ -140,6 +149,8 @@ Run `git diff` and check the change against this list:
       passes.
 - [ ] Bugfixes include a regression test that failed before the fix.
 - [ ] No test was weakened, skipped or deleted to get green.
+- [ ] No file is still tagged `wip`
+      (`grep -rl "'wip'" test integration_test` prints nothing).
 
 ## 6. Verify and summarize
 

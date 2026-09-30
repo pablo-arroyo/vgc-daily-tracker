@@ -13,6 +13,7 @@ class PokemonAutocompleteField extends StatefulWidget {
     required this.label,
     required this.search,
     required this.onChanged,
+    this.initialValue,
     super.key,
   });
 
@@ -20,13 +21,16 @@ class PokemonAutocompleteField extends StatefulWidget {
   final Future<List<PokemonRef>> Function(String query) search;
   final ValueChanged<PokemonRef?> onChanged;
 
+  /// Shown at start and treated as already picked, e.g. when editing a team.
+  final PokemonRef? initialValue;
+
   @override
   State<PokemonAutocompleteField> createState() =>
       _PokemonAutocompleteFieldState();
 }
 
 class _PokemonAutocompleteFieldState extends State<PokemonAutocompleteField> {
-  PokemonRef? _picked;
+  late PokemonRef? _picked = widget.initialValue;
   bool _showError = false;
 
   void _pick(PokemonRef ref) {
@@ -41,6 +45,9 @@ class _PokemonAutocompleteFieldState extends State<PokemonAutocompleteField> {
   Widget build(BuildContext context) {
     return Autocomplete<PokemonRef>(
       displayStringForOption: (ref) => ref.displayName,
+      initialValue: TextEditingValue(
+        text: widget.initialValue?.displayName ?? '',
+      ),
       optionsBuilder: (value) => widget.search(value.text),
       onSelected: _pick,
       fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) =>

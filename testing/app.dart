@@ -6,8 +6,10 @@ import 'package:vgc_daily_tracker/data/repositories/pokemon/pokemon_repository.d
 import 'package:vgc_daily_tracker/data/repositories/team/team_repository.dart';
 import 'package:vgc_daily_tracker/domain/models/team.dart';
 import 'package:vgc_daily_tracker/main.dart';
+import 'package:vgc_daily_tracker/utils/id_generator.dart';
 
 import 'fakes/fake_game_log_repository.dart';
+import 'fakes/fake_id_generator.dart';
 import 'fakes/fake_pokemon_repository.dart';
 import 'fakes/fake_team_repository.dart';
 
@@ -26,4 +28,5 @@ List<SingleChildWidget> providersFake({List<Team> teams = const []}) => [
   Provider<PokemonRepository>(create: (_) => FakePokemonRepository()),
   Provider<TeamRepository>(create: (_) => FakeTeamRepository(teams: teams)),
   Provider<GameLogRepository>(create: (_) => FakeGameLogRepository()),
+  Provider<IdGenerator>(create: (_) => SequentialIdGenerator()),
 ];

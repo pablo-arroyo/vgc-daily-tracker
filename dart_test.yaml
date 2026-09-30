@@ -7,3 +7,8 @@ tags:
     skip: "Calls the live PokéAPI. Run on purpose with: flutter test --tags network --run-skipped"
   # Golden (screenshot) tests. Run by default; select alone with --tags golden.
   golden:
+  # Acceptance tests for the roadmap step in progress (outside-in TDD):
+  # red on purpose until the step's layers exist. Plain `flutter test` still
+  # runs them; the Stop hook excludes them. A step isn't done while any file
+  # is still tagged wip.
+  wip:

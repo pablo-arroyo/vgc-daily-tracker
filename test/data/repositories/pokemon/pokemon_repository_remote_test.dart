@@ -34,6 +34,7 @@ void main() {
         const Pokemon(
           id: 983,
           slug: 'kingambit',
+          speciesSlug: 'kingambit',
           displayName: 'Kingambit',
           types: ['dark', 'steel'],
           baseStats: BaseStats(
@@ -56,6 +57,20 @@ void main() {
 
       expect((result as Ok<Pokemon>).value.displayName, 'Raichu-Mega-Y');
     });
+
+    test(
+      'knows the species of alternate forms (for the species clause)',
+      () async {
+        service.addDetailFixture('raichu-mega-y');
+        service.addDetailFixture('basculegion-male');
+
+        final mega = await repository.getPokemon('raichu-mega-y');
+        final male = await repository.getPokemon('basculegion-male');
+
+        expect((mega as Ok<Pokemon>).value.speciesSlug, 'raichu');
+        expect((male as Ok<Pokemon>).value.speciesSlug, 'basculegion');
+      },
+    );
 
     test('serves a second lookup from the cache', () async {
       service.addDetailFixture('kingambit');
