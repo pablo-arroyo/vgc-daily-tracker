@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:vgc_daily_tracker/config/format_config.dart';
 import 'package:vgc_daily_tracker/data/repositories/team/team_repository.dart';
+import 'package:vgc_daily_tracker/data/services/pokeapi/poke_api_exception.dart';
 import 'package:vgc_daily_tracker/domain/models/pokemon_ref.dart';
 import 'package:vgc_daily_tracker/domain/models/team.dart';
+import 'package:vgc_daily_tracker/domain/use_cases/import_team_use_case.dart';
 import 'package:vgc_daily_tracker/ui/core/pokemon_avatar.dart';
 import 'package:vgc_daily_tracker/ui/core/theme/app_theme.dart';
 import 'package:vgc_daily_tracker/ui/teams/view_models/teams_view_model.dart';
 import 'package:vgc_daily_tracker/ui/teams/widgets/teams_screen.dart';
 import 'package:vgc_daily_tracker/utils/result.dart';
 
+import '../../../../testing/fakes/fake_id_generator.dart';
+import '../../../../testing/fakes/fake_item_repository.dart';
+import '../../../../testing/fakes/fake_pokemon_repository.dart';
 import '../../../../testing/fakes/fake_team_repository.dart';
 
 /// A repository whose list never arrives, to observe the loading state.
@@ -44,18 +50,29 @@ void main() {
     ],
   );
 
-  Future<void> pumpScreen(WidgetTester tester, TeamRepository repository) =>
-      tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.light,
-          home: Scaffold(
-            body: ChangeNotifierProvider(
-              create: (_) => TeamsViewModel(teamRepository: repository),
-              child: const TeamsScreen(),
+  Future<void> pumpScreen(
+    WidgetTester tester,
+    TeamRepository repository, {
+    FakeItemRepository? items,
+  }) => tester.pumpWidget(
+    MaterialApp(
+      theme: AppTheme.light,
+      home: Scaffold(
+        body: ChangeNotifierProvider(
+          create: (_) => TeamsViewModel(
+            teamRepository: repository,
+            importTeam: ImportTeamUseCase(
+              pokemonRepository: FakePokemonRepository(),
+              itemRepository: items ?? FakeItemRepository(),
+              idGenerator: SequentialIdGenerator(),
             ),
+            format: FormatConfig.regMC,
           ),
+          child: const TeamsScreen(),
         ),
-      );
+      ),
+    ),
+  );
 
   testWidgets('shows a spinner until the teams arrive', (tester) async {
     await pumpScreen(tester, _NeverLoadsTeamRepository());
@@ -70,6 +87,74 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('No teams saved yet.'), findsOneWidget);
+  });
+
+  group('an empty tab offers the sample teams', () {
+    testWidgets('and adds them', (tester) async {
+      await pumpScreen(tester, FakeTeamRepository());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Add Reg M-C sample teams'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Big Six'), findsOneWidget);
+      expect(find.text('Add Reg M-C sample teams'), findsNothing);
+    });
+
+    testWidgets('and says so when they cannot be added', (tester) async {
+      await pumpScreen(
+        tester,
+        FakeTeamRepository(),
+        items: FakeItemRepository()
+          ..failWith = const PokeApiNetworkUnavailable('/item'),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Add Reg M-C sample teams'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(
+          "Couldn't add the sample teams. Check your connection and try "
+          'again.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('No teams saved yet.'), findsOneWidget);
+    });
+
+    testWidgets('but not once there are teams', (tester) async {
+      await pumpScreen(tester, FakeTeamRepository(teams: [bigSix]));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Add Reg M-C sample teams'), findsNothing);
+    });
+  });
+
+  testWidgets('scrolled to the end, the last team clears the buttons', (
+    tester,
+  ) async {
+    final teams = [
+      for (var i = 1; i <= 6; i++) bigSix.copyWith(id: 't$i', name: 'Team $i'),
+    ];
+    await pumpScreen(tester, FakeTeamRepository(teams: teams));
+    await tester.pumpAndSettle();
+
+    await tester.drag(find.byType(ListView), const Offset(0, -5000));
+    await tester.pumpAndSettle();
+
+    final delete = find.descendant(
+      of: find.byTooltip('Delete Team 6'),
+      matching: find.byType(Icon),
+    );
+    expect(
+      tester
+          .hitTestOnBinding(tester.getCenter(delete))
+          .path
+          .any((entry) => entry.target == tester.renderObject(delete)),
+      isTrue,
+      reason: "Team 6's Delete is under the floating buttons",
+    );
   });
 
   testWidgets('lists each team with its six Pokémon', (tester) async {

@@ -50,17 +50,19 @@ void main() {
     expect((result as Failure<Item>).error, isA<PokeApiNotFound>());
   });
 
-  test('offline fails with PokeApiNetworkUnavailable and retries later',
-      () async {
-    service.offline = true;
-    final offline = await repository.resolve('Raichunite Y');
-    service.offline = false;
-    final online = await repository.resolve('Raichunite Y');
+  test(
+    'offline fails with PokeApiNetworkUnavailable and retries later',
+    () async {
+      service.offline = true;
+      final offline = await repository.resolve('Raichunite Y');
+      service.offline = false;
+      final online = await repository.resolve('Raichunite Y');
 
-    expect(
-      (offline as Failure<Item>).error,
-      isA<PokeApiNetworkUnavailable>(),
-    );
-    expect(online, isA<Ok<Item>>());
-  });
+      expect(
+        (offline as Failure<Item>).error,
+        isA<PokeApiNetworkUnavailable>(),
+      );
+      expect(online, isA<Ok<Item>>());
+    },
+  );
 }

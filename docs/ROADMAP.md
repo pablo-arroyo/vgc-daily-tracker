@@ -505,11 +505,27 @@ the device timezone (injectable, so tests pin UTC-6).
   - I broke each check on purpose, one at a time, and a test failed
     every time. I also checked screenshots at a desktop window size.
 
-### 7.4 Sample teams
-- An "Add sample teams" action on an empty Teams tab that imports the
-  artifact's 3 teams.
-- The format label "Reg M-C" becomes config, not hard-coded text.
-- **Tests:** widget + integration: the action adds exactly 3 valid teams.
+### ✅ 7.4 Sample teams
+- **Format config:** `FormatConfig` in `lib/config/format_config.dart`
+  holds the label and the sample teams, provided through DI. Reg M-C
+  carries the artifact's 3 pastes verbatim, pinned to the fixtures by a
+  test. The header label now comes from the config; a test with a "Reg
+  Z" config proves it.
+- **Use case:** `ImportTeamUseCase` (`lib/domain/use_cases/`) took the
+  paste checks out of `TeamImportViewModel`, so the import screen and
+  the sample teams share them. It's the first use case, recorded in
+  `architecture.md`.
+- **Adding samples:** an empty Teams tab offers "Add Reg M-C sample
+  teams". `TeamsViewModel.addSampleTeams` checks all 3 first and saves
+  only if every one passes. A failure, e.g. offline, saves nothing and
+  shows a snackbar.
+- **Tests:**
+  - **Acceptance (widget):** the button adds 3 teams; Big Six shows
+    Mega Charizard Y 167 and Mega Floette 169 Spe.
+  - **Integration (macOS):** exactly 3 teams appear.
+  - **Unit and widget:** the config, the use case, the view model
+    (including all-or-nothing, where the last team fails) and the
+    Teams tab states.
 
 ## Phase 8: Polish and release readiness
 

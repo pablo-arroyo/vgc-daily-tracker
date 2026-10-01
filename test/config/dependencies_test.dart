@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:vgc_daily_tracker/config/format_config.dart';
 import 'package:vgc_daily_tracker/data/repositories/item/item_repository.dart';
+import 'package:vgc_daily_tracker/domain/use_cases/import_team_use_case.dart';
 import 'package:vgc_daily_tracker/data/repositories/item/item_repository_remote.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -50,6 +52,8 @@ void main() {
     late IdGenerator ids;
     late RoutineRepository routine;
     late ItemRepository items;
+    late FormatConfig format;
+    late ImportTeamUseCase importTeam;
     await tester.pumpWidget(
       MultiProvider(
         providers: providersRemote(storage: storage),
@@ -62,6 +66,8 @@ void main() {
             ids = context.read<IdGenerator>();
             routine = context.read<RoutineRepository>();
             items = context.read<ItemRepository>();
+            format = context.read<FormatConfig>();
+            importTeam = context.read<ImportTeamUseCase>();
             return const SizedBox.shrink();
           },
         ),
@@ -75,5 +81,7 @@ void main() {
     expect(ids, isA<RandomIdGenerator>());
     expect(routine, isA<RoutineRepositoryLocal>());
     expect(items, isA<ItemRepositoryRemote>());
+    expect(format, same(FormatConfig.regMC));
+    expect(importTeam, isA<ImportTeamUseCase>());
   });
 }

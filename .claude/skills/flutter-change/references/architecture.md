@@ -45,9 +45,13 @@ View (widget) ──calls commands──▶ ViewModel ──▶ Repository ─�
   `onChanged` callback from the screen's view model. That keeps it reusable
   (your team and the opponent's use the same field) and testable with a
   fake's `search`.
-- **Domain layer / use-cases. [Cond] — Decision: NOT used for now.** Add a
-  use-case only when logic is duplicated across view models or crowds one. Team
-  analysis across several repositories is the likely first candidate.
+- **Domain layer / use-cases. [Cond] — Decision: only when shared.** Add a
+  use-case only when logic is duplicated across view models or crowds one.
+  The first is `ImportTeamUseCase` (step 7.4), which checks a Showdown paste
+  against PokéAPI for both the import screen and the Teams tab's sample
+  teams. Use-cases live in `domain/use_cases/`, are provided through DI,
+  and return `Result`. They don't save; the calling view model decides
+  when to.
 
 ## Data
 
@@ -137,6 +141,7 @@ lib/
   domain/
     models/        immutable freezed domain models
     showdown/      the Showdown paste format: pure parse/export, no I/O
+    use_cases/     logic shared by view models (see Domain layer above)
     stats/         pure game formulas (stat calculator)
   routing/         go_router config, route constants
   ui/

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+
+import '../../config/format_config.dart';
 
 /// Frame around every tab: the tracker header, the current tab's content
 /// (capped at 640 px wide, like the original) and the tab bar.
@@ -73,7 +76,8 @@ class _Header extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Reg M-C · at least 1 game a day, review every one',
+            '${context.read<FormatConfig>().label} · at least 1 game a day, '
+            'review every one',
             style: textTheme.bodySmall?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),

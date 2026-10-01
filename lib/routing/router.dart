@@ -47,8 +47,11 @@ GoRouter createRouter() => GoRouter(
               path: Routes.teams,
               // Created once per tab and disposed with it.
               builder: (context, state) => ChangeNotifierProvider(
-                create: (context) =>
-                    TeamsViewModel(teamRepository: context.read()),
+                create: (context) => TeamsViewModel(
+                  teamRepository: context.read(),
+                  importTeam: context.read(),
+                  format: context.read(),
+                ),
                 child: const TeamsScreen(),
               ),
               routes: [
@@ -61,9 +64,7 @@ GoRouter createRouter() => GoRouter(
                   builder: (context, state) => ChangeNotifierProvider(
                     create: (context) => TeamImportViewModel(
                       teamRepository: context.read(),
-                      pokemonRepository: context.read(),
-                      itemRepository: context.read(),
-                      idGenerator: context.read(),
+                      importTeam: context.read(),
                     ),
                     child: const TeamImportScreen(),
                   ),

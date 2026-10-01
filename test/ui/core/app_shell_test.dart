@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:vgc_daily_tracker/config/format_config.dart';
 import 'package:vgc_daily_tracker/routing/router.dart';
 import 'package:vgc_daily_tracker/routing/routes.dart';
 import 'package:vgc_daily_tracker/ui/core/app_shell.dart';
@@ -15,10 +16,10 @@ void main() {
   setUp(() => router = createRouter());
   tearDown(() => router.dispose());
 
-  Future<void> pumpShell(WidgetTester tester) async {
+  Future<void> pumpShell(WidgetTester tester, {FormatConfig? format}) async {
     await tester.pumpWidget(
       MultiProvider(
-        providers: providersFake(),
+        providers: providersFake(format: format),
         child: MaterialApp.router(routerConfig: router),
       ),
     );
@@ -32,6 +33,18 @@ void main() {
     expect(find.text('🎮 VGC Daily Practice Tracker'), findsOneWidget);
     expect(
       find.text('Reg M-C · at least 1 game a day, review every one'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('the header names the configured format', (tester) async {
+    await pumpShell(
+      tester,
+      format: const FormatConfig(label: 'Reg Z', sampleTeams: []),
+    );
+
+    expect(
+      find.text('Reg Z · at least 1 game a day, review every one'),
       findsOneWidget,
     );
   });

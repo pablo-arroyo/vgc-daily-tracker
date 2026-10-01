@@ -58,10 +58,10 @@ class FakePokemonRepository implements PokemonRepository {
     return PokemonRef(id: p.id, slug: p.slug, displayName: p.displayName);
   }
 
-  /// Real PokéAPI data (fetched 2026-09-29, abilities and Team 1's
-  /// Metagross / Kleavor / Raichu added 2026-10-01): enough for full teams,
-  /// the Reg M-C artifact's Team 1 with its Megas, and a Charizard /
-  /// Charizard-Mega-Y pair for species-clause tests.
+  /// Real PokéAPI data (fetched 2026-09-29; abilities and the rest of the
+  /// Reg M-C artifact's teams added 2026-10-01): every Pokémon of its 3
+  /// sample teams, with their Megas, plus a Charizard / Charizard-Mega-Y
+  /// pair for species-clause tests.
   static const samplePokemon = [
     Pokemon(
       id: 983,
@@ -283,6 +283,108 @@ class FakePokemonRepository implements PokemonRepository {
       ),
       spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/26.png',
       abilities: ['static', 'lightning-rod'],
+    ),
+    Pokemon(
+      id: 903,
+      slug: 'sneasler',
+      speciesSlug: 'sneasler',
+      displayName: 'Sneasler',
+      types: ['fighting', 'poison'],
+      baseStats: BaseStats(
+        hp: 80,
+        attack: 130,
+        defense: 60,
+        specialAttack: 40,
+        specialDefense: 80,
+        speed: 120,
+      ),
+      spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/903.png',
+      abilities: ['pressure', 'unburden', 'poison-touch'],
+    ),
+    Pokemon(
+      id: 861,
+      slug: 'grimmsnarl',
+      speciesSlug: 'grimmsnarl',
+      displayName: 'Grimmsnarl',
+      types: ['dark', 'fairy'],
+      baseStats: BaseStats(
+        hp: 95,
+        attack: 120,
+        defense: 65,
+        specialAttack: 95,
+        specialDefense: 75,
+        speed: 60,
+      ),
+      spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/861.png',
+      abilities: ['prankster', 'frisk', 'pickpocket'],
+    ),
+    Pokemon(
+      id: 373,
+      slug: 'salamence',
+      speciesSlug: 'salamence',
+      displayName: 'Salamence',
+      types: ['dragon', 'flying'],
+      baseStats: BaseStats(
+        hp: 95,
+        attack: 135,
+        defense: 80,
+        specialAttack: 110,
+        specialDefense: 80,
+        speed: 100,
+      ),
+      spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/373.png',
+      abilities: ['intimidate', 'moxie'],
+    ),
+    Pokemon(
+      id: 10089,
+      slug: 'salamence-mega',
+      speciesSlug: 'salamence',
+      displayName: 'Salamence-Mega',
+      types: ['dragon', 'flying'],
+      baseStats: BaseStats(
+        hp: 95,
+        attack: 145,
+        defense: 130,
+        specialAttack: 120,
+        specialDefense: 90,
+        speed: 120,
+      ),
+      spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10089.png',
+      abilities: ['aerilate'],
+    ),
+    Pokemon(
+      id: 670,
+      slug: 'floette',
+      speciesSlug: 'floette',
+      displayName: 'Floette',
+      types: ['fairy'],
+      baseStats: BaseStats(
+        hp: 54,
+        attack: 45,
+        defense: 47,
+        specialAttack: 75,
+        specialDefense: 98,
+        speed: 52,
+      ),
+      spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/670.png',
+      abilities: ['flower-veil', 'symbiosis'],
+    ),
+    Pokemon(
+      id: 10296,
+      slug: 'floette-mega',
+      speciesSlug: 'floette',
+      displayName: 'Floette-Mega',
+      types: ['fairy'],
+      baseStats: BaseStats(
+        hp: 74,
+        attack: 85,
+        defense: 87,
+        specialAttack: 155,
+        specialDefense: 148,
+        speed: 102,
+      ),
+      spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10296.png',
+      abilities: ['fairy-aura'],
     ),
   ];
 }

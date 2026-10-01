@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vgc_daily_tracker/data/services/pokeapi/poke_api_exception.dart';
 import 'package:vgc_daily_tracker/domain/models/team.dart';
+import 'package:vgc_daily_tracker/domain/use_cases/import_team_use_case.dart';
 import 'package:vgc_daily_tracker/ui/teams/view_models/team_import_view_model.dart';
 
 import '../../../../testing/fakes/fake_id_generator.dart';
@@ -23,9 +24,11 @@ void main() {
   TeamImportViewModel create() {
     final viewModel = TeamImportViewModel(
       teamRepository: teams,
-      pokemonRepository: pokemon,
-      itemRepository: items,
-      idGenerator: SequentialIdGenerator(),
+      importTeam: ImportTeamUseCase(
+        pokemonRepository: pokemon,
+        itemRepository: items,
+        idGenerator: SequentialIdGenerator(),
+      ),
     );
     addTearDown(viewModel.dispose);
     return viewModel;

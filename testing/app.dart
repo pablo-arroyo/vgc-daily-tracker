@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
+import 'package:vgc_daily_tracker/config/format_config.dart';
 import 'package:vgc_daily_tracker/data/repositories/game_log/game_log_repository.dart';
 import 'package:vgc_daily_tracker/data/repositories/item/item_repository.dart';
 import 'package:vgc_daily_tracker/data/repositories/pokemon/pokemon_repository.dart';
@@ -8,6 +9,7 @@ import 'package:vgc_daily_tracker/data/repositories/routine/routine_repository.d
 import 'package:vgc_daily_tracker/data/repositories/team/team_repository.dart';
 import 'package:vgc_daily_tracker/domain/models/game_log.dart';
 import 'package:vgc_daily_tracker/domain/models/team.dart';
+import 'package:vgc_daily_tracker/domain/use_cases/import_team_use_case.dart';
 import 'package:vgc_daily_tracker/main.dart';
 import 'package:vgc_daily_tracker/utils/id_generator.dart';
 
@@ -27,10 +29,16 @@ Future<void> pumpApp(
   List<Team> teams = const [],
   List<GameLog> games = const [],
   FakeRoutineRepository? routine,
+  FormatConfig? format,
 }) async {
   await tester.pumpWidget(
     VgcApp(
-      providers: providersFake(teams: teams, games: games, routine: routine),
+      providers: providersFake(
+        teams: teams,
+        games: games,
+        routine: routine,
+        format: format,
+      ),
     ),
   );
   await tester.pumpAndSettle();
@@ -43,7 +51,9 @@ List<SingleChildWidget> providersFake({
   List<Team> teams = const [],
   List<GameLog> games = const [],
   FakeRoutineRepository? routine,
+  FormatConfig? format,
 }) => [
+  Provider<FormatConfig>.value(value: format ?? FormatConfig.regMC),
   Provider<PokemonRepository>(create: (_) => FakePokemonRepository()),
   Provider<ItemRepository>(create: (_) => FakeItemRepository()),
   Provider<TeamRepository>(create: (_) => FakeTeamRepository(teams: teams)),
@@ -54,4 +64,12 @@ List<SingleChildWidget> providersFake({
     create: (_) => routine ?? FakeRoutineRepository(),
   ),
   Provider<IdGenerator>(create: (_) => SequentialIdGenerator()),
+  // The real use case, over the fakes above.
+  Provider<ImportTeamUseCase>(
+    create: (context) => ImportTeamUseCase(
+      pokemonRepository: context.read(),
+      itemRepository: context.read(),
+      idGenerator: context.read(),
+    ),
+  ),
 ];

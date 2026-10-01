@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:vgc_daily_tracker/ui/core/theme/app_theme.dart';
+import 'package:vgc_daily_tracker/domain/use_cases/import_team_use_case.dart';
 import 'package:vgc_daily_tracker/ui/teams/view_models/team_import_view_model.dart';
 import 'package:vgc_daily_tracker/ui/teams/widgets/team_import_screen.dart';
 
@@ -26,9 +27,11 @@ void main() {
                   builder: (_) => ChangeNotifierProvider(
                     create: (_) => TeamImportViewModel(
                       teamRepository: teams,
-                      pokemonRepository: FakePokemonRepository(),
-                      itemRepository: FakeItemRepository(),
-                      idGenerator: SequentialIdGenerator(),
+                      importTeam: ImportTeamUseCase(
+                        pokemonRepository: FakePokemonRepository(),
+                        itemRepository: FakeItemRepository(),
+                        idGenerator: SequentialIdGenerator(),
+                      ),
                     ),
                     child: const TeamImportScreen(),
                   ),

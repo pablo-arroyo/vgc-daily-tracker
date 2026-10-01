@@ -44,7 +44,7 @@ class TeamsScreen extends StatelessWidget {
               return const Center(child: CircularProgressIndicator());
             }
             if (viewModel.teams.isEmpty) {
-              return const Center(child: Text('No teams saved yet.'));
+              return const _EmptyTeams();
             }
             return ListView.builder(
               padding: const EdgeInsets.all(16),
@@ -56,6 +56,50 @@ class TeamsScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// No teams yet: say so, and offer the format's sample teams.
+class _EmptyTeams extends StatelessWidget {
+  const _EmptyTeams();
+
+  @override
+  Widget build(BuildContext context) {
+    final viewModel = context.read<TeamsViewModel>();
+    final addSamples = viewModel.addSampleTeams;
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('No teams saved yet.'),
+          const SizedBox(height: 12),
+          // Only the button follows the command.
+          ListenableBuilder(
+            listenable: addSamples,
+            builder: (context, _) => FilledButton.tonal(
+              onPressed: addSamples.running ? null : () => _addSamples(context),
+              child: Text(viewModel.sampleTeamsLabel),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _addSamples(BuildContext context) async {
+    final addSamples = context.read<TeamsViewModel>().addSampleTeams;
+    final messenger = ScaffoldMessenger.of(context);
+    await addSamples.execute();
+    if (addSamples.error) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Couldn't add the sample teams. Check your connection and try "
+            'again.',
+          ),
+        ),
+      );
+    }
   }
 }
 
