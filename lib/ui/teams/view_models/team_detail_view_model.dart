@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import '../../../data/repositories/matchup/matchup_repository.dart';
 import '../../../data/repositories/pokemon/pokemon_repository.dart';
 import '../../../data/repositories/team/team_repository.dart';
+import '../../../data/repositories/type/type_repository.dart';
 import '../../../domain/models/matchup_note.dart';
 import '../../../domain/models/pokemon.dart';
 import '../../../domain/models/pokemon_ref.dart';
@@ -11,6 +12,7 @@ import '../../../domain/models/pokemon_set.dart';
 import '../../../domain/models/stat_spread.dart';
 import '../../../domain/models/team.dart';
 import '../../../domain/stats/stat_calculator.dart';
+import '../../../domain/stats/type_matchups.dart';
 import '../../../utils/command.dart';
 import '../../../utils/result.dart';
 
@@ -60,6 +62,7 @@ class TeamDetailViewModel extends ChangeNotifier {
     required this._teamRepository,
     required this._pokemonRepository,
     required this._matchupRepository,
+    required this._typeRepository,
     required this._teamId,
   }) {
     load = Command0(_load)..addListener(notifyListeners);
@@ -70,6 +73,45 @@ class TeamDetailViewModel extends ChangeNotifier {
   final TeamRepository _teamRepository;
   final PokemonRepository _pokemonRepository;
   final MatchupRepository _matchupRepository;
+  final TypeRepository _typeRepository;
+
+  List<({String type, String label})> _weaknessRows = const [];
+  bool _typesUnavailable = false;
+
+  /// Attacking types that hit at least one member super-effectively, most
+  /// weaknesses first: `Ground · 3 weak · 1 resists`.
+  List<({String type, String label})> get weaknessRows => _weaknessRows;
+
+  /// The type chart couldn't be loaded (e.g. offline), so no weaknesses.
+  bool get typesUnavailable => _typesUnavailable;
+
+  Future<void> _loadWeaknesses(List<TeamMemberView> members) async {
+    switch (await _typeRepository.chart()) {
+      case Ok(value: final chart):
+        _typesUnavailable = false;
+        _weaknessRows = [
+          for (final c in teamWeaknesses(chart, [
+            for (final m in members) m.types,
+          ]))
+            if (c.weak > 0)
+              (
+                type: c.type,
+                label: [
+                  _capitalized(c.type),
+                  '${c.weak} weak',
+                  if (c.resist > 0) '${c.resist} resists',
+                  if (c.immune > 0) '${c.immune} immune',
+                ].join(' · '),
+              ),
+        ];
+      case Failure():
+        _typesUnavailable = true;
+        _weaknessRows = const [];
+    }
+  }
+
+  static String _capitalized(String type) =>
+      type[0].toUpperCase() + type.substring(1);
   final String _teamId;
 
   /// Loads the team and looks up each member. Run it again to retry.
@@ -218,6 +260,7 @@ class TeamDetailViewModel extends ChangeNotifier {
     _name = team.name;
     _members = members;
     _speedOrder = _sortedBySpeed(members);
+    await _loadWeaknesses(members);
     return const Result.ok(null);
   }
 

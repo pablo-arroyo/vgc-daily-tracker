@@ -84,6 +84,10 @@ class _TeamDetail extends StatelessWidget {
                 _MemberCard(member: members[index]),
           ),
         ),
+        const SliverPadding(
+          padding: EdgeInsets.fromLTRB(16, 0, 16, 12),
+          sliver: SliverToBoxAdapter(child: _WeaknessesCard()),
+        ),
         if (!viewModel.hasSets)
           const SliverPadding(
             padding: EdgeInsets.all(16),
@@ -269,6 +273,52 @@ class _MatchupNotesCard extends StatelessWidget {
           ),
         );
     }
+  }
+}
+
+/// Attacking types that hit this team super-effectively, from its
+/// members' battle-form types.
+class _WeaknessesCard extends StatelessWidget {
+  const _WeaknessesCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final viewModel = context.read<TeamDetailViewModel>();
+    final textTheme = Theme.of(context).textTheme;
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Weaknesses', style: textTheme.titleMedium),
+            const SizedBox(height: 8),
+            if (viewModel.typesUnavailable)
+              const Text("Couldn't load the type chart. Check your connection.")
+            else ...[
+              // At most 18 rows, one per type, so a plain column.
+              for (final row in viewModel.weaknessRows)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 3),
+                  child: Row(
+                    children: [
+                      TypeBadge(type: row.type),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(row.label)),
+                    ],
+                  ),
+                ),
+              const SizedBox(height: 6),
+              Text(
+                "Types only: abilities like Levitate aren't counted.",
+                style: textTheme.bodySmall,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 }
 

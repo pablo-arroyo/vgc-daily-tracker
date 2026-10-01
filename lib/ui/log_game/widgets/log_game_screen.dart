@@ -418,6 +418,7 @@ class _OpponentSection extends StatelessWidget {
         const _OpponentTeamPicker(),
         const _GamePlanCard(),
         const _SpeedCard(),
+        const _ThreatsCard(),
         ListenableBuilder(
           listenable: viewModel,
           builder: (context, _) {
@@ -635,6 +636,44 @@ class _SpeedCard extends StatelessWidget {
                     ],
                   ),
                 ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _ThreatsCard extends StatelessWidget {
+  const _ThreatsCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final viewModel = context.read<LogGameViewModel>();
+    return ListenableBuilder(
+      listenable: viewModel,
+      builder: (context, _) {
+        final rows = viewModel.threatRows;
+        if (rows.isEmpty) return const SizedBox.shrink();
+        return Card(
+          margin: const EdgeInsets.only(bottom: 12),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Their likely attacks',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                // At most 18 types, so a plain column.
+                for (final row in rows)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: Text(row),
+                  ),
               ],
             ),
           ),

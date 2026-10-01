@@ -7,6 +7,7 @@ import '../../../data/repositories/game_log/game_log_repository.dart';
 import '../../../data/repositories/matchup/matchup_repository.dart';
 import '../../../data/repositories/pokemon/pokemon_repository.dart';
 import '../../../data/repositories/team/team_repository.dart';
+import '../../../data/repositories/type/type_repository.dart';
 import '../../../domain/models/game_log.dart';
 import '../../../domain/models/matchup_note.dart';
 import '../../../domain/models/mistake_category.dart';
@@ -14,6 +15,7 @@ import '../../../domain/models/pokemon_ref.dart';
 import '../../../domain/models/pokemon_set.dart';
 import '../../../domain/models/team.dart';
 import '../../../domain/stats/speed_order.dart';
+import '../../../domain/stats/type_matchups.dart';
 import '../../../utils/command.dart';
 import '../../../utils/id_generator.dart';
 import '../../../utils/iso_date.dart';
@@ -33,6 +35,7 @@ class LogGameViewModel extends ChangeNotifier {
     required this._teamRepository,
     required this._pokemonRepository,
     required this._matchupRepository,
+    required this._typeRepository,
     required this._idGenerator,
     DateTime Function(DateTime utc)? toLocal,
   }) : _toLocal = toLocal ?? ((utc) => utc.toLocal()) {
@@ -166,6 +169,13 @@ class LogGameViewModel extends ChangeNotifier {
   Future<Result<void>> _endSet() =>
       _gameLogRepository.add(_openSet!.games.first.copyWith(endsSet: true));
   final MatchupRepository _matchupRepository;
+  final TypeRepository _typeRepository;
+
+  List<String> _threatRows = const [];
+
+  /// Their Pokémon's types as likely attacks against your team, strongest
+  /// first: `Fighting → Kingambit ×4`. Empty until both sides are in.
+  List<String> get threatRows => _threatRows;
   Map<String, String> _matchupNotes = const {};
 
   /// Saves the plan for the picked pair of teams, trimmed.
@@ -277,6 +287,7 @@ class LogGameViewModel extends ChangeNotifier {
     final List<SpeedInput> inputs;
     if (mine == null || opponentTeam.isEmpty) {
       inputs = const [];
+      _threatRows = const [];
     } else {
       final pending = [
         for (final (i, ref) in mine.pokemon.indexed)
@@ -297,12 +308,40 @@ class LogGameViewModel extends ChangeNotifier {
         notifyListeners();
         return;
       }
-      inputs = results.nonNulls.toList();
+      final found = results.nonNulls.toList();
+      inputs = [for (final r in found) r.input];
+      _threatRows = await _threats(found);
+      if (request != _speedRequest) return; // a newer pick won
     }
     _speedUnavailable = false;
     _speedInputs = inputs;
     _speedEntries = speedOrder(inputs, mode: _speedMode);
     notifyListeners();
+  }
+
+  /// Their members' types as attacks against yours, as one line each.
+  Future<List<String>> _threats(
+    List<({SpeedInput input, List<String> types})> found,
+  ) async {
+    if (await _typeRepository.chart() case Ok(value: final chart)) {
+      return [
+        for (final t in threats(
+          chart,
+          [
+            for (final f in found)
+              if (f.input.side == SpeedSide.theirs) ...f.types,
+          ],
+          [
+            for (final f in found)
+              if (f.input.side == SpeedSide.mine)
+                (name: f.input.name, types: f.types),
+          ],
+        ))
+          '${t.type[0].toUpperCase()}${t.type.substring(1)} → '
+              '${[for (final h in t.hits) '${h.name} ×${h.multiplier.toInt()}'].join(', ')}',
+      ];
+    }
+    return const [];
   }
 
   /// [team]'s imported set for slot [i], while that slot still holds the
@@ -312,9 +351,9 @@ class LogGameViewModel extends ChangeNotifier {
       ? team.sets[i]
       : null;
 
-  /// [ref] in its battle form (its Mega when [set] holds the stone), or
-  /// null when it can't be looked up.
-  Future<SpeedInput?> _speedInput(
+  /// [ref] in its battle form (its Mega when [set] holds the stone), with
+  /// its types, or null when it can't be looked up.
+  Future<({SpeedInput input, List<String> types})?> _speedInput(
     SpeedSide side,
     PokemonRef ref,
     PokemonSet? set,
@@ -325,10 +364,13 @@ class LogGameViewModel extends ChangeNotifier {
         value: final pokemon,
       )) {
         return (
-          side: side,
-          name: pokemon.displayName,
-          base: pokemon.baseStats,
-          set: set,
+          input: (
+            side: side,
+            name: pokemon.displayName,
+            base: pokemon.baseStats,
+            set: set,
+          ),
+          types: pokemon.types,
         );
       }
     }

@@ -14,6 +14,7 @@ import '../../../../testing/fakes/fake_id_generator.dart';
 import '../../../../testing/fakes/fake_matchup_repository.dart';
 import '../../../../testing/fakes/fake_pokemon_repository.dart';
 import '../../../../testing/fakes/fake_team_repository.dart';
+import '../../../../testing/fakes/fake_type_repository.dart';
 import '../../../../testing/log_game_actions.dart';
 import '../../../../testing/team_editor_actions.dart';
 
@@ -52,6 +53,7 @@ void main() {
             teamRepository: FakeTeamRepository(teams: [bigSix, ...extraTeams]),
             pokemonRepository: pokemon ?? FakePokemonRepository(),
             matchupRepository: matchups ?? FakeMatchupRepository(),
+            typeRepository: FakeTypeRepository(),
             idGenerator: SequentialIdGenerator(),
           ),
           child: const LogGameScreen(),
@@ -361,6 +363,37 @@ void main() {
         find.text("Couldn't look up their speeds. Check your connection."),
         findsOneWidget,
       );
+    });
+  });
+
+  group('their likely attacks', () {
+    final rival = Team(
+      id: 'o1',
+      name: 'Rival Grassy',
+      side: TeamSide.opponent,
+      pokemon: [FakePokemonRepository.sampleRef('sneasler')],
+    );
+
+    testWidgets('hidden until both sides are there', (tester) async {
+      await pumpScreen(tester, extraTeams: [rival]);
+      await selectDropdownItem(tester, 'Their team', 'Rival Grassy');
+
+      expect(find.text('Their likely attacks'), findsNothing);
+    });
+
+    testWidgets('each of their types against the Pokémon it hits hard', (
+      tester,
+    ) async {
+      await pumpScreen(tester, extraTeams: [rival]);
+      await selectDropdownItem(tester, 'Your team used', 'Big Six');
+      await selectDropdownItem(tester, 'Their team', 'Rival Grassy');
+
+      expect(find.text('Their likely attacks'), findsOneWidget);
+      expect(
+        find.text('Fighting → Kingambit ×4, Incineroar ×2'),
+        findsOneWidget,
+      );
+      expect(find.text('Poison → Whimsicott ×4, Rillaboom ×2'), findsOneWidget);
     });
   });
 

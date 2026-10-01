@@ -17,6 +17,7 @@ import '../../../../testing/fakes/fake_id_generator.dart';
 import '../../../../testing/fakes/fake_matchup_repository.dart';
 import '../../../../testing/fakes/fake_pokemon_repository.dart';
 import '../../../../testing/fakes/fake_team_repository.dart';
+import '../../../../testing/fakes/fake_type_repository.dart';
 import '../../../../testing/showdown_pastes.dart';
 
 final bigSix = Team(
@@ -52,6 +53,7 @@ void main() {
       teamRepository: teams,
       pokemonRepository: FakePokemonRepository(),
       matchupRepository: matchups,
+      typeRepository: FakeTypeRepository(),
       idGenerator: SequentialIdGenerator(),
     );
     addTearDown(viewModel.dispose);
@@ -294,6 +296,7 @@ void main() {
         teamRepository: teams,
         pokemonRepository: FakePokemonRepository(),
         matchupRepository: matchups,
+        typeRepository: FakeTypeRepository(),
         idGenerator: SequentialIdGenerator(),
         toLocal: costaRica,
       );
@@ -642,6 +645,7 @@ void main() {
         teamRepository: teams,
         pokemonRepository: pokemon ?? FakePokemonRepository(),
         matchupRepository: matchups,
+        typeRepository: FakeTypeRepository(),
         idGenerator: SequentialIdGenerator(),
       );
       addTearDown(viewModel.dispose);
@@ -725,6 +729,37 @@ void main() {
 
       expect(names(viewModel), contains('Garchomp'));
     });
+
+    test('their likely attacks clear when your team is cleared', () async {
+      final viewModel = await ready();
+      viewModel
+        ..selectTeam(team1)
+        ..selectOpponentTeam(rival);
+      await pumpEventQueue();
+
+      viewModel.selectTeam(null);
+      await pumpEventQueue();
+
+      expect(viewModel.threatRows, isEmpty);
+    });
+
+    test(
+      'their likely attacks: each of their types against your team',
+      () async {
+        final viewModel = await ready();
+
+        viewModel
+          ..selectTeam(team1)
+          ..selectOpponentTeam(rival);
+        await pumpEventQueue();
+
+        expect(viewModel.threatRows, [
+          'Fighting → Kingambit ×4',
+          'Poison → Whimsicott ×4',
+          'Grass → Basculegion-Male ×2',
+        ]);
+      },
+    );
 
     test('a failed lookup says the speeds are unavailable', () async {
       final pokemon = FakePokemonRepository()
@@ -1018,6 +1053,7 @@ void main() {
         teamRepository: teams,
         pokemonRepository: failing,
         matchupRepository: matchups,
+        typeRepository: FakeTypeRepository(),
         idGenerator: SequentialIdGenerator(),
       );
       addTearDown(viewModel.dispose);

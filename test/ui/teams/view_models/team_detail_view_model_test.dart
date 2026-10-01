@@ -13,6 +13,7 @@ import 'package:vgc_daily_tracker/utils/result.dart';
 import '../../../../testing/fakes/fake_matchup_repository.dart';
 import '../../../../testing/fakes/fake_pokemon_repository.dart';
 import '../../../../testing/fakes/fake_team_repository.dart';
+import '../../../../testing/fakes/fake_type_repository.dart';
 import '../../../../testing/showdown_pastes.dart';
 
 void main() {
@@ -44,6 +45,7 @@ void main() {
       teamRepository: FakeTeamRepository(teams: [team]),
       pokemonRepository: pokemon,
       matchupRepository: FakeMatchupRepository(),
+      typeRepository: FakeTypeRepository(),
       teamId: teamId ?? team.id,
     );
     addTearDown(viewModel.dispose);
@@ -169,6 +171,7 @@ void main() {
         teamRepository: teams,
         pokemonRepository: pokemon,
         matchupRepository: FakeMatchupRepository(),
+        typeRepository: FakeTypeRepository(),
         teamId: team.id,
       );
       addTearDown(viewModel.dispose);
@@ -230,6 +233,7 @@ void main() {
         teamRepository: FakeTeamRepository(teams: [mine, rival, ladder]),
         pokemonRepository: pokemon,
         matchupRepository: matchups,
+        typeRepository: FakeTypeRepository(),
         teamId: teamId,
       );
       addTearDown(viewModel.dispose);
@@ -312,6 +316,46 @@ void main() {
 
       expect(viewModel.saveMatchupNotes.error, isTrue);
       expect(viewModel.matchups.last.notes, 'Tailwind turn 1.');
+    });
+  });
+
+  group('weaknesses', () {
+    Future<TeamDetailViewModel> open({FakeTypeRepository? types}) async {
+      final viewModel = TeamDetailViewModel(
+        teamRepository: FakeTeamRepository(teams: [team1]),
+        pokemonRepository: pokemon,
+        matchupRepository: FakeMatchupRepository(),
+        typeRepository: types ?? FakeTypeRepository(),
+        teamId: team1.id,
+      );
+      addTearDown(viewModel.dispose);
+      await viewModel.load.execute();
+      return viewModel;
+    }
+
+    test('lists the types that hit someone, most weaknesses first', () async {
+      final viewModel = await open();
+
+      expect(viewModel.weaknessRows.take(2).map((r) => r.label), [
+        'Ground · 3 weak · 1 resists',
+        'Fire · 3 weak · 1 resists',
+      ]);
+      expect(viewModel.weaknessRows.first.type, 'ground');
+      expect(
+        viewModel.weaknessRows.map((r) => r.label),
+        isNot(contains(startsWith('Normal'))),
+        reason: 'Normal hits nobody super-effectively',
+      );
+    });
+
+    test('without the type chart the team still loads', () async {
+      final viewModel = await open(
+        types: FakeTypeRepository()..failWith = Exception('offline'),
+      );
+
+      expect(viewModel.load.completed, isTrue);
+      expect(viewModel.weaknessRows, isEmpty);
+      expect(viewModel.typesUnavailable, isTrue);
     });
   });
 }

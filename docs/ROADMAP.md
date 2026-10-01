@@ -4,6 +4,10 @@ This plan rebuilds the **VGC Daily Practice Tracker** artifact as a Flutter app
 backed by PokéAPI. It also turns the **Reg M-C Teams: EVs & Analysis**
 artifact into a real feature: team import plus stat and speed analysis.
 
+**Status (2026-10-01): version 1 is complete.** Phases 0–8 and 10 are
+done. Cloud sync (Phase 9) is left out of the first version; data stays on
+the device, and Backup & restore moves it.
+
 How to use this plan:
 - Each numbered step is one `flutter-change` run and one commit. Do them in
   order. A step is done only when its **Done when** list holds and
@@ -19,7 +23,7 @@ How to use this plan:
 
 | # | Decision | Chosen | Why | Used from |
 |---|---|---|---|---|
-| D1 | Where data lives | **Local-first with `sembast`** (`sembast` on mobile/desktop, `sembast_web` on web, in-memory in tests) | Pure Dart; works on every platform including web (IndexedDB); tests need no native sqlite; its document model matches the artifact's data shape. A backend can be added later as another repository implementation (Phase 9) without touching the UI. | Step 2.1 |
+| D1 | Where data lives | **Local-first with `sembast`** (`sembast` on mobile/desktop, `sembast_web` on web, in-memory in tests) | Pure Dart; works on every platform including web (IndexedDB); tests need no native sqlite; its document model matches the artifact's data shape. A backend can be added later as another repository implementation (Phase 9, not in version 1) without touching the UI. | Step 2.1 |
 | D2 | Integration test platform | **macOS desktop**: `flutter test integration_test -d macos` | Web needs `chromedriver` + `flutter drive`, which is clunkier. **User action needed:** install full Xcode from the App Store, then run `sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer` and `sudo xcodebuild -runFirstLaunch`, then `brew install cocoapods`. Until then, integration tests can run on Chrome with `flutter drive` as a fallback. | Step 0.4 |
 | D3 | Routine checklist ticks | **Saved per day, reset each new local day** | The artifact never saved them. Keeping them for the day matches how the routine is used. | Step 6.1 |
 
@@ -947,7 +951,7 @@ opponent spreads.
     counted network requests, which the stored copy already prevented.
     It now deletes the stored copy and goes offline first.
 
-### 10.5 Type matchups
+### ✅ 10.5 Type matchups
 - **Team detail:** a weaknesses chart. For each attacking type it shows
   how many team members are weak to it, resist it, or are immune.
 - **Game plan:** their likely attacking types, from their Pokémon's
@@ -955,8 +959,25 @@ opponent spreads.
 - Abilities that change matchups, such as Levitate, are out of scope;
   the chart says so.
 - **Tests:** the view model, widget, and acceptance.
+- **As built:**
+  - Pure domain functions in `lib/domain/stats/type_matchups.dart`:
+    `teamWeaknesses` (most weak first, game type order on ties) and
+    `threats` (strongest hit first, then most members hit; types that hit
+    nobody super effectively are dropped).
+  - Team detail: a **Weaknesses** card listing only types the team is weak
+    to, as `Ground · 3 weak · 1 resists`, plus the Levitate note and an
+    offline message when the type chart can't load.
+  - Log Game: a **Their likely attacks** card under the Speed card (the
+    same both-sides-picked trigger and battle forms, so Megas use their
+    Mega types), as `Fighting → Kingambit ×4, Incineroar ×2`.
+  - Mutation checks: the their-side filter, the ×int format and clearing
+    the rows when a side is removed (this one needed a new test) all fail
+    a test.
 
-## Phase 9 (optional, later): Cloud sync
+## Phase 9 (not in version 1): Cloud sync
+
+Left out of the first version (decided 2026-10-01): there's no backend to
+store data in yet. If it comes back:
 
 - New `TeamRepositoryRemote` / `GameLogRepositoryRemote` implementations for
   the chosen backend, plus sign-in, wired through DI. The UI and view models
@@ -979,7 +1000,7 @@ opponent spreads.
 | Opponent lead frequency + win % | 5.1, 5.2 |
 | Mistake breakdown bars | 5.1, 5.2 |
 | Recent games + delete | 5.2 |
-| Per-user persistence | 2.1, 2.2 (Phase 9 for sync) |
+| Per-user persistence | 2.1, 2.2 (on the device; sync, Phase 9, is not in version 1) |
 | Reg M-C teams in Showdown format | 7.1, 7.4 |
 | Level 50 EV / speed analysis | 7.2, 7.3 |
 | *(new)* Saved opponent teams, Log Game picker, matchup stats | 7.5–7.8 |

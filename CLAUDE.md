@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 VGC Daily Tracker is a Flutter app that rebuilds an existing "VGC daily tracker" claude.ai artifact (a Pokémon VGC companion) from scratch. Its data comes from public Pokémon API endpoints. When building a feature meant to mimic the original, read that artifact first so the behavior and layout match.
 
-Current state: the step-by-step build plan is in `docs/ROADMAP.md`. Work through it in order, one step per `flutter-change` run, and tick each step off (✅) there as it lands. That checklist is the source of truth for what exists.
+Current state: version 1 is complete (2026-10-01). The step-by-step build plan is in `docs/ROADMAP.md`, and its ✅ checklist is the source of truth for what exists. Cloud sync (Phase 9) is left out of version 1, so keep all data local. New work still goes one step per `flutter-change` run, added to the roadmap and ticked off (✅) as it lands.
 
 Source material: two claude.ai artifacts, read with the Artifact tool:
 - the VGC Daily Practice Tracker (https://claude.ai/artifact/Pthd6cY24xK8TkehiruMCE), which is the app being rebuilt

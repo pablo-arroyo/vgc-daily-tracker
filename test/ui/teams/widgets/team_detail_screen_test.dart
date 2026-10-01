@@ -14,6 +14,7 @@ import 'package:vgc_daily_tracker/utils/result.dart';
 import '../../../../testing/fakes/fake_matchup_repository.dart';
 import '../../../../testing/fakes/fake_pokemon_repository.dart';
 import '../../../../testing/fakes/fake_team_repository.dart';
+import '../../../../testing/fakes/fake_type_repository.dart';
 import '../../../../testing/showdown_pastes.dart';
 import '../../../../testing/team_import_actions.dart';
 
@@ -45,6 +46,7 @@ void main() {
     FakePokemonRepository? pokemon,
     FakeTeamRepository? teams,
     FakeMatchupRepository? matchups,
+    FakeTypeRepository? types,
   }) async {
     tester.view.physicalSize = const Size(1200, 4000);
     // Logical pixels: tall enough to build every lazy row.
@@ -60,6 +62,7 @@ void main() {
                 teams ?? FakeTeamRepository(teams: [imported, picked]),
             pokemonRepository: repository,
             matchupRepository: matchups ?? FakeMatchupRepository(),
+            typeRepository: types ?? FakeTypeRepository(),
             teamId: teamId,
           )..load.execute(),
           child: const TeamDetailScreen(),
@@ -156,6 +159,46 @@ void main() {
     });
   });
 
+  group('weaknesses', () {
+    testWidgets('lists the types that hit the team, with their badges', (
+      tester,
+    ) async {
+      await pumpDetail(tester);
+
+      expect(find.text('Weaknesses'), findsOneWidget);
+      final row = find.ancestor(
+        of: find.text('Ground · 3 weak · 1 resists'),
+        matching: find.byType(Row),
+      );
+      expect(
+        find.descendant(of: row, matching: find.byType(TypeBadge)),
+        findsOneWidget,
+      );
+      expect(
+        find.text("Types only: abilities like Levitate aren't counted."),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('a team without sets has weaknesses too', (tester) async {
+      await pumpDetail(tester, teamId: 't2');
+
+      expect(find.text('Weaknesses'), findsOneWidget);
+    });
+
+    testWidgets('says so when the type chart is unavailable', (tester) async {
+      await pumpDetail(
+        tester,
+        types: FakeTypeRepository()..failWith = Exception('offline'),
+      );
+
+      expect(
+        find.text("Couldn't load the type chart. Check your connection."),
+        findsOneWidget,
+      );
+    });
+  });
+
   group('notes', () {
     TextField field(WidgetTester tester) =>
         tester.widget<TextField>(find.widgetWithText(TextField, 'Notes'));
@@ -220,6 +263,7 @@ void main() {
             teamRepository: FakeTeamRepository(teams: [withMegaAbility]),
             pokemonRepository: FakePokemonRepository(),
             matchupRepository: FakeMatchupRepository(),
+            typeRepository: FakeTypeRepository(),
             teamId: 't1',
           )..load.execute(),
           child: const TeamDetailScreen(),

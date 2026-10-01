@@ -11,14 +11,17 @@ Tracker* claude.ai artifact in Flutter, backed by
 Teams* artifact. The step-by-step build plan, with what each step delivered,
 is in [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
+**Status:** version 1 is complete. Everything stays on your device; there's
+no account or cloud sync in this version.
+
 ## What it does
 
 | Tab | What you get |
 |---|---|
 | **Routine** | Before / during / after checklists, ticked per local day. |
-| **Teams** | *My teams* and *Opponents*: build a team by picking Pokémon, or import a Showdown paste (checked against PokéAPI). A team's detail screen shows each Pokémon's battle form (Megas from their stone), types, item, ability, moves, level 50 stats and the team's Speed order, plus team notes and matchup notes against each team on the other side. An empty tab offers the Reg M-C sample teams. |
-| **Log Game** | Result, your team with its bring 4 / lead 2, their team (pick a saved opponent team to fill it), what decided the game, and notes. A **Game plan** card shows your notes and matchup plan before the battle; after saving, a game's notes can be added to that plan. |
-| **Progress** | Totals, win rates, streak, weekly focus, win rate by team, your record against each opponent team, opponent leads, mistake breakdown and recent games (save a game's opponent as a team from here). |
+| **Teams** | *My teams* and *Opponents*: build a team by picking Pokémon, or import a Showdown paste (checked against PokéAPI). A team's detail screen shows each Pokémon's battle form (Megas from their stone), types, item, ability, moves, level 50 stats and the team's Speed order, plus a **Weaknesses** card (how many members each attacking type hits super effectively), team notes and matchup notes against each team on the other side. An empty tab offers the Reg M-C sample teams. |
+| **Log Game** | Result, your team with its bring 4 / lead 2, their team (pick a saved opponent team to fill it), what decided the game, and notes. Games can be part of a **best-of-3**: a card tracks the set score with *Log game 2* / *End set*. Once both teams are picked you get a **Game plan** card (your notes and matchup plan), a **Speed** order for both sides (Megas, Choice Scarf, ranges for unknown spreads, with Tailwind and Trick Room toggles) and **Their likely attacks** (their types against the members they hit hard). After saving, a game's notes can be added to the plan. |
+| **Progress** | Totals, win rates, streak, weekly focus, win rate by team, your record against each opponent team, best-of-3 set record (and game 1 vs games 2–3 win rate), opponent leads, mistake breakdown and recent games (save a game's opponent as a team from here). |
 
 **Backup & restore** (the icon in the header) copies everything to the
 clipboard as JSON and merges a pasted backup back in.
@@ -110,7 +113,9 @@ lib/
 Key decisions (the full list, with reasons, is in the roadmap and in
 `.claude/skills/flutter-change/references/architecture.md`):
 - **Local-first:** all data lives on the device in sembast. There's no
-  account or server; use Backup & restore to move or keep data.
+  account or server, and cloud sync is left out of version 1; use Backup &
+  restore to move or keep data. A backend could later be added as another
+  repository implementation without touching the UI.
 - **Repositories return `Result<T>`** and are abstract, with a fake for
   tests. API models never leave their repository.
 - **View models expose `Command`s**, and widgets hold no business logic.
