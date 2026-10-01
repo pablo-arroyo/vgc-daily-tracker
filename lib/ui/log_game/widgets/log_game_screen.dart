@@ -280,17 +280,68 @@ class _OpponentSection extends StatelessWidget {
         const _Hint(
           'From Team Preview — fill in whichever you remember, rest optional',
         ),
-        for (var i = 0; i < 6; i++)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: PokemonAutocompleteField(
-              label: 'Opp. Pokémon ${i + 1}',
-              search: viewModel.search,
-              onChanged: (pokemon) => viewModel.setOpponentSlot(i, pokemon),
-            ),
-          ),
+        const _OpponentTeamPicker(),
+        ListenableBuilder(
+          listenable: viewModel,
+          builder: (context, _) {
+            // Keyed by the picked team: the fields keep their own text, so
+            // a new pick rebuilds them with its Pokémon.
+            final picked = viewModel.selectedOpponentTeam?.id;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = 0; i < 6; i++)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: PokemonAutocompleteField(
+                      key: ValueKey('opponent-$picked-$i'),
+                      label: 'Opp. Pokémon ${i + 1}',
+                      search: viewModel.search,
+                      initialValue: viewModel.opponentSlots[i],
+                      onChanged: (pokemon) =>
+                          viewModel.setOpponentSlot(i, pokemon),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
         const _OpponentPicks(),
       ],
+    );
+  }
+}
+
+/// "Their team": a saved opponent team fills their 6 slots. Shown only
+/// when there are some.
+class _OpponentTeamPicker extends StatelessWidget {
+  const _OpponentTeamPicker();
+
+  @override
+  Widget build(BuildContext context) {
+    final viewModel = context.read<LogGameViewModel>();
+    return ListenableBuilder(
+      listenable: viewModel,
+      builder: (context, _) {
+        if (viewModel.opponentTeams.isEmpty) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: DropdownButtonFormField<Team?>(
+            initialValue: viewModel.selectedOpponentTeam,
+            decoration: const InputDecoration(labelText: 'Their team'),
+            isExpanded: true,
+            items: [
+              const DropdownMenuItem(child: Text('Not a saved team')),
+              for (final team in viewModel.opponentTeams)
+                DropdownMenuItem(
+                  value: team,
+                  child: Text(team.name, overflow: TextOverflow.ellipsis),
+                ),
+            ],
+            onChanged: viewModel.selectOpponentTeam,
+          ),
+        );
+      },
     );
   }
 }

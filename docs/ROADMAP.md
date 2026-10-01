@@ -554,7 +554,7 @@ so that backup covers it from the start.
     on purpose fails a test (Teams filter, Log Game filter, the editor
     keeping and saving the side, import side).
 
-### 7.6 Pick the opponent's team in Log Game
+### ✅ 7.6 Pick the opponent's team in Log Game
 - A "Their team" picker lists saved opponent teams. Picking one fills the
   opponent's 6 Pokémon, and they can still be edited.
 - `GameLog` gains `opponentTeamId` and `opponentTeamName`, like
@@ -562,6 +562,15 @@ so that backup covers it from the start.
 - **Tests:** view model (fill, edit after picking, cleared on reset),
   widget, and an acceptance test that logs a game against a saved
   opponent team.
+- **As built:**
+  - The picker shows only when opponent teams exist.
+  - Picking a team also clears their brought and leads, since those
+    came from the old slots.
+  - "Not a saved team" unlinks the game but keeps the Pokémon.
+  - Swapping a Pokémon keeps the link.
+  - The 6 fields are keyed by the picked team, so they refill.
+  - The macOS opponent journey now goes through Log Game, and each rule
+    has been checked by breaking it on purpose.
 
 ### 7.7 Save an opponent team from a logged game
 - "Save their team" on a recent game whose opponent's 6 Pokémon were

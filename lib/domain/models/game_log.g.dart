@@ -37,6 +37,11 @@ _GameLog _$GameLogFromJson(Map<String, dynamic> json) => $checkedCreate(
         (v) =>
             (v as List<dynamic>?)?.map((e) => e as String).toList() ?? const [],
       ),
+      opponentTeamId: $checkedConvert('opponent_team_id', (v) => v as String?),
+      opponentTeamName: $checkedConvert(
+        'opponent_team_name',
+        (v) => v as String?,
+      ),
       opponentTeam: $checkedConvert(
         'opponent_team',
         (v) =>
@@ -64,6 +69,8 @@ _GameLog _$GameLogFromJson(Map<String, dynamic> json) => $checkedCreate(
     'playedAt': 'played_at',
     'teamId': 'team_id',
     'teamName': 'team_name',
+    'opponentTeamId': 'opponent_team_id',
+    'opponentTeamName': 'opponent_team_name',
     'opponentTeam': 'opponent_team',
     'opponentBrought': 'opponent_brought',
     'opponentLeads': 'opponent_leads',
@@ -79,6 +86,8 @@ Map<String, dynamic> _$GameLogToJson(_GameLog instance) => <String, dynamic>{
   'team': instance.team,
   'brought': instance.brought,
   'leads': instance.leads,
+  'opponent_team_id': instance.opponentTeamId,
+  'opponent_team_name': instance.opponentTeamName,
   'opponent_team': instance.opponentTeam,
   'opponent_brought': instance.opponentBrought,
   'opponent_leads': instance.opponentLeads,

@@ -36,6 +36,10 @@ class LogGameViewModel extends ChangeNotifier {
         for (final team in teams)
           if (team.side == TeamSide.mine) team,
       ];
+      _opponentTeams = [
+        for (final team in teams)
+          if (team.side == TeamSide.opponent) team,
+      ];
       notifyListeners();
     });
   }
@@ -109,6 +113,32 @@ class LogGameViewModel extends ChangeNotifier {
   }
 
   final List<PokemonRef?> _opponentSlots = List.filled(6, null);
+  List<Team> _opponentTeams = const [];
+  Team? _selectedOpponentTeam;
+
+  /// Saved opponent teams, to fill their slots in one pick.
+  List<Team> get opponentTeams => _opponentTeams;
+
+  /// The saved opponent team this game is against, if one was picked.
+  Team? get selectedOpponentTeam => _selectedOpponentTeam;
+
+  /// Their 6 slots as entered, empty ones included.
+  List<PokemonRef?> get opponentSlots => List.unmodifiable(_opponentSlots);
+
+  /// Links the game to [team] and fills their slots with its Pokémon (they
+  /// can still be edited). Their brought and leads start over, since they
+  /// were picked from the old slots. None unlinks, keeping the slots.
+  void selectOpponentTeam(Team? team) {
+    _selectedOpponentTeam = team;
+    if (team != null) {
+      _opponentSlots.fillRange(0, 6, null);
+      _opponentSlots.setAll(0, team.pokemon.take(6));
+      _opponentBrought.clear();
+      _opponentLeads.clear();
+    }
+    notifyListeners();
+  }
+
   final List<PokemonRef> _opponentBrought = [];
   final List<PokemonRef> _opponentLeads = [];
 
@@ -211,6 +241,8 @@ class LogGameViewModel extends ChangeNotifier {
         team: slugs(team?.pokemon ?? const []),
         brought: slugs(_brought),
         leads: slugs(_leads),
+        opponentTeamId: _selectedOpponentTeam?.id,
+        opponentTeamName: _selectedOpponentTeam?.name,
         opponentTeam: slugs(opponentTeam),
         opponentBrought: slugs(_opponentBrought),
         opponentLeads: slugs(_opponentLeads),
@@ -234,6 +266,7 @@ class LogGameViewModel extends ChangeNotifier {
     _brought.clear();
     _leads.clear();
     _opponentSlots.fillRange(0, 6, null);
+    _selectedOpponentTeam = null;
     _opponentBrought.clear();
     _opponentLeads.clear();
     _mistake = null;

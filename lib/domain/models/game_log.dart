@@ -26,6 +26,11 @@ abstract class GameLog with _$GameLog {
     @Default([]) List<String> team,
     @Default([]) List<String> brought,
     @Default([]) List<String> leads,
+
+    /// The saved opponent team this game was against, if one was picked.
+    /// Its name is kept too, so a deleted team still reads well.
+    String? opponentTeamId,
+    String? opponentTeamName,
     @Default([]) List<String> opponentTeam,
     @Default([]) List<String> opponentBrought,
     @Default([]) List<String> opponentLeads,

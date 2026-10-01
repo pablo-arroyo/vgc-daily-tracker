@@ -20,6 +20,8 @@ void main() {
       ],
       brought: const ['kingambit', 'kleavor', 'whimsicott', 'metagross-mega'],
       leads: const ['kleavor', 'whimsicott'],
+      opponentTeamId: 'opp-1',
+      opponentTeamName: 'Rival Grassy',
       opponentTeam: const ['rillaboom', 'sneasler', 'incineroar'],
       opponentBrought: const ['rillaboom', 'sneasler'],
       opponentLeads: const ['rillaboom', 'sneasler'],
@@ -42,6 +44,8 @@ void main() {
       ],
       'brought': ['kingambit', 'kleavor', 'whimsicott', 'metagross-mega'],
       'leads': ['kleavor', 'whimsicott'],
+      'opponent_team_id': 'opp-1',
+      'opponent_team_name': 'Rival Grassy',
       'opponent_team': ['rillaboom', 'sneasler', 'incineroar'],
       'opponent_brought': ['rillaboom', 'sneasler'],
       'opponent_leads': ['rillaboom', 'sneasler'],
@@ -55,6 +59,18 @@ void main() {
 
     test('round-trips through JSON', () {
       expect(GameLog.fromJson(json), game);
+    });
+
+    test('games saved before opponent teams existed load unlinked', () {
+      final legacy = {...json}
+        ..remove('opponent_team_id')
+        ..remove('opponent_team_name');
+
+      final loaded = GameLog.fromJson(legacy);
+
+      expect(loaded.opponentTeamId, isNull);
+      expect(loaded.opponentTeamName, isNull);
+      expect(loaded.opponentTeam, game.opponentTeam);
     });
   });
 
@@ -75,6 +91,8 @@ void main() {
         'team': <String>[],
         'brought': <String>[],
         'leads': <String>[],
+        'opponent_team_id': null,
+        'opponent_team_name': null,
         'opponent_team': <String>[],
         'opponent_brought': <String>[],
         'opponent_leads': <String>[],

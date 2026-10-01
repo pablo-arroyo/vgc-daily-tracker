@@ -17,7 +17,9 @@ T _$identity<T>(T value) => value;
 mixin _$GameLog {
 
  String get id; DateTime get playedAt; GameResult get result; String? get teamId; String? get teamName;/// The full six of the team used; empty when no saved team was picked.
- List<String> get team; List<String> get brought; List<String> get leads; List<String> get opponentTeam; List<String> get opponentBrought; List<String> get opponentLeads;/// "What decided this game?", when answered.
+ List<String> get team; List<String> get brought; List<String> get leads;/// The saved opponent team this game was against, if one was picked.
+/// Its name is kept too, so a deleted team still reads well.
+ String? get opponentTeamId; String? get opponentTeamName; List<String> get opponentTeam; List<String> get opponentBrought; List<String> get opponentLeads;/// "What decided this game?", when answered.
  MistakeCategory? get mistake; String get notes;
 /// Create a copy of GameLog
 /// with the given fields replaced by the non-null parameter values.
@@ -32,20 +34,20 @@ $GameLogCopyWith<GameLog> get copyWith => _$GameLogCopyWithImpl<GameLog>(this as
 @override
 bool operator ==(Object other) {
   final _this = this as GameLog;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GameLog&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.playedAt, _this.playedAt) || other.playedAt == _this.playedAt)&&(identical(other.result, _this.result) || other.result == _this.result)&&(identical(other.teamId, _this.teamId) || other.teamId == _this.teamId)&&(identical(other.teamName, _this.teamName) || other.teamName == _this.teamName)&&const DeepCollectionEquality().equals(other.team, _this.team)&&const DeepCollectionEquality().equals(other.brought, _this.brought)&&const DeepCollectionEquality().equals(other.leads, _this.leads)&&const DeepCollectionEquality().equals(other.opponentTeam, _this.opponentTeam)&&const DeepCollectionEquality().equals(other.opponentBrought, _this.opponentBrought)&&const DeepCollectionEquality().equals(other.opponentLeads, _this.opponentLeads)&&(identical(other.mistake, _this.mistake) || other.mistake == _this.mistake)&&(identical(other.notes, _this.notes) || other.notes == _this.notes));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GameLog&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.playedAt, _this.playedAt) || other.playedAt == _this.playedAt)&&(identical(other.result, _this.result) || other.result == _this.result)&&(identical(other.teamId, _this.teamId) || other.teamId == _this.teamId)&&(identical(other.teamName, _this.teamName) || other.teamName == _this.teamName)&&const DeepCollectionEquality().equals(other.team, _this.team)&&const DeepCollectionEquality().equals(other.brought, _this.brought)&&const DeepCollectionEquality().equals(other.leads, _this.leads)&&(identical(other.opponentTeamId, _this.opponentTeamId) || other.opponentTeamId == _this.opponentTeamId)&&(identical(other.opponentTeamName, _this.opponentTeamName) || other.opponentTeamName == _this.opponentTeamName)&&const DeepCollectionEquality().equals(other.opponentTeam, _this.opponentTeam)&&const DeepCollectionEquality().equals(other.opponentBrought, _this.opponentBrought)&&const DeepCollectionEquality().equals(other.opponentLeads, _this.opponentLeads)&&(identical(other.mistake, _this.mistake) || other.mistake == _this.mistake)&&(identical(other.notes, _this.notes) || other.notes == _this.notes));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as GameLog;
-  return Object.hash(runtimeType,_this.id,_this.playedAt,_this.result,_this.teamId,_this.teamName,const DeepCollectionEquality().hash(_this.team),const DeepCollectionEquality().hash(_this.brought),const DeepCollectionEquality().hash(_this.leads),const DeepCollectionEquality().hash(_this.opponentTeam),const DeepCollectionEquality().hash(_this.opponentBrought),const DeepCollectionEquality().hash(_this.opponentLeads),_this.mistake,_this.notes);
+  return Object.hash(runtimeType,_this.id,_this.playedAt,_this.result,_this.teamId,_this.teamName,const DeepCollectionEquality().hash(_this.team),const DeepCollectionEquality().hash(_this.brought),const DeepCollectionEquality().hash(_this.leads),_this.opponentTeamId,_this.opponentTeamName,const DeepCollectionEquality().hash(_this.opponentTeam),const DeepCollectionEquality().hash(_this.opponentBrought),const DeepCollectionEquality().hash(_this.opponentLeads),_this.mistake,_this.notes);
 }
 
 @override
 String toString() {
   final _this = this as GameLog;
-  return 'GameLog(id: ${_this.id}, playedAt: ${_this.playedAt}, result: ${_this.result}, teamId: ${_this.teamId}, teamName: ${_this.teamName}, team: ${_this.team}, brought: ${_this.brought}, leads: ${_this.leads}, opponentTeam: ${_this.opponentTeam}, opponentBrought: ${_this.opponentBrought}, opponentLeads: ${_this.opponentLeads}, mistake: ${_this.mistake}, notes: ${_this.notes})';
+  return 'GameLog(id: ${_this.id}, playedAt: ${_this.playedAt}, result: ${_this.result}, teamId: ${_this.teamId}, teamName: ${_this.teamName}, team: ${_this.team}, brought: ${_this.brought}, leads: ${_this.leads}, opponentTeamId: ${_this.opponentTeamId}, opponentTeamName: ${_this.opponentTeamName}, opponentTeam: ${_this.opponentTeam}, opponentBrought: ${_this.opponentBrought}, opponentLeads: ${_this.opponentLeads}, mistake: ${_this.mistake}, notes: ${_this.notes})';
 }
 
 
@@ -56,7 +58,7 @@ abstract mixin class $GameLogCopyWith<$Res>  {
   factory $GameLogCopyWith(GameLog value, $Res Function(GameLog) _then) = _$GameLogCopyWithImpl;
 @useResult
 $Res call({
- String id, DateTime playedAt, GameResult result, String? teamId, String? teamName, List<String> team, List<String> brought, List<String> leads, List<String> opponentTeam, List<String> opponentBrought, List<String> opponentLeads, MistakeCategory? mistake, String notes
+ String id, DateTime playedAt, GameResult result, String? teamId, String? teamName, List<String> team, List<String> brought, List<String> leads, String? opponentTeamId, String? opponentTeamName, List<String> opponentTeam, List<String> opponentBrought, List<String> opponentLeads, MistakeCategory? mistake, String notes
 });
 
 
@@ -73,7 +75,7 @@ class _$GameLogCopyWithImpl<$Res>
 
 /// Create a copy of GameLog
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? playedAt = null,Object? result = null,Object? teamId = freezed,Object? teamName = freezed,Object? team = null,Object? brought = null,Object? leads = null,Object? opponentTeam = null,Object? opponentBrought = null,Object? opponentLeads = null,Object? mistake = freezed,Object? notes = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? playedAt = null,Object? result = null,Object? teamId = freezed,Object? teamName = freezed,Object? team = null,Object? brought = null,Object? leads = null,Object? opponentTeamId = freezed,Object? opponentTeamName = freezed,Object? opponentTeam = null,Object? opponentBrought = null,Object? opponentLeads = null,Object? mistake = freezed,Object? notes = null,}) {
   return _then(GameLog(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,playedAt: null == playedAt ? _self.playedAt : playedAt // ignore: cast_nullable_to_non_nullable
@@ -83,7 +85,9 @@ as String?,teamName: freezed == teamName ? _self.teamName : teamName // ignore: 
 as String?,team: null == team ? _self.team : team // ignore: cast_nullable_to_non_nullable
 as List<String>,brought: null == brought ? _self.brought : brought // ignore: cast_nullable_to_non_nullable
 as List<String>,leads: null == leads ? _self.leads : leads // ignore: cast_nullable_to_non_nullable
-as List<String>,opponentTeam: null == opponentTeam ? _self.opponentTeam : opponentTeam // ignore: cast_nullable_to_non_nullable
+as List<String>,opponentTeamId: freezed == opponentTeamId ? _self.opponentTeamId : opponentTeamId // ignore: cast_nullable_to_non_nullable
+as String?,opponentTeamName: freezed == opponentTeamName ? _self.opponentTeamName : opponentTeamName // ignore: cast_nullable_to_non_nullable
+as String?,opponentTeam: null == opponentTeam ? _self.opponentTeam : opponentTeam // ignore: cast_nullable_to_non_nullable
 as List<String>,opponentBrought: null == opponentBrought ? _self.opponentBrought : opponentBrought // ignore: cast_nullable_to_non_nullable
 as List<String>,opponentLeads: null == opponentLeads ? _self.opponentLeads : opponentLeads // ignore: cast_nullable_to_non_nullable
 as List<String>,mistake: freezed == mistake ? _self.mistake : mistake // ignore: cast_nullable_to_non_nullable
@@ -173,10 +177,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  DateTime playedAt,  GameResult result,  String? teamId,  String? teamName,  List<String> team,  List<String> brought,  List<String> leads,  List<String> opponentTeam,  List<String> opponentBrought,  List<String> opponentLeads,  MistakeCategory? mistake,  String notes)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  DateTime playedAt,  GameResult result,  String? teamId,  String? teamName,  List<String> team,  List<String> brought,  List<String> leads,  String? opponentTeamId,  String? opponentTeamName,  List<String> opponentTeam,  List<String> opponentBrought,  List<String> opponentLeads,  MistakeCategory? mistake,  String notes)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GameLog() when $default != null:
-return $default(_that.id,_that.playedAt,_that.result,_that.teamId,_that.teamName,_that.team,_that.brought,_that.leads,_that.opponentTeam,_that.opponentBrought,_that.opponentLeads,_that.mistake,_that.notes);case _:
+return $default(_that.id,_that.playedAt,_that.result,_that.teamId,_that.teamName,_that.team,_that.brought,_that.leads,_that.opponentTeamId,_that.opponentTeamName,_that.opponentTeam,_that.opponentBrought,_that.opponentLeads,_that.mistake,_that.notes);case _:
   return orElse();
 
 }
@@ -194,10 +198,10 @@ return $default(_that.id,_that.playedAt,_that.result,_that.teamId,_that.teamName
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  DateTime playedAt,  GameResult result,  String? teamId,  String? teamName,  List<String> team,  List<String> brought,  List<String> leads,  List<String> opponentTeam,  List<String> opponentBrought,  List<String> opponentLeads,  MistakeCategory? mistake,  String notes)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  DateTime playedAt,  GameResult result,  String? teamId,  String? teamName,  List<String> team,  List<String> brought,  List<String> leads,  String? opponentTeamId,  String? opponentTeamName,  List<String> opponentTeam,  List<String> opponentBrought,  List<String> opponentLeads,  MistakeCategory? mistake,  String notes)  $default,) {final _that = this;
 switch (_that) {
 case _GameLog():
-return $default(_that.id,_that.playedAt,_that.result,_that.teamId,_that.teamName,_that.team,_that.brought,_that.leads,_that.opponentTeam,_that.opponentBrought,_that.opponentLeads,_that.mistake,_that.notes);case _:
+return $default(_that.id,_that.playedAt,_that.result,_that.teamId,_that.teamName,_that.team,_that.brought,_that.leads,_that.opponentTeamId,_that.opponentTeamName,_that.opponentTeam,_that.opponentBrought,_that.opponentLeads,_that.mistake,_that.notes);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -214,10 +218,10 @@ return $default(_that.id,_that.playedAt,_that.result,_that.teamId,_that.teamName
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  DateTime playedAt,  GameResult result,  String? teamId,  String? teamName,  List<String> team,  List<String> brought,  List<String> leads,  List<String> opponentTeam,  List<String> opponentBrought,  List<String> opponentLeads,  MistakeCategory? mistake,  String notes)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  DateTime playedAt,  GameResult result,  String? teamId,  String? teamName,  List<String> team,  List<String> brought,  List<String> leads,  String? opponentTeamId,  String? opponentTeamName,  List<String> opponentTeam,  List<String> opponentBrought,  List<String> opponentLeads,  MistakeCategory? mistake,  String notes)?  $default,) {final _that = this;
 switch (_that) {
 case _GameLog() when $default != null:
-return $default(_that.id,_that.playedAt,_that.result,_that.teamId,_that.teamName,_that.team,_that.brought,_that.leads,_that.opponentTeam,_that.opponentBrought,_that.opponentLeads,_that.mistake,_that.notes);case _:
+return $default(_that.id,_that.playedAt,_that.result,_that.teamId,_that.teamName,_that.team,_that.brought,_that.leads,_that.opponentTeamId,_that.opponentTeamName,_that.opponentTeam,_that.opponentBrought,_that.opponentLeads,_that.mistake,_that.notes);case _:
   return null;
 
 }
@@ -229,7 +233,7 @@ return $default(_that.id,_that.playedAt,_that.result,_that.teamId,_that.teamName
 @JsonSerializable()
 
 class _GameLog implements GameLog {
-  const _GameLog({required this.id, required this.playedAt, required this.result, this.teamId, this.teamName,  List<String> team = const [],  List<String> brought = const [],  List<String> leads = const [],  List<String> opponentTeam = const [],  List<String> opponentBrought = const [],  List<String> opponentLeads = const [], this.mistake, this.notes = ''}): _team = team,_brought = brought,_leads = leads,_opponentTeam = opponentTeam,_opponentBrought = opponentBrought,_opponentLeads = opponentLeads;
+  const _GameLog({required this.id, required this.playedAt, required this.result, this.teamId, this.teamName,  List<String> team = const [],  List<String> brought = const [],  List<String> leads = const [], this.opponentTeamId, this.opponentTeamName,  List<String> opponentTeam = const [],  List<String> opponentBrought = const [],  List<String> opponentLeads = const [], this.mistake, this.notes = ''}): _team = team,_brought = brought,_leads = leads,_opponentTeam = opponentTeam,_opponentBrought = opponentBrought,_opponentLeads = opponentLeads;
   factory _GameLog.fromJson(Map<String, dynamic> json) => _$GameLogFromJson(json);
 
 @override final  String id;
@@ -260,6 +264,10 @@ class _GameLog implements GameLog {
   return EqualUnmodifiableListView(_leads);
 }
 
+/// The saved opponent team this game was against, if one was picked.
+/// Its name is kept too, so a deleted team still reads well.
+@override final  String? opponentTeamId;
+@override final  String? opponentTeamName;
  final  List<String> _opponentTeam;
 @override@JsonKey() List<String> get opponentTeam {
   if (_opponentTeam is EqualUnmodifiableListView) return _opponentTeam;
@@ -298,18 +306,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _GameLog&&(identical(other.id, id) || other.id == id)&&(identical(other.playedAt, playedAt) || other.playedAt == playedAt)&&(identical(other.result, result) || other.result == result)&&(identical(other.teamId, teamId) || other.teamId == teamId)&&(identical(other.teamName, teamName) || other.teamName == teamName)&&const DeepCollectionEquality().equals(other.team, _team)&&const DeepCollectionEquality().equals(other.brought, _brought)&&const DeepCollectionEquality().equals(other.leads, _leads)&&const DeepCollectionEquality().equals(other.opponentTeam, _opponentTeam)&&const DeepCollectionEquality().equals(other.opponentBrought, _opponentBrought)&&const DeepCollectionEquality().equals(other.opponentLeads, _opponentLeads)&&(identical(other.mistake, mistake) || other.mistake == mistake)&&(identical(other.notes, notes) || other.notes == notes));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _GameLog&&(identical(other.id, id) || other.id == id)&&(identical(other.playedAt, playedAt) || other.playedAt == playedAt)&&(identical(other.result, result) || other.result == result)&&(identical(other.teamId, teamId) || other.teamId == teamId)&&(identical(other.teamName, teamName) || other.teamName == teamName)&&const DeepCollectionEquality().equals(other.team, _team)&&const DeepCollectionEquality().equals(other.brought, _brought)&&const DeepCollectionEquality().equals(other.leads, _leads)&&(identical(other.opponentTeamId, opponentTeamId) || other.opponentTeamId == opponentTeamId)&&(identical(other.opponentTeamName, opponentTeamName) || other.opponentTeamName == opponentTeamName)&&const DeepCollectionEquality().equals(other.opponentTeam, _opponentTeam)&&const DeepCollectionEquality().equals(other.opponentBrought, _opponentBrought)&&const DeepCollectionEquality().equals(other.opponentLeads, _opponentLeads)&&(identical(other.mistake, mistake) || other.mistake == mistake)&&(identical(other.notes, notes) || other.notes == notes));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,playedAt,result,teamId,teamName,const DeepCollectionEquality().hash(_team),const DeepCollectionEquality().hash(_brought),const DeepCollectionEquality().hash(_leads),const DeepCollectionEquality().hash(_opponentTeam),const DeepCollectionEquality().hash(_opponentBrought),const DeepCollectionEquality().hash(_opponentLeads),mistake,notes);
+    return Object.hash(runtimeType,id,playedAt,result,teamId,teamName,const DeepCollectionEquality().hash(_team),const DeepCollectionEquality().hash(_brought),const DeepCollectionEquality().hash(_leads),opponentTeamId,opponentTeamName,const DeepCollectionEquality().hash(_opponentTeam),const DeepCollectionEquality().hash(_opponentBrought),const DeepCollectionEquality().hash(_opponentLeads),mistake,notes);
 }
 
 @override
 String toString() {
-    return 'GameLog(id: $id, playedAt: $playedAt, result: $result, teamId: $teamId, teamName: $teamName, team: $team, brought: $brought, leads: $leads, opponentTeam: $opponentTeam, opponentBrought: $opponentBrought, opponentLeads: $opponentLeads, mistake: $mistake, notes: $notes)';
+    return 'GameLog(id: $id, playedAt: $playedAt, result: $result, teamId: $teamId, teamName: $teamName, team: $team, brought: $brought, leads: $leads, opponentTeamId: $opponentTeamId, opponentTeamName: $opponentTeamName, opponentTeam: $opponentTeam, opponentBrought: $opponentBrought, opponentLeads: $opponentLeads, mistake: $mistake, notes: $notes)';
 }
 
 
@@ -320,7 +328,7 @@ abstract mixin class _$GameLogCopyWith<$Res> implements $GameLogCopyWith<$Res> {
   factory _$GameLogCopyWith(_GameLog value, $Res Function(_GameLog) _then) = __$GameLogCopyWithImpl;
 @override @useResult
 $Res call({
- String id, DateTime playedAt, GameResult result, String? teamId, String? teamName, List<String> team, List<String> brought, List<String> leads, List<String> opponentTeam, List<String> opponentBrought, List<String> opponentLeads, MistakeCategory? mistake, String notes
+ String id, DateTime playedAt, GameResult result, String? teamId, String? teamName, List<String> team, List<String> brought, List<String> leads, String? opponentTeamId, String? opponentTeamName, List<String> opponentTeam, List<String> opponentBrought, List<String> opponentLeads, MistakeCategory? mistake, String notes
 });
 
 
@@ -337,7 +345,7 @@ class __$GameLogCopyWithImpl<$Res>
 
 /// Create a copy of GameLog
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? playedAt = null,Object? result = null,Object? teamId = freezed,Object? teamName = freezed,Object? team = null,Object? brought = null,Object? leads = null,Object? opponentTeam = null,Object? opponentBrought = null,Object? opponentLeads = null,Object? mistake = freezed,Object? notes = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? playedAt = null,Object? result = null,Object? teamId = freezed,Object? teamName = freezed,Object? team = null,Object? brought = null,Object? leads = null,Object? opponentTeamId = freezed,Object? opponentTeamName = freezed,Object? opponentTeam = null,Object? opponentBrought = null,Object? opponentLeads = null,Object? mistake = freezed,Object? notes = null,}) {
   return _then(_GameLog(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,playedAt: null == playedAt ? _self.playedAt : playedAt // ignore: cast_nullable_to_non_nullable
@@ -347,7 +355,9 @@ as String?,teamName: freezed == teamName ? _self.teamName : teamName // ignore: 
 as String?,team: null == team ? _self._team : team // ignore: cast_nullable_to_non_nullable
 as List<String>,brought: null == brought ? _self._brought : brought // ignore: cast_nullable_to_non_nullable
 as List<String>,leads: null == leads ? _self._leads : leads // ignore: cast_nullable_to_non_nullable
-as List<String>,opponentTeam: null == opponentTeam ? _self._opponentTeam : opponentTeam // ignore: cast_nullable_to_non_nullable
+as List<String>,opponentTeamId: freezed == opponentTeamId ? _self.opponentTeamId : opponentTeamId // ignore: cast_nullable_to_non_nullable
+as String?,opponentTeamName: freezed == opponentTeamName ? _self.opponentTeamName : opponentTeamName // ignore: cast_nullable_to_non_nullable
+as String?,opponentTeam: null == opponentTeam ? _self._opponentTeam : opponentTeam // ignore: cast_nullable_to_non_nullable
 as List<String>,opponentBrought: null == opponentBrought ? _self._opponentBrought : opponentBrought // ignore: cast_nullable_to_non_nullable
 as List<String>,opponentLeads: null == opponentLeads ? _self._opponentLeads : opponentLeads // ignore: cast_nullable_to_non_nullable
 as List<String>,mistake: freezed == mistake ? _self.mistake : mistake // ignore: cast_nullable_to_non_nullable

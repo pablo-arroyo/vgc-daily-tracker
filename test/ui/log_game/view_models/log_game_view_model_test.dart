@@ -87,6 +87,89 @@ void main() {
     );
   });
 
+  group('their team', () {
+    final rival = Team(
+      id: 'o1',
+      name: 'Rival Grassy',
+      side: TeamSide.opponent,
+      pokemon: [
+        for (final slug in [
+          'rillaboom',
+          'sneasler',
+          'incineroar',
+          'kingambit',
+          'salamence',
+          'grimmsnarl',
+        ])
+          FakePokemonRepository.sampleRef(slug),
+      ],
+    );
+    final garchomp = FakePokemonRepository.sampleRef('garchomp');
+
+    Future<LogGameViewModel> withRival() async {
+      teams = FakeTeamRepository(teams: [bigSix, rival]);
+      final viewModel = create();
+      await pumpEventQueue();
+      return viewModel;
+    }
+
+    test('offers only the saved opponent teams', () async {
+      final viewModel = await withRival();
+
+      expect(viewModel.opponentTeams, [rival]);
+    });
+
+    test('picking one fills their 6 slots and clears their brought and '
+        'leads', () async {
+      final viewModel = await withRival();
+      viewModel.setOpponentSlot(0, garchomp);
+      viewModel.toggleOpponentBrought(garchomp);
+
+      viewModel.selectOpponentTeam(rival);
+
+      expect(viewModel.selectedOpponentTeam, rival);
+      expect(viewModel.opponentSlots, rival.pokemon);
+      expect(viewModel.opponentTeam, rival.pokemon);
+      expect(viewModel.opponentBrought, isEmpty);
+    });
+
+    test('its slots stay editable, and the game stays linked', () async {
+      final viewModel = await withRival();
+      viewModel.selectOpponentTeam(rival);
+
+      viewModel.setOpponentSlot(5, garchomp);
+
+      expect(viewModel.opponentTeam.last, garchomp);
+      expect(viewModel.selectedOpponentTeam, rival);
+    });
+
+    test('picking none unlinks the team but keeps the Pokémon', () async {
+      final viewModel = await withRival();
+      viewModel.selectOpponentTeam(rival);
+
+      viewModel.selectOpponentTeam(null);
+
+      expect(viewModel.selectedOpponentTeam, isNull);
+      expect(viewModel.opponentTeam, rival.pokemon);
+    });
+
+    test('the saved game records it, and the form resets', () async {
+      final viewModel = await withRival();
+      viewModel
+        ..setResult(GameResult.win)
+        ..selectOpponentTeam(rival);
+
+      await viewModel.save.execute();
+
+      final [game] = await games.watchAll().first;
+      expect(game.opponentTeamId, 'o1');
+      expect(game.opponentTeamName, 'Rival Grassy');
+      expect(game.opponentTeam.first, 'rillaboom');
+      expect(viewModel.selectedOpponentTeam, isNull);
+      expect(viewModel.opponentSlots, everyElement(isNull));
+    });
+  });
+
   group('your team', () {
     test("never offers an opponent's team as yours", () async {
       final rival = bigSix.copyWith(

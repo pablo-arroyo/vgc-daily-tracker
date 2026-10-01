@@ -34,7 +34,10 @@ final bigSix = Team(
 void main() {
   late FakeGameLogRepository games;
 
-  Future<LogGameViewModel> pumpScreen(WidgetTester tester) async {
+  Future<LogGameViewModel> pumpScreen(
+    WidgetTester tester, {
+    List<Team> extraTeams = const [],
+  }) async {
     games = FakeGameLogRepository();
     await tester.pumpWidget(
       MaterialApp(
@@ -42,7 +45,7 @@ void main() {
         home: ChangeNotifierProvider(
           create: (_) => LogGameViewModel(
             gameLogRepository: games,
-            teamRepository: FakeTeamRepository(teams: [bigSix]),
+            teamRepository: FakeTeamRepository(teams: [bigSix, ...extraTeams]),
             pokemonRepository: FakePokemonRepository(),
             idGenerator: SequentialIdGenerator(),
           ),
@@ -83,6 +86,60 @@ void main() {
           findsOneWidget,
         );
       }
+    });
+  });
+
+  group('their team', () {
+    final rival = Team(
+      id: 'o1',
+      name: 'Rival Grassy',
+      side: TeamSide.opponent,
+      pokemon: [
+        for (final slug in [
+          'rillaboom',
+          'sneasler',
+          'incineroar',
+          'kingambit',
+          'salamence',
+          'grimmsnarl',
+        ])
+          FakePokemonRepository.sampleRef(slug),
+      ],
+    );
+    String slotText(WidgetTester tester, int n) => tester
+        .widget<TextField>(find.widgetWithText(TextField, 'Opp. Pokémon $n'))
+        .controller!
+        .text;
+
+    testWidgets('no saved opponent teams: no picker', (tester) async {
+      await pumpScreen(tester);
+
+      expect(find.text('Their team'), findsNothing);
+    });
+
+    testWidgets('picking one fills the six opponent fields, which stay '
+        'editable', (tester) async {
+      final viewModel = await pumpScreen(tester, extraTeams: [rival]);
+
+      await selectDropdownItem(tester, 'Their team', 'Rival Grassy');
+
+      for (final (i, p) in rival.pokemon.indexed) {
+        expect(slotText(tester, i + 1), p.displayName);
+      }
+      final opponentBrought = find.byKey(const ValueKey('opponent-brought'));
+      expect(
+        find.descendant(of: opponentBrought, matching: find.text('Sneasler')),
+        findsOneWidget,
+      );
+
+      await pickPokemon(
+        tester,
+        label: 'Opp. Pokémon 6',
+        query: 'garch',
+        option: 'Garchomp',
+      );
+      expect(viewModel.opponentTeam.last.slug, 'garchomp');
+      expect(viewModel.selectedOpponentTeam, rival);
     });
   });
 
