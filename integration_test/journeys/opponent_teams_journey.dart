@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vgc_daily_tracker/config/format_config.dart';
+import 'package:vgc_daily_tracker/domain/models/game_log.dart';
 
 import '../../testing/app.dart';
 import '../../testing/log_game_actions.dart';
+import '../../testing/progress_actions.dart';
 import '../../testing/team_import_actions.dart';
 
 /// Opponent teams on the real app: import one under Opponents; it stays
@@ -39,5 +41,45 @@ void opponentTeamsJourney() {
           ?.text,
       'Rillaboom',
     );
+  });
+
+  testWidgets("save a logged game's opponent as a team", (tester) async {
+    await pumpApp(
+      tester,
+      games: [
+        GameLog(
+          id: 'g1',
+          playedAt: DateTime.now().toUtc(),
+          result: GameResult.loss,
+          opponentTeam: const [
+            'rillaboom',
+            'sneasler',
+            'incineroar',
+            'kingambit',
+            'salamence',
+            'grimmsnarl',
+          ],
+        ),
+      ],
+    );
+    await tester.tap(find.text('Progress'));
+    await tester.pumpAndSettle();
+
+    final save = find.byTooltip('Save their team');
+    await scrollTo(tester, save);
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Team name'),
+      'Ladder Grassy',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Teams'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Opponents'));
+    await tester.pumpAndSettle();
+    expect(find.text('Ladder Grassy'), findsOneWidget);
   });
 }

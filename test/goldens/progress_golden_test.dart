@@ -15,6 +15,9 @@ import 'package:vgc_daily_tracker/ui/progress/view_models/progress_view_model.da
 import 'package:vgc_daily_tracker/ui/progress/widgets/progress_screen.dart';
 
 import '../../testing/fakes/fake_game_log_repository.dart';
+import '../../testing/fakes/fake_id_generator.dart';
+import '../../testing/fakes/fake_pokemon_repository.dart';
+import '../../testing/fakes/fake_team_repository.dart';
 
 final now = DateTime.utc(2026, 9, 30, 16); // 10:00 in UTC-6
 
@@ -82,6 +85,9 @@ void main() {
             home: ChangeNotifierProvider(
               create: (_) => ProgressViewModel(
                 gameLogRepository: FakeGameLogRepository(games: games),
+                teamRepository: FakeTeamRepository(),
+                pokemonRepository: FakePokemonRepository(),
+                idGenerator: SequentialIdGenerator(),
                 toLocal: (utc) => utc.subtract(const Duration(hours: 6)),
               ),
               child: const ProgressScreen(),

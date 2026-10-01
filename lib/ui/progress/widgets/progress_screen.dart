@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../domain/models/game_log.dart';
+import '../../../utils/result.dart';
 import '../../core/theme/app_theme.dart';
 import '../view_models/progress_stats.dart';
 import '../view_models/progress_view_model.dart';
@@ -497,6 +498,12 @@ class _GameItem extends StatelessWidget {
                 ],
               ),
             ),
+            if (viewModel.canSaveOpponentTeam(game))
+              IconButton(
+                tooltip: 'Save their team',
+                icon: const Icon(Icons.group_add_outlined),
+                onPressed: () => _saveTheirTeam(context),
+              ),
             IconButton(
               tooltip: 'Delete game',
               icon: const Icon(Icons.close),
@@ -506,6 +513,29 @@ class _GameItem extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _saveTheirTeam(BuildContext context) async {
+    final save = context.read<ProgressViewModel>().saveOpponentTeam;
+    final messenger = ScaffoldMessenger.of(context);
+    final name = await showDialog<String>(
+      context: context,
+      builder: (context) => const _TeamNameDialog(),
+    );
+    if (name == null) return;
+
+    await save.execute((game: game, name: name));
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(switch (save.result) {
+            Ok(value: final saved) => 'Saved $saved to Opponents',
+            Failure(error: SaveOpponentTeamError(:final message)) => message,
+            _ => "Couldn't save their team. Try again.",
+          }),
+        ),
+      );
   }
 
   Future<void> _delete(BuildContext context) async {
@@ -527,6 +557,47 @@ class _GameItem extends StatelessWidget {
                 content: Text("Couldn't delete the game. Try again."),
               ),
       );
+  }
+}
+
+/// Asks for the opponent team's name; pops with it, or null on Cancel.
+class _TeamNameDialog extends StatefulWidget {
+  const _TeamNameDialog();
+
+  @override
+  State<_TeamNameDialog> createState() => _TeamNameDialogState();
+}
+
+class _TeamNameDialogState extends State<_TeamNameDialog> {
+  final _name = TextEditingController();
+
+  @override
+  void dispose() {
+    _name.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Save their team'),
+      content: TextField(
+        controller: _name,
+        autofocus: true,
+        decoration: const InputDecoration(labelText: 'Team name'),
+        onSubmitted: (name) => Navigator.pop(context, name),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, _name.text),
+          child: const Text('Save'),
+        ),
+      ],
+    );
   }
 }
 

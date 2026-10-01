@@ -5,23 +5,40 @@ import 'package:flutter/foundation.dart';
 
 import '../../../data/repositories/game_log/game_log_repository.dart';
 import '../../../data/repositories/pokemon/pokemon_names.dart';
+import '../../../data/repositories/pokemon/pokemon_repository.dart';
+import '../../../data/repositories/team/team_repository.dart';
 import '../../../domain/models/game_log.dart';
 import '../../../domain/models/mistake_category.dart';
+import '../../../domain/models/pokemon_ref.dart';
+import '../../../domain/models/team.dart';
 import '../../../utils/command.dart';
+import '../../../utils/id_generator.dart';
 import '../../../utils/iso_date.dart';
 import '../../../utils/result.dart';
 import 'progress_stats.dart';
+
+/// Why a game's opponent couldn't be saved as a team, in words the player
+/// can act on.
+class SaveOpponentTeamError implements Exception {
+  const SaveOpponentTeamError(this.message);
+
+  final String message;
+}
 
 /// State for the Progress tab: statistics recomputed from the game log each
 /// time it changes (never in `build`).
 class ProgressViewModel extends ChangeNotifier {
   ProgressViewModel({
     required GameLogRepository gameLogRepository,
+    required this._teamRepository,
+    required this._pokemonRepository,
+    required this._idGenerator,
     DateTime Function(DateTime utc)? toLocal,
   }) : _gameLogRepository = gameLogRepository,
        _toLocal = toLocal ?? ((utc) => utc.toLocal()) {
     deleteGame = Command1(_deleteGame);
     undoDelete = Command0(_undoDelete);
+    saveOpponentTeam = Command1(_saveOpponentTeam);
     _subscription = gameLogRepository.watchAll().listen((games) {
       _stats = _compute(games);
       _loaded = true;
@@ -30,6 +47,64 @@ class ProgressViewModel extends ChangeNotifier {
   }
 
   final GameLogRepository _gameLogRepository;
+  final TeamRepository _teamRepository;
+  final PokemonRepository _pokemonRepository;
+  final IdGenerator _idGenerator;
+
+  static const _teamSize = 6;
+
+  /// Saves a game's opponent Pokémon as a named opponent team, and links
+  /// the game to it so its matchup record counts the game. Completes with
+  /// the name it was saved under.
+  late final Command1<String, ({GameLog game, String name})> saveOpponentTeam;
+
+  /// Whether [game] can offer "Save their team": all 6 of their Pokémon
+  /// were entered, and it isn't linked to a saved team yet.
+  bool canSaveOpponentTeam(GameLog game) =>
+      game.opponentTeam.length == _teamSize && game.opponentTeamId == null;
+
+  Future<Result<String>> _saveOpponentTeam(
+    ({GameLog game, String name}) request,
+  ) async {
+    final name = request.name.trim();
+    if (name.isEmpty) {
+      return const Result.failure(
+        SaveOpponentTeamError('Give the team a name.'),
+      );
+    }
+    // Games store slugs; a team needs each Pokémon's index entry.
+    final pokemon = <PokemonRef>[];
+    for (final slug in request.game.opponentTeam) {
+      switch (await _pokemonRepository.resolve(slug)) {
+        case Ok(:final value):
+          pokemon.add(value);
+        case Failure():
+          return const Result.failure(
+            SaveOpponentTeamError(
+              "Couldn't look up their Pokémon. Check your connection and try "
+              'again.',
+            ),
+          );
+      }
+    }
+    final team = Team(
+      id: _idGenerator.next(),
+      name: name,
+      pokemon: pokemon,
+      side: TeamSide.opponent,
+    );
+    if (await _teamRepository.save(team) case Failure(:final error)) {
+      return Result.failure(error);
+    }
+    final linked = await _gameLogRepository.add(
+      request.game.copyWith(opponentTeamId: team.id, opponentTeamName: name),
+    );
+    return switch (linked) {
+      Ok() => Result.ok(name),
+      Failure(:final error) => Result.failure(error),
+    };
+  }
+
   late final StreamSubscription<List<GameLog>> _subscription;
 
   /// Deletes a logged game, remembering it so [undoDelete] can restore it.

@@ -2,10 +2,15 @@ import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vgc_daily_tracker/domain/models/game_log.dart';
 import 'package:vgc_daily_tracker/domain/models/mistake_category.dart';
+import 'package:vgc_daily_tracker/domain/models/team.dart';
 import 'package:vgc_daily_tracker/ui/progress/view_models/progress_stats.dart';
 import 'package:vgc_daily_tracker/ui/progress/view_models/progress_view_model.dart';
+import 'package:vgc_daily_tracker/utils/result.dart';
 
 import '../../../../testing/fakes/fake_game_log_repository.dart';
+import '../../../../testing/fakes/fake_id_generator.dart';
+import '../../../../testing/fakes/fake_pokemon_repository.dart';
+import '../../../../testing/fakes/fake_team_repository.dart';
 
 /// Tests run in a fixed timezone, UTC-6 (Costa Rica), so "local day" is
 /// deterministic on any machine.
@@ -42,6 +47,9 @@ void main() {
     await withClock(Clock.fixed(now), () async {
       viewModel = ProgressViewModel(
         gameLogRepository: FakeGameLogRepository(games: games),
+        teamRepository: FakeTeamRepository(),
+        pokemonRepository: FakePokemonRepository(),
+        idGenerator: SequentialIdGenerator(),
         toLocal: costaRica,
       );
       await pumpEventQueue();
@@ -263,6 +271,9 @@ void main() {
     await withClock(Clock.fixed(now), () async {
       viewModel = ProgressViewModel(
         gameLogRepository: games,
+        teamRepository: FakeTeamRepository(),
+        pokemonRepository: FakePokemonRepository(),
+        idGenerator: SequentialIdGenerator(),
         toLocal: costaRica,
       );
       await pumpEventQueue();
@@ -286,6 +297,9 @@ void main() {
           gameLogRepository: FakeGameLogRepository(
             games: [GameLog(id: 'now', playedAt: now, result: GameResult.win)],
           ),
+          teamRepository: FakeTeamRepository(),
+          pokemonRepository: FakePokemonRepository(),
+          idGenerator: SequentialIdGenerator(),
         );
         await pumpEventQueue();
       });
@@ -304,6 +318,9 @@ void main() {
     await withClock(Clock.fixed(now), () async {
       viewModel = ProgressViewModel(
         gameLogRepository: games,
+        teamRepository: FakeTeamRepository(),
+        pokemonRepository: FakePokemonRepository(),
+        idGenerator: SequentialIdGenerator(),
         toLocal: costaRica,
       );
       await pumpEventQueue();
@@ -334,4 +351,117 @@ void main() {
       expect(viewModel.pokemonName('raichu-mega-y'), 'Raichu-Mega-Y');
     },
   );
+
+  group("saving a game's opponent as a team", () {
+    const six = [
+      'rillaboom',
+      'sneasler',
+      'incineroar',
+      'kingambit',
+      'salamence',
+      'grimmsnarl',
+    ];
+    final played = GameLog(
+      id: 'g1',
+      playedAt: now,
+      result: GameResult.loss,
+      opponentTeam: six,
+    );
+
+    late FakeGameLogRepository games;
+    late FakeTeamRepository teams;
+
+    Future<ProgressViewModel> withGame(GameLog game) async {
+      games = FakeGameLogRepository(games: [game]);
+      teams = FakeTeamRepository();
+      final viewModel = ProgressViewModel(
+        gameLogRepository: games,
+        teamRepository: teams,
+        pokemonRepository: FakePokemonRepository(),
+        idGenerator: SequentialIdGenerator(),
+        toLocal: costaRica,
+      );
+      addTearDown(viewModel.dispose);
+      await pumpEventQueue();
+      return viewModel;
+    }
+
+    String? problem(ProgressViewModel viewModel) =>
+        switch (viewModel.saveOpponentTeam.result) {
+          Failure(error: SaveOpponentTeamError(:final message)) => message,
+          _ => null,
+        };
+
+    test(
+      'is offered for an unlinked game with all 6 of their Pokémon',
+      () async {
+        final viewModel = await withGame(played);
+
+        expect(viewModel.canSaveOpponentTeam(played), isTrue);
+        expect(
+          viewModel.canSaveOpponentTeam(
+            played.copyWith(opponentTeam: six.take(5).toList()),
+          ),
+          isFalse,
+        );
+        expect(
+          viewModel.canSaveOpponentTeam(played.copyWith(opponentTeamId: 'o9')),
+          isFalse,
+        );
+      },
+    );
+
+    test('saves their 6 as an opponent team and links the game', () async {
+      final viewModel = await withGame(played);
+
+      await viewModel.saveOpponentTeam.execute((
+        game: played,
+        name: '  Ladder Grassy ',
+      ));
+
+      expect(viewModel.saveOpponentTeam.completed, isTrue);
+      final [team] = await teams.watchAll().first;
+      expect(team.id, 'id-1');
+      expect(team.name, 'Ladder Grassy');
+      expect(team.side, TeamSide.opponent);
+      expect(team.pokemon.map((p) => p.slug), six);
+      expect(team.pokemon.first.displayName, 'Rillaboom');
+      final [game] = await games.watchAll().first;
+      expect(game.opponentTeamId, 'id-1');
+      expect(game.opponentTeamName, 'Ladder Grassy');
+    });
+
+    test('needs a name', () async {
+      final viewModel = await withGame(played);
+
+      await viewModel.saveOpponentTeam.execute((game: played, name: ' '));
+
+      expect(problem(viewModel), 'Give the team a name.');
+      expect(await teams.watchAll().first, isEmpty);
+    });
+
+    test("a Pokémon that can't be looked up stops it, saving nothing", () async {
+      final odd = played.copyWith(opponentTeam: [...six.take(5), 'missingno']);
+      final viewModel = await withGame(odd);
+
+      await viewModel.saveOpponentTeam.execute((game: odd, name: 'Odd'));
+
+      expect(
+        problem(viewModel),
+        "Couldn't look up their Pokémon. Check your connection and try again.",
+      );
+      expect(await teams.watchAll().first, isEmpty);
+      expect((await games.watchAll().first).single.opponentTeamId, isNull);
+    });
+
+    test('a failed save leaves the game unlinked', () async {
+      final viewModel = await withGame(played);
+      teams.failWith = Exception('disk full');
+
+      await viewModel.saveOpponentTeam.execute((game: played, name: 'X'));
+
+      expect(viewModel.saveOpponentTeam.error, isTrue);
+      expect((await games.watchAll().first).single.opponentTeamId, isNull);
+    });
+  });
 }

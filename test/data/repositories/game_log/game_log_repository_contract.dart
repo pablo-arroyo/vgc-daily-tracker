@@ -23,6 +23,16 @@ void gameLogRepositoryContract(Future<GameLogRepository> Function() create) {
     expect(await repository.watchAll().first, [game('g1')]);
   });
 
+  test('adding a game with an existing id replaces it', () async {
+    await repository.add(game('g1'));
+
+    await repository.add(game('g1').copyWith(opponentTeamId: 'o1'));
+
+    expect(await repository.watchAll().first, [
+      game('g1').copyWith(opponentTeamId: 'o1'),
+    ]);
+  });
+
   test('lists games newest first', () async {
     await repository.add(game('mid', day: 28));
     await repository.add(game('newest', day: 29, hour: 23));

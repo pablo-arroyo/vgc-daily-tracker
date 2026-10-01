@@ -9,6 +9,9 @@ import 'package:vgc_daily_tracker/ui/progress/view_models/progress_view_model.da
 import 'package:vgc_daily_tracker/ui/progress/widgets/progress_screen.dart';
 
 import '../../../../testing/fakes/fake_game_log_repository.dart';
+import '../../../../testing/fakes/fake_id_generator.dart';
+import '../../../../testing/fakes/fake_pokemon_repository.dart';
+import '../../../../testing/fakes/fake_team_repository.dart';
 import '../../../../testing/generated_games.dart';
 import '../../../../testing/progress_actions.dart';
 
@@ -45,8 +48,9 @@ GameLog game(
 /// Pumps the Progress screen over [games] at [now] (run inside withClock).
 Future<FakeGameLogRepository> pumpProgress(
   WidgetTester tester,
-  List<GameLog> games,
-) async {
+  List<GameLog> games, {
+  FakeTeamRepository? teams,
+}) async {
   // Tall enough that every card is built (the list builds lazily).
   tester.view.physicalSize = const Size(800, 3000);
   tester.view.devicePixelRatio = 1;
@@ -58,6 +62,9 @@ Future<FakeGameLogRepository> pumpProgress(
       home: ChangeNotifierProvider(
         create: (_) => ProgressViewModel(
           gameLogRepository: repository,
+          teamRepository: teams ?? FakeTeamRepository(),
+          pokemonRepository: FakePokemonRepository(),
+          idGenerator: SequentialIdGenerator(),
           toLocal: costaRica,
         ),
         child: const ProgressScreen(),
@@ -309,6 +316,81 @@ void main() {
           lessThan(100),
           reason: 'Recent games must stay lazy',
         );
+      });
+    });
+
+    group('save their team', () {
+      const six = [
+        'rillaboom',
+        'sneasler',
+        'incineroar',
+        'kingambit',
+        'salamence',
+        'grimmsnarl',
+      ];
+
+      Future<void> saveAs(WidgetTester tester, String name) async {
+        await tester.tap(find.byTooltip('Save their team'));
+        await tester.pumpAndSettle();
+        await tester.enterText(
+          find.widgetWithText(TextField, 'Team name'),
+          name,
+        );
+        await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+        await tester.pumpAndSettle();
+      }
+
+      testWidgets('only games with all 6 of their Pokémon offer it', (
+        tester,
+      ) async {
+        await withClock(Clock.fixed(now), () async {
+          await pumpProgress(tester, [
+            game('a', day: 30, opponentTeam: six.take(5).toList()),
+          ]);
+
+          expect(find.byTooltip('Save their team'), findsNothing);
+        });
+      });
+
+      testWidgets('asks for a name, saves, and confirms', (tester) async {
+        await withClock(Clock.fixed(now), () async {
+          final teams = FakeTeamRepository();
+          await pumpProgress(tester, [
+            game('a', day: 30, opponentTeam: six),
+          ], teams: teams);
+
+          await saveAs(tester, 'Ladder Grassy');
+
+          expect(find.text('Saved Ladder Grassy to Opponents'), findsOneWidget);
+          expect((await teams.watchAll().first).single.name, 'Ladder Grassy');
+          expect(find.byTooltip('Save their team'), findsNothing);
+        });
+      });
+
+      testWidgets('Cancel saves nothing', (tester) async {
+        await withClock(Clock.fixed(now), () async {
+          final teams = FakeTeamRepository();
+          await pumpProgress(tester, [
+            game('a', day: 30, opponentTeam: six),
+          ], teams: teams);
+
+          await tester.tap(find.byTooltip('Save their team'));
+          await tester.pumpAndSettle();
+          await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
+          await tester.pumpAndSettle();
+
+          expect(await teams.watchAll().first, isEmpty);
+        });
+      });
+
+      testWidgets('says why when it cannot save', (tester) async {
+        await withClock(Clock.fixed(now), () async {
+          await pumpProgress(tester, [game('a', day: 30, opponentTeam: six)]);
+
+          await saveAs(tester, '  ');
+
+          expect(find.text('Give the team a name.'), findsOneWidget);
+        });
       });
     });
 

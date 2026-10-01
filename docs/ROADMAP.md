@@ -572,11 +572,22 @@ so that backup covers it from the start.
   - The macOS opponent journey now goes through Log Game, and each rule
     has been checked by breaking it on purpose.
 
-### 7.7 Save an opponent team from a logged game
+### ✅ 7.7 Save an opponent team from a logged game
 - "Save their team" on a recent game whose opponent's 6 Pokémon were
   entered. It asks for a name and saves an opponent team. The game is
   then linked to it, so its matchup record counts it.
 - **Tests:** view model (needs all 6, linking), widget, and acceptance.
+- **As built:**
+  - `ProgressViewModel` gained the team and Pokémon repositories and the
+    id generator.
+  - `saveOpponentTeam` looks each stored name up in the Pokémon index,
+    saves the team, then re-adds the game linked to it. The repository
+    contract now states "add replaces by id". The command completes
+    with the saved name, for the snackbar.
+  - Blank names and failed lookups give a clear message, and nothing is
+    half-saved.
+  - Each rule has been checked by breaking it on purpose, and the macOS
+    opponent journey covers the flow.
 
 ### 7.8 Matchup stats
 - A Progress card "Vs opponent teams" gives the record and win % per

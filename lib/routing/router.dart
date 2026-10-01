@@ -114,8 +114,12 @@ GoRouter createRouter() => GoRouter(
             GoRoute(
               path: Routes.progress,
               builder: (context, state) => ChangeNotifierProvider(
-                create: (context) =>
-                    ProgressViewModel(gameLogRepository: context.read()),
+                create: (context) => ProgressViewModel(
+                  gameLogRepository: context.read(),
+                  teamRepository: context.read(),
+                  pokemonRepository: context.read(),
+                  idGenerator: context.read(),
+                ),
                 child: const ProgressScreen(),
               ),
             ),

@@ -11,6 +11,7 @@ abstract class GameLogRepository {
   /// again after each change.
   Stream<List<GameLog>> watchAll();
 
+  /// Inserts [game], or replaces the game with the same id.
   Future<Result<void>> add(GameLog game);
 
   Future<Result<void>> delete(String id);
