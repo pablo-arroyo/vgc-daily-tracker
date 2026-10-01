@@ -1,5 +1,7 @@
 # VGC Daily Tracker
 
+[![CI](https://github.com/pablo-arroyo/vgc-daily-tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/pablo-arroyo/vgc-daily-tracker/actions/workflows/ci.yml)
+
 <img src="assets/icon/app_icon.png" alt="App icon: a calendar page with a check mark" width="96" align="right">
 
 A Pokémon VGC practice companion: plan each battle, log every game, review
@@ -60,6 +62,11 @@ The project is built test-first. Test levels and where they live:
 | Integration (real app on a device) | `integration_test/` (journeys in `journeys/`, one entry point `app_test.dart`) | `flutter test integration_test -d macos` |
 | Contract (live PokéAPI) | `test/contract/` | `flutter test --tags network --run-skipped` |
 | Coverage | | `flutter test --coverage` → `coverage/lcov.info` |
+
+CI (`.github/workflows/ci.yml`) runs on every push to `main` and every pull
+request. On Linux it runs the formatting, analyzer, generated-code and
+unit/widget checks; on macOS it runs the goldens and the integration
+journeys.
 
 Contract tests are skipped by default (see `dart_test.yaml`), so a normal
 `flutter test` run never touches the network. Shared test support lives in

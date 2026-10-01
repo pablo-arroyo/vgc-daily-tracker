@@ -793,10 +793,21 @@ Not in the original. Added 2026-10-01 at the user's request (7.9–7.12).
     - A macOS journey, using a fake clipboard so test runs never
       overwrite the developer's real one.
     - Six rules broken on purpose, one at a time; a test caught each.
-- ⏸ **8.5 CI (optional): deferred by the user on 2026-10-01.** This is
-  a GitHub Actions workflow running `flutter analyze`, `flutter test`
-  and the integration tests on macOS. Pick it up whenever the project
-  uses a hosted remote for CI.
+- ✅ **8.5 CI:** deferred earlier on 2026-10-01, then picked up the same
+  day. `.github/workflows/ci.yml` runs on pushes to `main` and on pull
+  requests, with Flutter 3.47.5 pinned and newer runs cancelling older
+  ones. It has two jobs:
+  - **Linux:**
+    - `dart format --set-exit-if-changed`
+    - `flutter analyze`
+    - `build_runner` must produce no diff
+    - `flutter test --exclude-tags golden`
+  - **macOS:** the goldens (recorded on macOS; Linux text rendering
+    differs) and the integration journeys on a real macOS build.
+
+  Every command passed locally before the workflow was committed (format:
+  0 of 211 files changed; codegen: no diff; 460 + 2 tests; 9 journeys).
+  The first real run happens on the next push.
 - ✅ **8.6 App identity and README:**
   - **Name:** every platform shows "VGC Daily Tracker": Android label,
     iOS display and bundle names, macOS product name (the app is now

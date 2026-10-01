@@ -40,6 +40,16 @@ Rules that must always hold (details and reasoning are in the skill's references
 - **PostToolUse on `Edit|Write`** (`.claude/hooks/dart-format-analyze.sh`): runs `dart format` and then `dart analyze` on the edited `.dart` file. It skips `*.g.dart` and `*.freezed.dart`. Issues in `lib/` are sent back as a blocking error. Issues in test files are reported without blocking, because missing symbols there are the expected TDD red step.
 - **Stop** (`.claude/hooks/flutter-verify.sh`): if any Dart files, `pubspec.yaml` or `analysis_options.yaml` changed since the last commit, it runs `flutter analyze` and then `flutter test --exclude-tags wip`, ignoring analyzer issues in `wip`-tagged files and reminding (without blocking) when any remain. A failure stops Claude from finishing. If it fails again on the retry, it only warns, so it can't loop.
 
+## CI (`.github/workflows/ci.yml`)
+
+Runs on pushes to `main` and on pull requests:
+- **Linux:** format check, `flutter analyze`, `build_runner` with no diff
+  allowed, and `flutter test --exclude-tags golden`.
+- **macOS:** the goldens and the integration journeys.
+
+Keep it in step with the commands below. The Flutter version is pinned in
+the workflow.
+
 ## Toolchain
 
 - Flutter 3.47.5 (stable), installed with `brew install --cask flutter`. Dart SDK constraint: `^3.13.4`.
