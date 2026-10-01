@@ -6,6 +6,7 @@ import '../../../domain/models/pokemon.dart';
 import '../../../domain/models/pokemon_ref.dart';
 import '../../../domain/models/pokemon_set.dart';
 import '../../../domain/models/stat_spread.dart';
+import '../../../domain/models/team.dart';
 import '../../../domain/stats/stat_calculator.dart';
 import '../../../utils/command.dart';
 import '../../../utils/result.dart';
@@ -49,6 +50,7 @@ class TeamDetailViewModel extends ChangeNotifier {
     required this._teamId,
   }) {
     load = Command0(_load)..addListener(notifyListeners);
+    saveNotes = Command1(_saveNotes);
   }
 
   final TeamRepository _teamRepository;
@@ -57,6 +59,24 @@ class TeamDetailViewModel extends ChangeNotifier {
 
   /// Loads the team and looks up each member. Run it again to retry.
   late final Command0<void> load;
+
+  /// Saves the team's notes, trimmed.
+  late final Command1<void, String> saveNotes;
+
+  Team? _team;
+
+  /// The team's notes: scouting notes, or your own game plan.
+  String get notes => _team?.notes ?? '';
+
+  Future<Result<void>> _saveNotes(String notes) async {
+    final updated = _team!.copyWith(notes: notes.trim());
+    final saved = await _teamRepository.save(updated);
+    if (saved is Ok) {
+      _team = updated;
+      notifyListeners();
+    }
+    return saved;
+  }
 
   String _name = '';
   bool _missing = false;
@@ -110,6 +130,7 @@ class TeamDetailViewModel extends ChangeNotifier {
           return Result.failure(error);
       }
     }
+    _team = team;
     _name = team.name;
     _members = members;
     _speedOrder = _sortedBySpeed(members);

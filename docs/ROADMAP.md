@@ -607,6 +607,57 @@ so that backup covers it from the start.
     fallback, is equivalent: id and name are always saved together.
   - The macOS journey checks the record after "Save their team".
 
+### ✅ 7.9 Team notes
+Not in the original. Added 2026-10-01 at the user's request (7.9–7.12).
+- **Model:** `Team` gains `notes`, defaulting to empty, so saved teams and
+  older backups load unchanged. Any side can have notes: scouting notes
+  on an opponent's team, a game plan or EV reasoning on yours.
+- **Team detail screen:** a Notes section, editable in place, with Save.
+- **Backup:** included automatically, since it's part of the team's JSON.
+- **Tests:** model JSON (old teams load with no notes), the view model
+  (edit, save, failed save), widget, and acceptance (write notes on an
+  opponent team, reopen it, and they're there).
+- **As built:**
+  - The Notes card is the first section of the team detail screen, for
+    any team, with or without sets.
+  - `TeamDetailViewModel` keeps the loaded team, and `saveNotes` trims
+    the text and keeps everything else on the team. A failed save keeps
+    the old notes.
+  - The detail screen got its own `ScaffoldMessenger`, like the other
+    screens.
+  - The backup round-trip test now includes team notes.
+  - Each rule has been checked by breaking it on purpose, and the macOS
+    opponent journey saves notes.
+
+### 7.10 Matchup notes
+- **Model:** `MatchupNote` holds your team id, their team id, the notes
+  and an updated-at time. A new `MatchupRepository` (local store
+  `matchups`, keyed by the pair, plus a fake) has a shared contract
+  that includes watching one pair.
+- **Team detail screen:** a "Matchup notes" section lists the other
+  side's teams. On an opponent team it lists your teams, and on yours
+  it lists opponents. Each entry is editable.
+- **Backup:** gains `matchups`. Older backups without it still restore,
+  so the format stays at version 1.
+- **Tests:** the repository contract (real and fake), the view model,
+  widget, backup round trip with matchups, and acceptance.
+
+### 7.11 Game plan in Log Game
+- Picking "Their team" shows a **Game plan** card above their slots,
+  with that team's notes. Picking "Your team used" as well adds that
+  matchup's notes, editable in place, so the plan is in front of you
+  before the battle.
+- **Tests:** the view model (which notes show for which picks, editing
+  the matchup), widget, and acceptance.
+
+### 7.12 Turn a game's notes into matchup notes
+- After saving a game against a saved opponent team, if the game had
+  notes, the confirmation snackbar offers **"Add to matchup notes"**.
+  It appends the date and the note to the notes for your team against
+  theirs, or to their team's notes if no team of yours was picked.
+- **Tests:** the view model (appending, the target with and without
+  your team), widget, and acceptance.
+
 ## Phase 8: Polish and release readiness
 
 - ✅ **8.1 Resilience:** every PokéAPI-backed widget was audited. Most of
@@ -704,8 +755,10 @@ so that backup covers it from the start.
     - A macOS journey, using a fake clipboard so test runs never
       overwrite the developer's real one.
     - Six rules broken on purpose, one at a time; a test caught each.
-- **8.5 CI (optional):** a GitHub Actions workflow running `flutter analyze`,
-  `flutter test` and the integration tests on macOS.
+- ⏸ **8.5 CI (optional): deferred by the user on 2026-10-01.** This is
+  a GitHub Actions workflow running `flutter analyze`, `flutter test`
+  and the integration tests on macOS. Pick it up whenever the project
+  uses a hosted remote for CI.
 - **8.6 App identity and README:** app name and icon, and a README with
   setup, commands and architecture overview.
 
@@ -736,6 +789,7 @@ so that backup covers it from the start.
 | Reg M-C teams in Showdown format | 7.1, 7.4 |
 | Level 50 EV / speed analysis | 7.2, 7.3 |
 | *(new)* Saved opponent teams, Log Game picker, matchup stats | 7.5–7.8 |
+| *(new)* Team notes, matchup notes, Log Game game plan, notes from a game | 7.9–7.12 |
 
 ## Differences from the original
 

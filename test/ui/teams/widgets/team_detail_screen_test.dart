@@ -42,6 +42,7 @@ void main() {
     WidgetTester tester, {
     String teamId = 't1',
     FakePokemonRepository? pokemon,
+    FakeTeamRepository? teams,
   }) async {
     tester.view.physicalSize = const Size(1200, 4000);
     // Logical pixels: tall enough to build every lazy row.
@@ -53,7 +54,8 @@ void main() {
         theme: AppTheme.light,
         home: ChangeNotifierProvider(
           create: (_) => TeamDetailViewModel(
-            teamRepository: FakeTeamRepository(teams: [imported, picked]),
+            teamRepository:
+                teams ?? FakeTeamRepository(teams: [imported, picked]),
             pokemonRepository: repository,
             teamId: teamId,
           )..load.execute(),
@@ -91,6 +93,52 @@ void main() {
     expect(find.bySemanticsLabel('Speed 178'), findsOneWidget);
     expect(find.bySemanticsLabel('HP 207'), findsOneWidget);
     semantics.dispose();
+  });
+
+  group('notes', () {
+    TextField field(WidgetTester tester) =>
+        tester.widget<TextField>(find.widgetWithText(TextField, 'Notes'));
+
+    testWidgets('shows saved notes; Save notes saves them and confirms', (
+      tester,
+    ) async {
+      final teams = FakeTeamRepository(
+        teams: [imported.copyWith(notes: 'Tailwind turn 1.')],
+      );
+      await pumpDetail(tester, teams: teams);
+      expect(field(tester).controller?.text, 'Tailwind turn 1.');
+
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Notes'),
+        'Lead Raichu + Whimsicott.',
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Save notes'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Notes saved'), findsOneWidget);
+      expect(
+        (await teams.watchAll().first).single.notes,
+        'Lead Raichu + Whimsicott.',
+      );
+    });
+
+    testWidgets('a team without sets has notes too', (tester) async {
+      await pumpDetail(tester, teamId: 't2');
+
+      expect(find.widgetWithText(TextField, 'Notes'), findsOneWidget);
+    });
+
+    testWidgets('a failed save says so', (tester) async {
+      final teams = FakeTeamRepository(teams: [imported]);
+      await pumpDetail(tester, teams: teams);
+      teams.failWith = Exception('disk full');
+
+      await tester.enterText(find.widgetWithText(TextField, 'Notes'), 'X');
+      await tester.tap(find.widgetWithText(FilledButton, 'Save notes'));
+      await tester.pumpAndSettle();
+
+      expect(find.text("Couldn't save the notes. Try again."), findsOneWidget);
+    });
   });
 
   testWidgets('a mega ability shows after an arrow', (tester) async {

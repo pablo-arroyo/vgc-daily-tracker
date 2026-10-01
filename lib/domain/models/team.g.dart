@@ -29,6 +29,7 @@ _Team _$TeamFromJson(Map<String, dynamic> json) =>
           'side',
           (v) => $enumDecodeNullable(_$TeamSideEnumMap, v) ?? TeamSide.mine,
         ),
+        notes: $checkedConvert('notes', (v) => v as String? ?? ''),
       );
       return val;
     });
@@ -39,6 +40,7 @@ Map<String, dynamic> _$TeamToJson(_Team instance) => <String, dynamic>{
   'pokemon': instance.pokemon.map((e) => e.toJson()).toList(),
   'sets': instance.sets.map((e) => e.toJson()).toList(),
   'side': _$TeamSideEnumMap[instance.side]!,
+  'notes': instance.notes,
 };
 
 const _$TeamSideEnumMap = {

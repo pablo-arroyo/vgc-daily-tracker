@@ -15,19 +15,23 @@ class TeamDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.read<TeamDetailViewModel>();
-    return ListenableBuilder(
-      listenable: viewModel,
-      builder: (context, _) => Scaffold(
-        appBar: AppBar(title: Text(viewModel.name)),
-        body: switch (viewModel) {
-          TeamDetailViewModel(missing: true) => const Center(
-            child: Text('This team no longer exists.'),
-          ),
-          TeamDetailViewModel(load: Command(error: true)) => const _LoadError(),
-          TeamDetailViewModel(load: Command(completed: true)) =>
-            const _TeamDetail(),
-          _ => const Center(child: CircularProgressIndicator()),
-        },
+    // Its own messenger, so "Notes saved" shows on this screen.
+    return ScaffoldMessenger(
+      child: ListenableBuilder(
+        listenable: viewModel,
+        builder: (context, _) => Scaffold(
+          appBar: AppBar(title: Text(viewModel.name)),
+          body: switch (viewModel) {
+            TeamDetailViewModel(missing: true) => const Center(
+              child: Text('This team no longer exists.'),
+            ),
+            TeamDetailViewModel(load: Command(error: true)) =>
+              const _LoadError(),
+            TeamDetailViewModel(load: Command(completed: true)) =>
+              const _TeamDetail(),
+            _ => const Center(child: CircularProgressIndicator()),
+          },
+        ),
       ),
     );
   }
@@ -62,6 +66,10 @@ class _TeamDetail extends StatelessWidget {
     final speedOrder = viewModel.speedOrder;
     return CustomScrollView(
       slivers: [
+        const SliverPadding(
+          padding: EdgeInsets.fromLTRB(16, 16, 16, 0),
+          sliver: SliverToBoxAdapter(child: _NotesCard()),
+        ),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
           sliver: SliverList.builder(
@@ -101,6 +109,81 @@ class _TeamDetail extends StatelessWidget {
         ],
       ],
     );
+  }
+}
+
+/// The team's notes, edited in place. Built once the team has loaded, so
+/// the field starts from the saved notes.
+class _NotesCard extends StatefulWidget {
+  const _NotesCard();
+
+  @override
+  State<_NotesCard> createState() => _NotesCardState();
+}
+
+class _NotesCardState extends State<_NotesCard> {
+  late final _viewModel = context.read<TeamDetailViewModel>();
+  late final _notes = TextEditingController(text: _viewModel.notes);
+
+  @override
+  void dispose() {
+    _notes.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextField(
+              controller: _notes,
+              decoration: const InputDecoration(
+                labelText: 'Notes',
+                hintText: 'Scouting notes, threats, your game plan…',
+                alignLabelWithHint: true,
+                border: OutlineInputBorder(),
+              ),
+              minLines: 3,
+              maxLines: 8,
+              keyboardType: TextInputType.multiline,
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: ListenableBuilder(
+                listenable: _viewModel.saveNotes,
+                builder: (context, _) => FilledButton(
+                  onPressed: _viewModel.saveNotes.running ? null : _save,
+                  child: const Text('Save notes'),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _save() async {
+    final saveNotes = _viewModel.saveNotes;
+    final messenger = ScaffoldMessenger.of(context);
+    await saveNotes.execute(_notes.text);
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            saveNotes.completed
+                ? 'Notes saved'
+                : "Couldn't save the notes. Try again.",
+          ),
+        ),
+      );
   }
 }
 

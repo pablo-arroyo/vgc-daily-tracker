@@ -31,6 +31,7 @@ void main() {
           PokemonRef(id: 812, slug: 'rillaboom', displayName: 'Rillaboom'),
         ],
         side: TeamSide.opponent,
+        notes: 'Sneasler runs Unburden: Fake Out it turn 1.',
       ),
     ],
     games: [

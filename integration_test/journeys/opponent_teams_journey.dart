@@ -27,6 +27,19 @@ void opponentTeamsJourney() {
     );
     expect(find.text('Rival Grassy'), findsOneWidget);
 
+    // Scouting notes on their team.
+    await tester.tap(find.text('Rival Grassy'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Notes'),
+      'Fake Out Sneasler turn 1.',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Save notes'));
+    await tester.pumpAndSettle();
+    expect(find.text('Notes saved'), findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+
     await tester.tap(find.text('My teams'));
     await tester.pumpAndSettle();
     expect(find.text('Rival Grassy'), findsNothing);

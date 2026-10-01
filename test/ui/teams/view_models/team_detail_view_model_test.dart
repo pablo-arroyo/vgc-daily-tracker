@@ -155,4 +155,48 @@ void main() {
     expect(viewModel.load.completed, isTrue);
     expect(viewModel.members, hasLength(6));
   });
+
+  group('notes', () {
+    late FakeTeamRepository teams;
+
+    Future<TeamDetailViewModel> withTeam(Team team) async {
+      teams = FakeTeamRepository(teams: [team]);
+      final viewModel = TeamDetailViewModel(
+        teamRepository: teams,
+        pokemonRepository: pokemon,
+        teamId: team.id,
+      );
+      addTearDown(viewModel.dispose);
+      await viewModel.load.execute();
+      return viewModel;
+    }
+
+    test("loads the team's notes", () async {
+      final viewModel = await withTeam(team1.copyWith(notes: 'Tailwind T1'));
+
+      expect(viewModel.notes, 'Tailwind T1');
+    });
+
+    test('saves trimmed notes, keeping everything else on the team', () async {
+      final viewModel = await withTeam(team1);
+
+      await viewModel.saveNotes.execute('  Lead Raichu + Whimsicott.\n');
+
+      expect(viewModel.saveNotes.completed, isTrue);
+      expect(viewModel.notes, 'Lead Raichu + Whimsicott.');
+      expect(await teams.watchAll().first, [
+        team1.copyWith(notes: 'Lead Raichu + Whimsicott.'),
+      ]);
+    });
+
+    test('a failed save keeps the old notes', () async {
+      final viewModel = await withTeam(team1.copyWith(notes: 'Old'));
+      teams.failWith = Exception('disk full');
+
+      await viewModel.saveNotes.execute('New');
+
+      expect(viewModel.saveNotes.error, isTrue);
+      expect(viewModel.notes, 'Old');
+    });
+  });
 }

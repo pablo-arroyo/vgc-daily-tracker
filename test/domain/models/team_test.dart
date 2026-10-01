@@ -21,6 +21,7 @@ void main() {
     ],
     'sets': <Object?>[],
     'side': 'mine',
+    'notes': '',
   };
 
   test('serializes to plain JSON storage can hold', () {
@@ -42,6 +43,19 @@ void main() {
     final legacy = {...json}..remove('side');
 
     expect(Team.fromJson(legacy).side, TeamSide.mine);
+  });
+
+  test('teams saved before notes existed load with none', () {
+    final legacy = {...json}..remove('notes');
+
+    expect(Team.fromJson(legacy).notes, '');
+  });
+
+  test('notes round-trip with the team', () {
+    final noted = team.copyWith(notes: 'Lead Kingambit + Kleavor.');
+
+    expect(noted.toJson()['notes'], 'Lead Kingambit + Kleavor.');
+    expect(Team.fromJson(noted.toJson()), noted);
   });
 
   test("an opponent's team stores its side", () {

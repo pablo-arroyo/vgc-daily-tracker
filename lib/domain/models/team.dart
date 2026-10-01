@@ -23,6 +23,10 @@ abstract class Team with _$Team {
 
     /// Teams saved before sides existed are the player's own.
     @Default(TeamSide.mine) TeamSide side,
+
+    /// Free text: scouting notes on an opponent's team, or a game plan for
+    /// your own. Empty for teams saved before notes existed.
+    @Default('') String notes,
   }) = _Team;
 
   factory Team.fromJson(Map<String, Object?> json) => _$TeamFromJson(json);

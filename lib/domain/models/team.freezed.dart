@@ -19,7 +19,9 @@ mixin _$Team {
  String get id; String get name; List<PokemonRef> get pokemon;/// Full builds from a Showdown import, one per [pokemon] in the same
 /// order, or empty for a team built by picking Pokémon.
  List<PokemonSet> get sets;/// Teams saved before sides existed are the player's own.
- TeamSide get side;
+ TeamSide get side;/// Free text: scouting notes on an opponent's team, or a game plan for
+/// your own. Empty for teams saved before notes existed.
+ String get notes;
 /// Create a copy of Team
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -33,20 +35,20 @@ $TeamCopyWith<Team> get copyWith => _$TeamCopyWithImpl<Team>(this as Team, _$ide
 @override
 bool operator ==(Object other) {
   final _this = this as Team;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Team&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&const DeepCollectionEquality().equals(other.pokemon, _this.pokemon)&&const DeepCollectionEquality().equals(other.sets, _this.sets)&&(identical(other.side, _this.side) || other.side == _this.side));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Team&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&const DeepCollectionEquality().equals(other.pokemon, _this.pokemon)&&const DeepCollectionEquality().equals(other.sets, _this.sets)&&(identical(other.side, _this.side) || other.side == _this.side)&&(identical(other.notes, _this.notes) || other.notes == _this.notes));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as Team;
-  return Object.hash(runtimeType,_this.id,_this.name,const DeepCollectionEquality().hash(_this.pokemon),const DeepCollectionEquality().hash(_this.sets),_this.side);
+  return Object.hash(runtimeType,_this.id,_this.name,const DeepCollectionEquality().hash(_this.pokemon),const DeepCollectionEquality().hash(_this.sets),_this.side,_this.notes);
 }
 
 @override
 String toString() {
   final _this = this as Team;
-  return 'Team(id: ${_this.id}, name: ${_this.name}, pokemon: ${_this.pokemon}, sets: ${_this.sets}, side: ${_this.side})';
+  return 'Team(id: ${_this.id}, name: ${_this.name}, pokemon: ${_this.pokemon}, sets: ${_this.sets}, side: ${_this.side}, notes: ${_this.notes})';
 }
 
 
@@ -57,7 +59,7 @@ abstract mixin class $TeamCopyWith<$Res>  {
   factory $TeamCopyWith(Team value, $Res Function(Team) _then) = _$TeamCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, List<PokemonRef> pokemon, List<PokemonSet> sets, TeamSide side
+ String id, String name, List<PokemonRef> pokemon, List<PokemonSet> sets, TeamSide side, String notes
 });
 
 
@@ -74,14 +76,15 @@ class _$TeamCopyWithImpl<$Res>
 
 /// Create a copy of Team
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? pokemon = null,Object? sets = null,Object? side = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? pokemon = null,Object? sets = null,Object? side = null,Object? notes = null,}) {
   return _then(Team(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,pokemon: null == pokemon ? _self.pokemon : pokemon // ignore: cast_nullable_to_non_nullable
 as List<PokemonRef>,sets: null == sets ? _self.sets : sets // ignore: cast_nullable_to_non_nullable
 as List<PokemonSet>,side: null == side ? _self.side : side // ignore: cast_nullable_to_non_nullable
-as TeamSide,
+as TeamSide,notes: null == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 
@@ -166,10 +169,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  List<PokemonRef> pokemon,  List<PokemonSet> sets,  TeamSide side)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  List<PokemonRef> pokemon,  List<PokemonSet> sets,  TeamSide side,  String notes)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Team() when $default != null:
-return $default(_that.id,_that.name,_that.pokemon,_that.sets,_that.side);case _:
+return $default(_that.id,_that.name,_that.pokemon,_that.sets,_that.side,_that.notes);case _:
   return orElse();
 
 }
@@ -187,10 +190,10 @@ return $default(_that.id,_that.name,_that.pokemon,_that.sets,_that.side);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  List<PokemonRef> pokemon,  List<PokemonSet> sets,  TeamSide side)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  List<PokemonRef> pokemon,  List<PokemonSet> sets,  TeamSide side,  String notes)  $default,) {final _that = this;
 switch (_that) {
 case _Team():
-return $default(_that.id,_that.name,_that.pokemon,_that.sets,_that.side);case _:
+return $default(_that.id,_that.name,_that.pokemon,_that.sets,_that.side,_that.notes);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -207,10 +210,10 @@ return $default(_that.id,_that.name,_that.pokemon,_that.sets,_that.side);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  List<PokemonRef> pokemon,  List<PokemonSet> sets,  TeamSide side)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  List<PokemonRef> pokemon,  List<PokemonSet> sets,  TeamSide side,  String notes)?  $default,) {final _that = this;
 switch (_that) {
 case _Team() when $default != null:
-return $default(_that.id,_that.name,_that.pokemon,_that.sets,_that.side);case _:
+return $default(_that.id,_that.name,_that.pokemon,_that.sets,_that.side,_that.notes);case _:
   return null;
 
 }
@@ -222,7 +225,7 @@ return $default(_that.id,_that.name,_that.pokemon,_that.sets,_that.side);case _:
 @JsonSerializable()
 
 class _Team implements Team {
-  const _Team({required this.id, required this.name, required  List<PokemonRef> pokemon,  List<PokemonSet> sets = const [], this.side = TeamSide.mine}): _pokemon = pokemon,_sets = sets;
+  const _Team({required this.id, required this.name, required  List<PokemonRef> pokemon,  List<PokemonSet> sets = const [], this.side = TeamSide.mine, this.notes = ''}): _pokemon = pokemon,_sets = sets;
   factory _Team.fromJson(Map<String, dynamic> json) => _$TeamFromJson(json);
 
 @override final  String id;
@@ -247,6 +250,9 @@ class _Team implements Team {
 
 /// Teams saved before sides existed are the player's own.
 @override@JsonKey() final  TeamSide side;
+/// Free text: scouting notes on an opponent's team, or a game plan for
+/// your own. Empty for teams saved before notes existed.
+@override@JsonKey() final  String notes;
 
 /// Create a copy of Team
 /// with the given fields replaced by the non-null parameter values.
@@ -261,18 +267,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Team&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&const DeepCollectionEquality().equals(other.pokemon, _pokemon)&&const DeepCollectionEquality().equals(other.sets, _sets)&&(identical(other.side, side) || other.side == side));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Team&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&const DeepCollectionEquality().equals(other.pokemon, _pokemon)&&const DeepCollectionEquality().equals(other.sets, _sets)&&(identical(other.side, side) || other.side == side)&&(identical(other.notes, notes) || other.notes == notes));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,name,const DeepCollectionEquality().hash(_pokemon),const DeepCollectionEquality().hash(_sets),side);
+    return Object.hash(runtimeType,id,name,const DeepCollectionEquality().hash(_pokemon),const DeepCollectionEquality().hash(_sets),side,notes);
 }
 
 @override
 String toString() {
-    return 'Team(id: $id, name: $name, pokemon: $pokemon, sets: $sets, side: $side)';
+    return 'Team(id: $id, name: $name, pokemon: $pokemon, sets: $sets, side: $side, notes: $notes)';
 }
 
 
@@ -283,7 +289,7 @@ abstract mixin class _$TeamCopyWith<$Res> implements $TeamCopyWith<$Res> {
   factory _$TeamCopyWith(_Team value, $Res Function(_Team) _then) = __$TeamCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, List<PokemonRef> pokemon, List<PokemonSet> sets, TeamSide side
+ String id, String name, List<PokemonRef> pokemon, List<PokemonSet> sets, TeamSide side, String notes
 });
 
 
@@ -300,14 +306,15 @@ class __$TeamCopyWithImpl<$Res>
 
 /// Create a copy of Team
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? pokemon = null,Object? sets = null,Object? side = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? pokemon = null,Object? sets = null,Object? side = null,Object? notes = null,}) {
   return _then(_Team(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,pokemon: null == pokemon ? _self._pokemon : pokemon // ignore: cast_nullable_to_non_nullable
 as List<PokemonRef>,sets: null == sets ? _self._sets : sets // ignore: cast_nullable_to_non_nullable
 as List<PokemonSet>,side: null == side ? _self.side : side // ignore: cast_nullable_to_non_nullable
-as TeamSide,
+as TeamSide,notes: null == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 
