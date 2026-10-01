@@ -14,6 +14,7 @@ class RoutineViewModel extends ChangeNotifier {
     DateTime Function(DateTime utc)? toLocal,
   }) : _toLocal = toLocal ?? ((utc) => utc.toLocal()) {
     toggle = Command1(_toggle);
+    _day = isoDate(_toLocal(clock.now().toUtc()));
     _load();
   }
 
@@ -30,11 +31,13 @@ class RoutineViewModel extends ChangeNotifier {
 
   bool isChecked(String itemId) => _checked.contains(itemId);
 
-  /// Today's local date, the key ticks are saved under.
-  String get _today => isoDate(_toLocal(clock.now().toUtc()));
+  /// The local date loaded, which ticks are saved under. Fixed at load, so
+  /// ticks made after midnight with the tab still open go to the day on
+  /// screen; the next load starts the new day.
+  late final String _day;
 
   Future<void> _load() async {
-    final result = await _routineRepository.checkedOn(_today);
+    final result = await _routineRepository.checkedOn(_day);
     if (result case Ok(:final value)) _checked = value;
     _loaded = true;
     notifyListeners();
@@ -46,7 +49,7 @@ class RoutineViewModel extends ChangeNotifier {
         ? ({...before}..remove(itemId))
         : {...before, itemId};
     notifyListeners(); // tick at once, save in the background
-    final saved = await _routineRepository.save(_today, _checked);
+    final saved = await _routineRepository.save(_day, _checked);
     if (saved is Failure) {
       _checked = before;
       notifyListeners();

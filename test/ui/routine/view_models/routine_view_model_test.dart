@@ -53,6 +53,27 @@ void main() {
     expect(viewModel.isChecked('log-fast'), isFalse);
   });
 
+  test('a tick after midnight still goes to the day on screen, not into the '
+      'new day', () async {
+    await repository.save('2026-09-30', {'speed-order'});
+    final viewModel = await routineAt(lateEvening);
+
+    // Left open past midnight: it's now Oct 1, 09:00 local.
+    await withClock(
+      Clock.fixed(DateTime.utc(2026, 10, 1, 15)),
+      () => viewModel.toggle.execute('log-fast'),
+    );
+
+    expect(
+      (await repository.checkedOn('2026-09-30') as Ok<Set<String>>).value,
+      {'speed-order', 'log-fast'},
+    );
+    expect(
+      (await repository.checkedOn('2026-10-01') as Ok<Set<String>>).value,
+      isEmpty,
+    );
+  });
+
   test('the next day starts with nothing ticked', () async {
     await repository.save('2026-09-30', {'speed-order'});
 
