@@ -5,6 +5,10 @@ import 'package:vgc_daily_tracker/domain/models/matchup_note.dart';
 import 'package:vgc_daily_tracker/domain/models/mistake_category.dart';
 import 'package:vgc_daily_tracker/domain/models/pokemon_ref.dart';
 import 'package:vgc_daily_tracker/domain/models/team.dart';
+import 'package:vgc_daily_tracker/data/services/pokeapi/poke_api_exception.dart';
+import 'package:vgc_daily_tracker/domain/stats/speed_order.dart';
+import 'package:vgc_daily_tracker/domain/showdown/showdown_format.dart';
+import 'package:vgc_daily_tracker/domain/models/pokemon_set.dart';
 import 'package:vgc_daily_tracker/ui/log_game/view_models/log_game_view_model.dart';
 import 'package:vgc_daily_tracker/utils/result.dart';
 
@@ -13,6 +17,7 @@ import '../../../../testing/fakes/fake_id_generator.dart';
 import '../../../../testing/fakes/fake_matchup_repository.dart';
 import '../../../../testing/fakes/fake_pokemon_repository.dart';
 import '../../../../testing/fakes/fake_team_repository.dart';
+import '../../../../testing/showdown_pastes.dart';
 
 final bigSix = Team(
   id: 't1',
@@ -602,6 +607,137 @@ void main() {
       await pumpEventQueue();
 
       expect(restarted.openSetTitle, 'Best-of-3 · 1–0');
+    });
+  });
+
+  group('speed matchups', () {
+    const ref = FakePokemonRepository.sampleRef;
+    final team1 = Team(
+      id: 'w1',
+      name: 'Worlds Metagross',
+      pokemon: [
+        for (final slug in [
+          'kingambit',
+          'kleavor',
+          'metagross',
+          'whimsicott',
+          'raichu',
+          'basculegion-male',
+        ])
+          ref(slug),
+      ],
+      sets: (ShowdownFormat.parse(team1Paste) as Ok<List<PokemonSet>>).value,
+    );
+    final rival = Team(
+      id: 'o1',
+      name: 'Rival Grassy',
+      side: TeamSide.opponent,
+      pokemon: [ref('sneasler'), ref('rillaboom')],
+    );
+
+    Future<LogGameViewModel> ready({FakePokemonRepository? pokemon}) async {
+      teams = FakeTeamRepository(teams: [team1, rival]);
+      final viewModel = LogGameViewModel(
+        gameLogRepository: games,
+        teamRepository: teams,
+        pokemonRepository: pokemon ?? FakePokemonRepository(),
+        matchupRepository: matchups,
+        idGenerator: SequentialIdGenerator(),
+      );
+      addTearDown(viewModel.dispose);
+      await pumpEventQueue();
+      return viewModel;
+    }
+
+    List<String> names(LogGameViewModel viewModel) => [
+      for (final e in viewModel.speedEntries) e.name,
+    ];
+
+    test('nothing until your team and their Pokémon are both there', () async {
+      final viewModel = await ready();
+      viewModel.selectTeam(team1);
+      await pumpEventQueue();
+
+      expect(viewModel.speedEntries, isEmpty);
+    });
+
+    test('both teams in Speed order, with Megas and ranges', () async {
+      final viewModel = await ready();
+
+      viewModel
+        ..selectTeam(team1)
+        ..selectOpponentTeam(rival);
+      await pumpEventQueue();
+
+      expect(names(viewModel), [
+        'Raichu-Mega-Y',
+        'Sneasler',
+        'Whimsicott',
+        'Metagross-Mega',
+        'Rillaboom',
+        'Kleavor',
+        'Basculegion-Male',
+        'Kingambit',
+      ]);
+      final sneasler = viewModel.speedEntries[1];
+      expect(
+        (sneasler.side, sneasler.min, sneasler.max),
+        (SpeedSide.theirs, 140, 189),
+      );
+    });
+
+    test('each row reads as one line: name, side, speed or range', () async {
+      final viewModel = await ready();
+
+      viewModel
+        ..selectTeam(team1)
+        ..selectOpponentTeam(rival);
+      await pumpEventQueue();
+
+      expect(viewModel.speedRows.take(2), [
+        'Raichu-Mega-Y · yours · 200',
+        'Sneasler · theirs · 140–189',
+      ]);
+    });
+
+    test('the mode reorders: Trick Room puts the slowest first', () async {
+      final viewModel = await ready();
+      viewModel
+        ..selectTeam(team1)
+        ..selectOpponentTeam(rival);
+      await pumpEventQueue();
+
+      viewModel.setSpeedMode(SpeedMode.trickRoom);
+
+      expect(viewModel.speedMode, SpeedMode.trickRoom);
+      expect(names(viewModel).first, 'Kingambit');
+    });
+
+    test('recomputes when their Pokémon change', () async {
+      final viewModel = await ready();
+      viewModel
+        ..selectTeam(team1)
+        ..selectOpponentTeam(rival);
+      await pumpEventQueue();
+
+      viewModel.setOpponentSlot(2, ref('garchomp'));
+      await pumpEventQueue();
+
+      expect(names(viewModel), contains('Garchomp'));
+    });
+
+    test('a failed lookup says the speeds are unavailable', () async {
+      final pokemon = FakePokemonRepository()
+        ..failWith = const PokeApiNetworkUnavailable('/pokemon');
+      final viewModel = await ready(pokemon: pokemon);
+
+      viewModel
+        ..selectTeam(team1)
+        ..selectOpponentTeam(rival);
+      await pumpEventQueue();
+
+      expect(viewModel.speedEntries, isEmpty);
+      expect(viewModel.speedUnavailable, isTrue);
     });
   });
 

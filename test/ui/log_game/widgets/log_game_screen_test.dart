@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:vgc_daily_tracker/data/services/pokeapi/poke_api_exception.dart';
 import 'package:vgc_daily_tracker/domain/models/game_log.dart';
 import 'package:vgc_daily_tracker/domain/models/mistake_category.dart';
 import 'package:vgc_daily_tracker/domain/models/team.dart';
@@ -39,6 +40,7 @@ void main() {
     WidgetTester tester, {
     List<Team> extraTeams = const [],
     FakeMatchupRepository? matchups,
+    FakePokemonRepository? pokemon,
   }) async {
     games = FakeGameLogRepository();
     await tester.pumpWidget(
@@ -48,7 +50,7 @@ void main() {
           create: (_) => LogGameViewModel(
             gameLogRepository: games,
             teamRepository: FakeTeamRepository(teams: [bigSix, ...extraTeams]),
-            pokemonRepository: FakePokemonRepository(),
+            pokemonRepository: pokemon ?? FakePokemonRepository(),
             matchupRepository: matchups ?? FakeMatchupRepository(),
             idGenerator: SequentialIdGenerator(),
           ),
@@ -305,6 +307,60 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.textContaining('Best-of-3 vs'), findsNothing);
+    });
+  });
+
+  group('speed matchups', () {
+    final rival = Team(
+      id: 'o1',
+      name: 'Rival Grassy',
+      side: TeamSide.opponent,
+      pokemon: [FakePokemonRepository.sampleRef('sneasler')],
+    );
+    List<String> rows(WidgetTester tester) => [
+      for (final e in find.byKey(const ValueKey('speed-row')).evaluate())
+        (e.widget as Text).data!,
+    ];
+
+    testWidgets('hidden until both sides are there', (tester) async {
+      await pumpScreen(tester, extraTeams: [rival]);
+      await selectDropdownItem(tester, 'Their team', 'Rival Grassy');
+
+      expect(find.byKey(const ValueKey('speed-order')), findsNothing);
+    });
+
+    testWidgets('lists both teams; Tailwind on your side reorders', (
+      tester,
+    ) async {
+      await pumpScreen(tester, extraTeams: [rival]);
+      await selectDropdownItem(tester, 'Your team used', 'Big Six');
+      await selectDropdownItem(tester, 'Their team', 'Rival Grassy');
+
+      expect(rows(tester).first, 'Sneasler · theirs · 140–189');
+
+      final tailwind = find.widgetWithText(ChoiceChip, 'Tailwind (yours)');
+      await tester.ensureVisible(tailwind);
+      await tester.pumpAndSettle();
+      await tester.tap(tailwind);
+      await tester.pumpAndSettle();
+
+      expect(rows(tester).first, startsWith('Whimsicott · yours · '));
+    });
+
+    testWidgets('offline: says the speeds are unavailable', (tester) async {
+      await pumpScreen(
+        tester,
+        extraTeams: [rival],
+        pokemon: FakePokemonRepository()
+          ..failWith = const PokeApiNetworkUnavailable('/pokemon'),
+      );
+      await selectDropdownItem(tester, 'Your team used', 'Big Six');
+      await selectDropdownItem(tester, 'Their team', 'Rival Grassy');
+
+      expect(
+        find.text("Couldn't look up their speeds. Check your connection."),
+        findsOneWidget,
+      );
     });
   });
 

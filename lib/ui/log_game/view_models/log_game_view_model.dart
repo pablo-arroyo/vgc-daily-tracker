@@ -11,7 +11,9 @@ import '../../../domain/models/game_log.dart';
 import '../../../domain/models/matchup_note.dart';
 import '../../../domain/models/mistake_category.dart';
 import '../../../domain/models/pokemon_ref.dart';
+import '../../../domain/models/pokemon_set.dart';
 import '../../../domain/models/team.dart';
+import '../../../domain/stats/speed_order.dart';
 import '../../../utils/command.dart';
 import '../../../utils/id_generator.dart';
 import '../../../utils/iso_date.dart';
@@ -157,6 +159,7 @@ class LogGameViewModel extends ChangeNotifier {
       }
     }
     notifyListeners();
+    unawaited(_refreshSpeed());
     return const Result.ok(null);
   }
 
@@ -229,6 +232,107 @@ class LogGameViewModel extends ChangeNotifier {
     _brought.clear();
     _leads.clear();
     notifyListeners();
+    unawaited(_refreshSpeed());
+  }
+
+  SpeedMode _speedMode = SpeedMode.normal;
+  List<SpeedInput> _speedInputs = const [];
+  List<SpeedEntry> _speedEntries = const [];
+  bool _speedUnavailable = false;
+
+  /// Bumped per refresh, so a slow lookup can't overwrite a newer one.
+  int _speedRequest = 0;
+
+  /// Both teams in the order they move under [speedMode]; empty until your
+  /// team is picked and their Pokémon are filled in.
+  List<SpeedEntry> get speedEntries => _speedEntries;
+
+  SpeedMode get speedMode => _speedMode;
+
+  /// [speedEntries] as one line each: `Sneasler · theirs · 140–189`, with
+  /// `· tie` when another Pokémon has the same exact Speed.
+  List<String> get speedRows => [
+    for (final e in _speedEntries)
+      [
+        e.name,
+        e.side == SpeedSide.mine ? 'yours' : 'theirs',
+        e.min == e.max ? '${e.min}' : '${e.min}–${e.max}',
+        if (e.tie) 'tie',
+      ].join(' · '),
+  ];
+
+  /// A Pokémon couldn't be looked up (e.g. offline), so there's no order.
+  bool get speedUnavailable => _speedUnavailable;
+
+  void setSpeedMode(SpeedMode mode) {
+    _speedMode = mode;
+    _speedEntries = speedOrder(_speedInputs, mode: mode);
+    notifyListeners();
+  }
+
+  Future<void> _refreshSpeed() async {
+    final request = ++_speedRequest;
+    final mine = _selectedTeam;
+    final theirs = _opponentSlots;
+    final List<SpeedInput> inputs;
+    if (mine == null || opponentTeam.isEmpty) {
+      inputs = const [];
+    } else {
+      final pending = [
+        for (final (i, ref) in mine.pokemon.indexed)
+          _speedInput(SpeedSide.mine, ref, _setAt(mine, i, ref)),
+        for (final (i, ref) in theirs.indexed)
+          if (ref != null)
+            _speedInput(SpeedSide.theirs, ref, switch (_selectedOpponentTeam) {
+              final team? => _setAt(team, i, ref),
+              null => null,
+            }),
+      ];
+      final results = await Future.wait(pending);
+      if (request != _speedRequest) return; // a newer pick won
+      if (results.contains(null)) {
+        _speedUnavailable = true;
+        _speedInputs = const [];
+        _speedEntries = const [];
+        notifyListeners();
+        return;
+      }
+      inputs = results.nonNulls.toList();
+    }
+    _speedUnavailable = false;
+    _speedInputs = inputs;
+    _speedEntries = speedOrder(inputs, mode: _speedMode);
+    notifyListeners();
+  }
+
+  /// [team]'s imported set for slot [i], while that slot still holds the
+  /// team's Pokémon.
+  static PokemonSet? _setAt(Team team, int i, PokemonRef ref) =>
+      i < team.sets.length && i < team.pokemon.length && team.pokemon[i] == ref
+      ? team.sets[i]
+      : null;
+
+  /// [ref] in its battle form (its Mega when [set] holds the stone), or
+  /// null when it can't be looked up.
+  Future<SpeedInput?> _speedInput(
+    SpeedSide side,
+    PokemonRef ref,
+    PokemonSet? set,
+  ) async {
+    final form = await _pokemonRepository.resolve(ref.slug, item: set?.item);
+    if (form case Ok(:final value)) {
+      if (await _pokemonRepository.getPokemon(value.slug) case Ok(
+        value: final pokemon,
+      )) {
+        return (
+          side: side,
+          name: pokemon.displayName,
+          base: pokemon.baseStats,
+          set: set,
+        );
+      }
+    }
+    return null;
   }
 
   final List<PokemonRef> _brought = [];
@@ -299,6 +403,7 @@ class LogGameViewModel extends ChangeNotifier {
       _opponentLeads.clear();
     }
     notifyListeners();
+    unawaited(_refreshSpeed());
   }
 
   final List<PokemonRef> _opponentBrought = [];
@@ -321,6 +426,7 @@ class LogGameViewModel extends ChangeNotifier {
     _opponentBrought.removeWhere((p) => !team.contains(p));
     _opponentLeads.removeWhere((p) => !team.contains(p));
     notifyListeners();
+    unawaited(_refreshSpeed());
   }
 
   /// Marks or unmarks one of their Pokémon as brought. Returns why it was
@@ -498,6 +604,8 @@ class LogGameViewModel extends ChangeNotifier {
     _teamsSubscription.cancel();
     _matchupsSubscription.cancel();
     _gamesSubscription.cancel();
+    // A speed lookup still in flight is now stale: it won't notify.
+    _speedRequest++;
     super.dispose();
   }
 
@@ -515,5 +623,6 @@ class LogGameViewModel extends ChangeNotifier {
     _partOfSet = false;
     _continuing = null;
     notifyListeners();
+    unawaited(_refreshSpeed());
   }
 }

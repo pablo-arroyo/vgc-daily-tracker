@@ -889,7 +889,7 @@ opponent spreads.
     were caught already.
   - The macOS best-of-3 journey checks the Progress card.
 
-### 10.3 Speed matchups in the Game plan
+### ✅ 10.3 Speed matchups in the Game plan
 - **Domain:** a pure speed-order calculator, built on 7.2's stats.
   - Inputs: both teams' battle forms and sets.
   - Items: Choice Scarf ×1.5; Iron Ball and Macho Brace ×0.5 (rounded
@@ -905,6 +905,23 @@ opponent spreads.
   - Unit: the calculator, against the artifact's verified numbers
     (Mega Metagross 178 and so on), items, ranges, each mode and ties.
   - The view model, widget, and acceptance.
+- **As built:**
+  - `speedOrder` lives in `lib/domain/stats/speed_order.dart`.
+  - The "Speed" card sits right under the Game plan card. It shows once
+    your team is picked and their Pokémon are filled in, from a saved
+    team or typed slots.
+  - `LogGameViewModel` looks up each battle form, recomputes on every
+    pick, ignores stale lookups, and says when the speeds are
+    unavailable (offline).
+  - Rows read as one line, e.g. "Sneasler · theirs · 140–189", with
+    "· tie" for exact ties.
+  - **Found by an existing test:** a lookup finishing after the screen
+    closed called a disposed view model. Disposing now makes in-flight
+    lookups stale.
+  - Mutations: Scarf, Trick Room, one-sided Tailwind, the +Speed range
+    and stale lookups are all caught. Removing the explicit tie-break
+    survives, because Dart sorts short lists stably anyway; it stays as
+    a guard.
 
 ### 10.4 Type data from PokéAPI
 - **Service:** `PokeApiService.getType(name)` (`/type/{name}`), with a

@@ -5,6 +5,7 @@ import '../../../domain/models/game_log.dart';
 import '../../../domain/models/mistake_category.dart';
 import '../../../domain/models/pokemon_ref.dart';
 import '../../../domain/models/team.dart';
+import '../../../domain/stats/speed_order.dart';
 import '../../../utils/result.dart';
 import '../../core/matchup_notes_dialog.dart';
 import '../../core/pokemon_autocomplete_field.dart';
@@ -416,6 +417,7 @@ class _OpponentSection extends StatelessWidget {
         ),
         const _OpponentTeamPicker(),
         const _GamePlanCard(),
+        const _SpeedCard(),
         ListenableBuilder(
           listenable: viewModel,
           builder: (context, _) {
@@ -568,6 +570,77 @@ class _GamePlanCard extends StatelessWidget {
           ),
         );
     }
+  }
+}
+
+/// Both teams in the order they move, under the chosen speed mode.
+class _SpeedCard extends StatelessWidget {
+  const _SpeedCard();
+
+  static const _modes = {
+    SpeedMode.normal: 'Normal',
+    SpeedMode.tailwindMine: 'Tailwind (yours)',
+    SpeedMode.tailwindTheirs: 'Tailwind (theirs)',
+    SpeedMode.trickRoom: 'Trick Room',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final viewModel = context.read<LogGameViewModel>();
+    return ListenableBuilder(
+      listenable: viewModel,
+      builder: (context, _) {
+        final rows = viewModel.speedRows;
+        if (rows.isEmpty && !viewModel.speedUnavailable) {
+          return const SizedBox.shrink();
+        }
+        return Card(
+          margin: const EdgeInsets.only(bottom: 12),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Speed', style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 8),
+                if (viewModel.speedUnavailable)
+                  const Text(
+                    "Couldn't look up their speeds. Check your connection.",
+                  )
+                else ...[
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      for (final MapEntry(key: mode, value: label)
+                          in _modes.entries)
+                        ChoiceChip(
+                          label: Text(label),
+                          selected: viewModel.speedMode == mode,
+                          onSelected: (_) => viewModel.setSpeedMode(mode),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  // At most 12 rows (both teams), so a plain column.
+                  Column(
+                    key: const ValueKey('speed-order'),
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (final row in rows)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          child: Text(row, key: const ValueKey('speed-row')),
+                        ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 }
 
