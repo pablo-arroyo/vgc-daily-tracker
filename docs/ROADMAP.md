@@ -829,6 +829,74 @@ Not in the original. Added 2026-10-01 at the user's request (7.9–7.12).
     one failure ("log game: create a team, then log a game with it").
     The next three runs passed. It's noted here, not explained.
 
+## Phase 10: Practice features
+
+Not in the original. Added 2026-10-01 at the user's request, after Phase 8.
+The user chose: best-of-3 with "next game in set", and speed matchups that
+include Megas, Tailwind and Trick Room, Speed items, and ranges for unknown
+opponent spreads.
+
+### 10.1 Best-of-3 sets: logging
+- **Model:** `GameLog` gains `setId` and `setGame` (1–3), both null for
+  single games, so older games load unchanged.
+- **Log Game:**
+  - A "Part of a best-of-3" checkbox.
+  - While a set is open, a card at the top reads, e.g. "Best-of-3 vs
+    Rival Grassy · 1–0", with **Log game 2** and **End set**. It's a
+    card rather than a snackbar action, because a snackbar holds one
+    action (it already offers "Add to matchup notes") and disappears.
+  - "Log game N" keeps your team and their team (or their Pokémon)
+    filled in, and clears the rest.
+  - The set closes by itself at 2 wins or 2 losses; "End set" closes it
+    early (a forfeit, or a set you stopped logging).
+- **Tests:**
+  - Unit: the model JSON (older games load as single games); the view
+    model (open set, next game, the score, auto-close, end set).
+  - Widget tests, and acceptance: log a set 2–1.
+
+### 10.2 Best-of-3 sets: Progress
+- A "Best-of-3 sets" card with your set record and set win %, game 1 win
+  % against games 2–3 (how well you adapt), and the last few sets with
+  their games.
+- **Tests:** stats unit tests (sets grouped by `setId`, unfinished sets
+  counted apart, single games ignored), widget, and acceptance.
+
+### 10.3 Speed matchups in the Game plan
+- **Domain:** a pure speed-order calculator, built on 7.2's stats.
+  - Inputs: both teams' battle forms and sets.
+  - Items: Choice Scarf ×1.5; Iron Ball and Macho Brace ×0.5 (rounded
+    down).
+  - Opponent Pokémon without an imported set: a range from 0 EVs with a
+    neutral nature up to 252 EVs with a +Speed nature.
+  - Modes: normal; Tailwind on your side or theirs (that side ×2); Trick
+    Room (slowest first).
+  - Ties are marked as speed ties.
+- **Game plan card:** once both teams are picked, a "Speed" list
+  interleaving both sides, with the mode toggles.
+- **Tests:**
+  - Unit: the calculator, against the artifact's verified numbers
+    (Mega Metagross 178 and so on), items, ranges, each mode and ties.
+  - The view model, widget, and acceptance.
+
+### 10.4 Type data from PokéAPI
+- **Service:** `PokeApiService.getType(name)` (`/type/{name}`), with a
+  recorded fixture and a contract test.
+- **Repository:** a `TypeRepository` (remote with a cache, plus a fake)
+  that maps damage relations to a domain `TypeChart`
+  (attacking × defending → ×0, ×½, ×1, ×2), including dual types (×4,
+  ×¼).
+- **Tests:** service, repository (mapping, caching, offline), and chart
+  unit tests.
+
+### 10.5 Type matchups
+- **Team detail:** a weaknesses chart. For each attacking type it shows
+  how many team members are weak to it, resist it, or are immune.
+- **Game plan:** their likely attacking types, from their Pokémon's
+  types, against your team, highlighting your members weak to them.
+- Abilities that change matchups, such as Levitate, are out of scope;
+  the chart says so.
+- **Tests:** the view model, widget, and acceptance.
+
 ## Phase 9 (optional, later): Cloud sync
 
 - New `TeamRepositoryRemote` / `GameLogRepositoryRemote` implementations for
@@ -857,6 +925,7 @@ Not in the original. Added 2026-10-01 at the user's request (7.9–7.12).
 | Level 50 EV / speed analysis | 7.2, 7.3 |
 | *(new)* Saved opponent teams, Log Game picker, matchup stats | 7.5–7.8 |
 | *(new)* Team notes, matchup notes, Log Game game plan, notes from a game | 7.9–7.12 |
+| *(new)* Best-of-3 sets, speed matchups, type matchups | 10.1–10.5 |
 
 ## Differences from the original
 
