@@ -34,6 +34,7 @@ Future<void> pumpApp(
   FakeRoutineRepository? routine,
   FormatConfig? format,
   FakePokemonRepository? pokemon,
+  FakeMatchupRepository? matchups,
 }) async {
   await tester.pumpWidget(
     VgcApp(
@@ -46,6 +47,7 @@ Future<void> pumpApp(
         routine: routine,
         format: format,
         pokemon: pokemon,
+        matchups: matchups,
       ),
     ),
   );
@@ -61,13 +63,16 @@ List<SingleChildWidget> providersFake({
   FakeRoutineRepository? routine,
   FormatConfig? format,
   FakePokemonRepository? pokemon,
+  FakeMatchupRepository? matchups,
 }) => [
   Provider<FormatConfig>.value(value: format ?? FormatConfig.regMC),
   Provider<PokemonRepository>(
     create: (_) => pokemon ?? FakePokemonRepository(),
   ),
   Provider<ItemRepository>(create: (_) => FakeItemRepository()),
-  Provider<MatchupRepository>(create: (_) => FakeMatchupRepository()),
+  Provider<MatchupRepository>(
+    create: (_) => matchups ?? FakeMatchupRepository(),
+  ),
   Provider<TeamRepository>(create: (_) => FakeTeamRepository(teams: teams)),
   Provider<GameLogRepository>(
     create: (_) => FakeGameLogRepository(games: games),

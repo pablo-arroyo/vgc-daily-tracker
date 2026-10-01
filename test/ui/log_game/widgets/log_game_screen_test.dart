@@ -10,6 +10,7 @@ import 'package:vgc_daily_tracker/ui/log_game/widgets/log_game_screen.dart';
 
 import '../../../../testing/fakes/fake_game_log_repository.dart';
 import '../../../../testing/fakes/fake_id_generator.dart';
+import '../../../../testing/fakes/fake_matchup_repository.dart';
 import '../../../../testing/fakes/fake_pokemon_repository.dart';
 import '../../../../testing/fakes/fake_team_repository.dart';
 import '../../../../testing/log_game_actions.dart';
@@ -37,6 +38,7 @@ void main() {
   Future<LogGameViewModel> pumpScreen(
     WidgetTester tester, {
     List<Team> extraTeams = const [],
+    FakeMatchupRepository? matchups,
   }) async {
     games = FakeGameLogRepository();
     await tester.pumpWidget(
@@ -47,6 +49,7 @@ void main() {
             gameLogRepository: games,
             teamRepository: FakeTeamRepository(teams: [bigSix, ...extraTeams]),
             pokemonRepository: FakePokemonRepository(),
+            matchupRepository: matchups ?? FakeMatchupRepository(),
             idGenerator: SequentialIdGenerator(),
           ),
           child: const LogGameScreen(),
@@ -140,6 +143,65 @@ void main() {
       );
       expect(viewModel.opponentTeam.last.slug, 'garchomp');
       expect(viewModel.selectedOpponentTeam, rival);
+    });
+  });
+
+  group('game plan', () {
+    final rival = Team(
+      id: 'o1',
+      name: 'Rival Grassy',
+      side: TeamSide.opponent,
+      notes: 'Fake Out Sneasler turn 1.',
+      pokemon: [FakePokemonRepository.sampleRef('rillaboom')],
+    );
+
+    testWidgets('hidden until their team is picked', (tester) async {
+      await pumpScreen(tester, extraTeams: [rival]);
+
+      expect(find.text('Game plan'), findsNothing);
+    });
+
+    testWidgets('their notes, then a hint to pick your team', (tester) async {
+      await pumpScreen(tester, extraTeams: [rival]);
+
+      await selectDropdownItem(tester, 'Their team', 'Rival Grassy');
+
+      expect(find.text('Game plan'), findsOneWidget);
+      expect(find.text('Fake Out Sneasler turn 1.'), findsOneWidget);
+      expect(
+        find.text('Pick your team to see your plan for this matchup.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('with both teams: the matchup plan, editable in place', (
+      tester,
+    ) async {
+      final matchups = FakeMatchupRepository();
+      await pumpScreen(tester, extraTeams: [rival], matchups: matchups);
+      await selectDropdownItem(tester, 'Their team', 'Rival Grassy');
+      await selectDropdownItem(tester, 'Your team used', 'Big Six');
+
+      expect(find.text('Big Six vs Rival Grassy'), findsOneWidget);
+      expect(find.text('No plan yet for this matchup.'), findsOneWidget);
+
+      final edit = find.byTooltip('Edit the matchup plan');
+      await tester.ensureVisible(edit);
+      await tester.pumpAndSettle();
+      await tester.tap(edit);
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Game plan'),
+        'Tailwind turn 1.',
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Tailwind turn 1.'), findsOneWidget);
+      expect(
+        (await matchups.watchAll().first).single.notes,
+        'Tailwind turn 1.',
+      );
     });
   });
 

@@ -656,13 +656,25 @@ Not in the original. Added 2026-10-01 at the user's request (7.9–7.12).
   - Each rule has been checked by breaking it on purpose: orientation,
     other side only, trimming, export, and the summary.
 
-### 7.11 Game plan in Log Game
+### ✅ 7.11 Game plan in Log Game
 - Picking "Their team" shows a **Game plan** card above their slots,
   with that team's notes. Picking "Your team used" as well adds that
   matchup's notes, editable in place, so the plan is in front of you
   before the battle.
 - **Tests:** the view model (which notes show for which picks, editing
   the matchup), widget, and acceptance.
+- **As built:**
+  - `LogGameViewModel` watches all matchup notes (no per-pair watch was
+    needed), and reads their team's notes from the latest team data, so
+    edits made elsewhere show up live.
+  - The card shows "No notes on their team yet", "Pick your team to see
+    your plan for this matchup" or "No plan yet for this matchup" where
+    fitting. The edit dialog is now a shared `MatchupNotesDialog` in
+    `ui/core/`.
+  - `pumpApp` can seed matchup notes.
+  - Each rule has been checked by breaking it on purpose: latest team
+    notes, live matchup notes, trimming, and showing the card only once
+    their team is picked.
 
 ### 7.12 Turn a game's notes into matchup notes
 - After saving a game against a saved opponent team, if the game had

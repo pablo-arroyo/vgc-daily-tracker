@@ -118,6 +118,7 @@ GoRouter createRouter() => GoRouter(
                   gameLogRepository: context.read(),
                   teamRepository: context.read(),
                   pokemonRepository: context.read(),
+                  matchupRepository: context.read(),
                   idGenerator: context.read(),
                 ),
                 child: const LogGameScreen(),

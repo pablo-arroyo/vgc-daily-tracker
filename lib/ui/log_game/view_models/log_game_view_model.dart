@@ -4,9 +4,11 @@ import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../../data/repositories/game_log/game_log_repository.dart';
+import '../../../data/repositories/matchup/matchup_repository.dart';
 import '../../../data/repositories/pokemon/pokemon_repository.dart';
 import '../../../data/repositories/team/team_repository.dart';
 import '../../../domain/models/game_log.dart';
+import '../../../domain/models/matchup_note.dart';
 import '../../../domain/models/mistake_category.dart';
 import '../../../domain/models/pokemon_ref.dart';
 import '../../../domain/models/team.dart';
@@ -27,9 +29,16 @@ class LogGameViewModel extends ChangeNotifier {
     required this._gameLogRepository,
     required TeamRepository teamRepository,
     required this._pokemonRepository,
+    required this._matchupRepository,
     required this._idGenerator,
   }) {
     save = Command0(_save);
+    saveMatchupNotes = Command1(_saveMatchupNotes);
+    // Watched, so plans edited elsewhere show up while logging.
+    _matchupsSubscription = _matchupRepository.watchAll().listen((notes) {
+      _matchupNotes = {for (final n in notes) n.key: n.notes};
+      notifyListeners();
+    });
     _teamsSubscription = teamRepository.watchAll().listen((teams) {
       // Only the player's own teams can be "your team used".
       _teams = [
@@ -45,6 +54,50 @@ class LogGameViewModel extends ChangeNotifier {
   }
 
   late final StreamSubscription<List<Team>> _teamsSubscription;
+  late final StreamSubscription<List<MatchupNote>> _matchupsSubscription;
+  final MatchupRepository _matchupRepository;
+  Map<String, String> _matchupNotes = const {};
+
+  /// Saves the plan for the picked pair of teams, trimmed.
+  late final Command1<void, String> saveMatchupNotes;
+
+  /// The game plan card shows once their team is picked.
+  bool get showGamePlan => _selectedOpponentTeam != null;
+
+  /// The picked opponent team as currently saved (its notes may have been
+  /// edited since it was picked).
+  Team? get _currentOpponentTeam {
+    final picked = _selectedOpponentTeam;
+    if (picked == null) return null;
+    return _opponentTeams.where((t) => t.id == picked.id).firstOrNull ?? picked;
+  }
+
+  /// Their team's notes; empty when none were written.
+  String get opponentTeamNotes => _currentOpponentTeam?.notes ?? '';
+
+  /// `Big Six vs Rival Grassy`, once both teams are picked.
+  String? get matchupTitle => switch ((_selectedTeam, _currentOpponentTeam)) {
+    (final mine?, final theirs?) => '${mine.name} vs ${theirs.name}',
+    _ => null,
+  };
+
+  /// The plan for the picked pair: empty when none was written, null until
+  /// both teams are picked.
+  String? get matchupNotes => switch ((_selectedTeam, _selectedOpponentTeam)) {
+    (final mine?, final theirs?) =>
+      _matchupNotes[MatchupNote.keyOf(mine.id, theirs.id)] ?? '',
+    _ => null,
+  };
+
+  Future<Result<void>> _saveMatchupNotes(String notes) =>
+      _matchupRepository.save(
+        MatchupNote(
+          myTeamId: _selectedTeam!.id,
+          opponentTeamId: _selectedOpponentTeam!.id,
+          notes: notes.trim(),
+          updatedAt: clock.now().toUtc(),
+        ),
+      );
 
   final GameLogRepository _gameLogRepository;
   final PokemonRepository _pokemonRepository;
@@ -257,6 +310,7 @@ class LogGameViewModel extends ChangeNotifier {
   @override
   void dispose() {
     _teamsSubscription.cancel();
+    _matchupsSubscription.cancel();
     super.dispose();
   }
 

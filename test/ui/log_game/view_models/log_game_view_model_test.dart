@@ -1,6 +1,7 @@
 import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vgc_daily_tracker/domain/models/game_log.dart';
+import 'package:vgc_daily_tracker/domain/models/matchup_note.dart';
 import 'package:vgc_daily_tracker/domain/models/mistake_category.dart';
 import 'package:vgc_daily_tracker/domain/models/pokemon_ref.dart';
 import 'package:vgc_daily_tracker/domain/models/team.dart';
@@ -9,6 +10,7 @@ import 'package:vgc_daily_tracker/utils/result.dart';
 
 import '../../../../testing/fakes/fake_game_log_repository.dart';
 import '../../../../testing/fakes/fake_id_generator.dart';
+import '../../../../testing/fakes/fake_matchup_repository.dart';
 import '../../../../testing/fakes/fake_pokemon_repository.dart';
 import '../../../../testing/fakes/fake_team_repository.dart';
 
@@ -31,10 +33,12 @@ final bigSix = Team(
 void main() {
   late FakeGameLogRepository games;
   late FakeTeamRepository teams;
+  late FakeMatchupRepository matchups;
 
   setUp(() {
     games = FakeGameLogRepository();
     teams = FakeTeamRepository();
+    matchups = FakeMatchupRepository();
   });
 
   LogGameViewModel create() {
@@ -42,6 +46,7 @@ void main() {
       gameLogRepository: games,
       teamRepository: teams,
       pokemonRepository: FakePokemonRepository(),
+      matchupRepository: matchups,
       idGenerator: SequentialIdGenerator(),
     );
     addTearDown(viewModel.dispose);
@@ -167,6 +172,100 @@ void main() {
       expect(game.opponentTeam.first, 'rillaboom');
       expect(viewModel.selectedOpponentTeam, isNull);
       expect(viewModel.opponentSlots, everyElement(isNull));
+    });
+  });
+
+  group('game plan', () {
+    final rival = Team(
+      id: 'o1',
+      name: 'Rival Grassy',
+      side: TeamSide.opponent,
+      notes: 'Fake Out Sneasler turn 1.',
+      pokemon: [FakePokemonRepository.sampleRef('rillaboom')],
+    );
+    final plan = MatchupNote(
+      myTeamId: 't1',
+      opponentTeamId: 'o1',
+      notes: 'Lead Whimsicott.',
+      updatedAt: DateTime.utc(2026, 9, 30),
+    );
+
+    Future<LogGameViewModel> ready({List<MatchupNote> notes = const []}) async {
+      teams = FakeTeamRepository(teams: [bigSix, rival]);
+      matchups = FakeMatchupRepository(notes: notes);
+      final viewModel = create();
+      await pumpEventQueue();
+      return viewModel;
+    }
+
+    test('only once their team is picked, with its notes', () async {
+      final viewModel = await ready();
+      expect(viewModel.showGamePlan, isFalse);
+
+      viewModel.selectOpponentTeam(rival);
+
+      expect(viewModel.showGamePlan, isTrue);
+      expect(viewModel.opponentTeamNotes, 'Fake Out Sneasler turn 1.');
+      expect(viewModel.matchupNotes, isNull, reason: 'no team of yours yet');
+    });
+
+    test('with your team picked too, the plan for that matchup', () async {
+      final viewModel = await ready(notes: [plan]);
+
+      viewModel
+        ..selectOpponentTeam(rival)
+        ..selectTeam(bigSix);
+
+      expect(viewModel.matchupTitle, 'Big Six vs Rival Grassy');
+      expect(viewModel.matchupNotes, 'Lead Whimsicott.');
+    });
+
+    test('an empty plan when none was written yet', () async {
+      final viewModel = await ready();
+
+      viewModel
+        ..selectOpponentTeam(rival)
+        ..selectTeam(bigSix);
+
+      expect(viewModel.matchupNotes, '');
+    });
+
+    test('notes saved elsewhere show up live', () async {
+      final viewModel = await ready();
+      viewModel
+        ..selectOpponentTeam(rival)
+        ..selectTeam(bigSix);
+
+      await matchups.save(plan);
+      await teams.save(rival.copyWith(notes: 'Watch for Trick Room.'));
+      await pumpEventQueue();
+
+      expect(viewModel.matchupNotes, 'Lead Whimsicott.');
+      expect(viewModel.opponentTeamNotes, 'Watch for Trick Room.');
+    });
+
+    test('saving the matchup plan stores it for the pair, trimmed', () async {
+      final viewModel = await ready();
+      viewModel
+        ..selectOpponentTeam(rival)
+        ..selectTeam(bigSix);
+      final now = DateTime.utc(2026, 10, 1, 9);
+
+      await withClock(
+        Clock.fixed(now),
+        () => viewModel.saveMatchupNotes.execute('  Tailwind turn 1.  '),
+      );
+      await pumpEventQueue();
+
+      expect(await matchups.watchAll().first, [
+        MatchupNote(
+          myTeamId: 't1',
+          opponentTeamId: 'o1',
+          notes: 'Tailwind turn 1.',
+          updatedAt: now,
+        ),
+      ]);
+      expect(viewModel.matchupNotes, 'Tailwind turn 1.');
     });
   });
 
@@ -446,6 +545,7 @@ void main() {
         gameLogRepository: games,
         teamRepository: teams,
         pokemonRepository: failing,
+        matchupRepository: matchups,
         idGenerator: SequentialIdGenerator(),
       );
       addTearDown(viewModel.dispose);

@@ -6,6 +6,7 @@ import '../../../domain/models/mistake_category.dart';
 import '../../../domain/models/pokemon_ref.dart';
 import '../../../domain/models/team.dart';
 import '../../../utils/result.dart';
+import '../../core/matchup_notes_dialog.dart';
 import '../../core/pokemon_autocomplete_field.dart';
 import '../../core/pokemon_chip.dart';
 import '../view_models/log_game_view_model.dart';
@@ -281,6 +282,7 @@ class _OpponentSection extends StatelessWidget {
           'From Team Preview — fill in whichever you remember, rest optional',
         ),
         const _OpponentTeamPicker(),
+        const _GamePlanCard(),
         ListenableBuilder(
           listenable: viewModel,
           builder: (context, _) {
@@ -343,6 +345,96 @@ class _OpponentTeamPicker extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+/// Their team's notes and your plan for the matchup, shown once their team
+/// is picked, so the plan is in front of you before the battle.
+class _GamePlanCard extends StatelessWidget {
+  const _GamePlanCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final viewModel = context.read<LogGameViewModel>();
+    return ListenableBuilder(
+      listenable: viewModel,
+      builder: (context, _) {
+        if (!viewModel.showGamePlan) return const SizedBox.shrink();
+        final textTheme = Theme.of(context).textTheme;
+        final theirNotes = viewModel.opponentTeamNotes;
+        final title = viewModel.matchupTitle;
+        final plan = viewModel.matchupNotes;
+        return Card(
+          margin: const EdgeInsets.only(bottom: 12),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Game plan', style: textTheme.titleMedium),
+                const SizedBox(height: 4),
+                Text(
+                  theirNotes.isEmpty
+                      ? 'No notes on their team yet.'
+                      : theirNotes,
+                ),
+                const Divider(height: 20),
+                if (title == null || plan == null)
+                  const Text(
+                    'Pick your team to see your plan for this matchup.',
+                  )
+                else
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(title, style: textTheme.labelLarge),
+                            const SizedBox(height: 2),
+                            Text(
+                              plan.isEmpty
+                                  ? 'No plan yet for this matchup.'
+                                  : plan,
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: 'Edit the matchup plan',
+                        icon: const Icon(Icons.edit_outlined),
+                        onPressed: () => _edit(context, title, plan),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _edit(BuildContext context, String title, String plan) async {
+    final save = context.read<LogGameViewModel>().saveMatchupNotes;
+    final messenger = ScaffoldMessenger.of(context);
+    final notes = await showDialog<String>(
+      context: context,
+      builder: (context) => MatchupNotesDialog(title: title, initial: plan),
+    );
+    if (notes == null) return;
+
+    await save.execute(notes);
+    if (save.error) {
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text("Couldn't save the matchup plan. Try again."),
+          ),
+        );
+    }
   }
 }
 
