@@ -56,13 +56,10 @@ class TeamEditorViewModel extends ChangeNotifier {
 
   void setSlot(int index, PokemonRef? pokemon) => _slots[index] = pokemon;
 
-  /// Suggestions for a Pokémon field; empty if search fails (e.g. offline
-  /// with no cached index), so the field just shows no suggestions.
-  Future<List<PokemonRef>> search(String query) async =>
-      switch (await _pokemonRepository.search(query)) {
-        Ok(:final value) => value,
-        Failure() => const [],
-      };
+  /// Suggestions for a Pokémon field. A failure (e.g. offline with no
+  /// cached index) is passed on, so the field can say why it's empty.
+  Future<Result<List<PokemonRef>>> search(String query) =>
+      _pokemonRepository.search(query);
 
   bool _missing = false;
 

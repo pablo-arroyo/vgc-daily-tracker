@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../domain/models/pokemon_ref.dart';
+import '../../utils/result.dart';
 
 /// A text field that only yields real Pokémon: it suggests matches from
 /// [search] and reports a [PokemonRef] only when one is picked, so typos
@@ -18,7 +19,10 @@ class PokemonAutocompleteField extends StatefulWidget {
   });
 
   final String label;
-  final Future<List<PokemonRef>> Function(String query) search;
+
+  /// A failed search (e.g. offline before the name list ever loaded) shows
+  /// a message instead of an unexplained empty list.
+  final Future<Result<List<PokemonRef>>> Function(String query) search;
   final ValueChanged<PokemonRef?> onChanged;
 
   /// Shown at start and treated as already picked, e.g. when editing a team.
@@ -32,6 +36,22 @@ class PokemonAutocompleteField extends StatefulWidget {
 class _PokemonAutocompleteFieldState extends State<PokemonAutocompleteField> {
   late PokemonRef? _picked = widget.initialValue;
   bool _showError = false;
+
+  /// The last search failed. Each keystroke searches again, so this clears
+  /// by itself once PokéAPI is reachable.
+  bool _searchFailed = false;
+
+  Future<List<PokemonRef>> _options(TextEditingValue value) async {
+    final result = await widget.search(value.text);
+    final failed = result is Failure;
+    if (failed != _searchFailed && mounted) {
+      setState(() => _searchFailed = failed);
+    }
+    return switch (result) {
+      Ok(:final value) => value,
+      Failure() => const [],
+    };
+  }
 
   void _pick(PokemonRef ref) {
     setState(() {
@@ -48,7 +68,7 @@ class _PokemonAutocompleteFieldState extends State<PokemonAutocompleteField> {
       initialValue: TextEditingValue(
         text: widget.initialValue?.displayName ?? '',
       ),
-      optionsBuilder: (value) => widget.search(value.text),
+      optionsBuilder: _options,
       onSelected: _pick,
       fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) =>
           TextField(
@@ -57,6 +77,9 @@ class _PokemonAutocompleteFieldState extends State<PokemonAutocompleteField> {
             decoration: InputDecoration(
               labelText: widget.label,
               errorText: _showError ? 'Pick a Pokémon from the list' : null,
+              helperText: _searchFailed
+                  ? "Can't reach PokéAPI. Keep typing to try again."
+                  : null,
             ),
             onChanged: (text) {
               if (_picked != null && text != _picked!.displayName) {

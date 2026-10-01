@@ -2,6 +2,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vgc_daily_tracker/domain/models/game_log.dart';
 import 'package:vgc_daily_tracker/domain/models/mistake_category.dart';
+import 'package:vgc_daily_tracker/domain/models/pokemon_ref.dart';
 import 'package:vgc_daily_tracker/domain/models/team.dart';
 import 'package:vgc_daily_tracker/ui/log_game/view_models/log_game_view_model.dart';
 import 'package:vgc_daily_tracker/utils/result.dart';
@@ -343,7 +344,7 @@ void main() {
       expect(viewModel.opponentLeads, isEmpty);
     });
 
-    test('search returns nothing when it fails', () async {
+    test('search passes a failure on, so the field can explain it', () async {
       final failing = FakePokemonRepository()..failWith = Exception('offline');
       final viewModel = LogGameViewModel(
         gameLogRepository: games,
@@ -353,13 +354,13 @@ void main() {
       );
       addTearDown(viewModel.dispose);
 
-      expect(await viewModel.search('rilla'), isEmpty);
+      expect(await viewModel.search('rilla'), isA<Failure<List<PokemonRef>>>());
     });
 
     test('search suggests Pokémon for the opponent slots', () async {
       final results = await create().search('rilla');
 
-      expect(results, [rilla]);
+      expect((results as Ok<List<PokemonRef>>).value, [rilla]);
     });
   });
 

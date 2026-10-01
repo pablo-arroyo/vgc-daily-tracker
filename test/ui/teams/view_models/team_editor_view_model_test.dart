@@ -125,14 +125,20 @@ void main() {
 
       final results = await viewModel.search('chariz');
 
-      expect(results.map((r) => r.slug), ['charizard', 'charizard-mega-y']);
+      expect((results as Ok<List<PokemonRef>>).value.map((r) => r.slug), [
+        'charizard',
+        'charizard-mega-y',
+      ]);
     });
 
-    test('returns nothing when search fails', () async {
+    test('passes a failed search on, so the field can explain it', () async {
       pokemon.failWith = Exception('offline');
       final viewModel = create();
 
-      expect(await viewModel.search('chariz'), isEmpty);
+      expect(
+        await viewModel.search('chariz'),
+        isA<Failure<List<PokemonRef>>>(),
+      );
     });
   });
 

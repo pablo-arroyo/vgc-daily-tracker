@@ -30,6 +30,7 @@ Future<void> pumpApp(
   List<GameLog> games = const [],
   FakeRoutineRepository? routine,
   FormatConfig? format,
+  FakePokemonRepository? pokemon,
 }) async {
   await tester.pumpWidget(
     VgcApp(
@@ -38,6 +39,7 @@ Future<void> pumpApp(
         games: games,
         routine: routine,
         format: format,
+        pokemon: pokemon,
       ),
     ),
   );
@@ -46,15 +48,18 @@ Future<void> pumpApp(
 
 /// The app's dependencies, all fake: no network, no disk. [teams] and
 /// [games] seed the repositories; pass the same [routine] to two apps to
-/// simulate a restart.
+/// simulate a restart, or a [pokemon] repository to switch it offline.
 List<SingleChildWidget> providersFake({
   List<Team> teams = const [],
   List<GameLog> games = const [],
   FakeRoutineRepository? routine,
   FormatConfig? format,
+  FakePokemonRepository? pokemon,
 }) => [
   Provider<FormatConfig>.value(value: format ?? FormatConfig.regMC),
-  Provider<PokemonRepository>(create: (_) => FakePokemonRepository()),
+  Provider<PokemonRepository>(
+    create: (_) => pokemon ?? FakePokemonRepository(),
+  ),
   Provider<ItemRepository>(create: (_) => FakeItemRepository()),
   Provider<TeamRepository>(create: (_) => FakeTeamRepository(teams: teams)),
   Provider<GameLogRepository>(

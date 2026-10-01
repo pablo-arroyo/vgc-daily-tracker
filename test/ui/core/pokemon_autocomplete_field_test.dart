@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:vgc_daily_tracker/data/services/pokeapi/poke_api_exception.dart';
 import 'package:vgc_daily_tracker/domain/models/pokemon_ref.dart';
 import 'package:vgc_daily_tracker/ui/core/pokemon_autocomplete_field.dart';
 import 'package:vgc_daily_tracker/utils/result.dart';
@@ -7,12 +8,10 @@ import 'package:vgc_daily_tracker/utils/result.dart';
 import '../../../testing/fakes/fake_pokemon_repository.dart';
 
 void main() {
-  final repository = FakePokemonRepository();
-  Future<List<PokemonRef>> search(String query) async =>
-      switch (await repository.search(query)) {
-        Ok(:final value) => value,
-        Failure() => const [],
-      };
+  late FakePokemonRepository repository;
+  setUp(() => repository = FakePokemonRepository());
+  Future<Result<List<PokemonRef>>> search(String query) =>
+      repository.search(query);
 
   late List<PokemonRef?> changes;
 
@@ -56,6 +55,37 @@ void main() {
       tester.widget<TextField>(find.byType(TextField)).controller?.text,
       'Kingambit',
     );
+  });
+
+  group('when the search fails (offline)', () {
+    const message = "Can't reach PokéAPI. Keep typing to try again.";
+
+    testWidgets('says why there are no suggestions', (tester) async {
+      repository.failWith = const PokeApiNetworkUnavailable('/pokemon');
+      await pumpField(tester);
+
+      await tester.enterText(find.byType(TextField), 'king');
+      await tester.pumpAndSettle();
+
+      expect(find.text(message), findsOneWidget);
+      expect(find.text('Kingambit'), findsNothing);
+    });
+
+    testWidgets('recovers on the next keystroke once back online', (
+      tester,
+    ) async {
+      repository.failWith = const PokeApiNetworkUnavailable('/pokemon');
+      await pumpField(tester);
+      await tester.enterText(find.byType(TextField), 'king');
+      await tester.pumpAndSettle();
+
+      repository.failWith = null;
+      await tester.enterText(find.byType(TextField), 'kinga');
+      await tester.pumpAndSettle();
+
+      expect(find.text(message), findsNothing);
+      expect(find.text('Kingambit'), findsOneWidget);
+    });
   });
 
   testWidgets('rejects a typo instead of storing it', (tester) async {

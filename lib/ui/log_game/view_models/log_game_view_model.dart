@@ -156,12 +156,10 @@ class LogGameViewModel extends ChangeNotifier {
     return null;
   }
 
-  /// Suggestions for an opponent slot; empty if search fails.
-  Future<List<PokemonRef>> search(String query) async =>
-      switch (await _pokemonRepository.search(query)) {
-        Ok(:final value) => value,
-        Failure() => const [],
-      };
+  /// Suggestions for a Pokémon field. A failure (e.g. offline with no
+  /// cached index) is passed on, so the field can say why it's empty.
+  Future<Result<List<PokemonRef>>> search(String query) =>
+      _pokemonRepository.search(query);
 
   MistakeCategory? _mistake;
   String _notes = '';

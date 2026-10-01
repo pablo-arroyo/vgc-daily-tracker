@@ -529,9 +529,24 @@ the device timezone (injectable, so tests pin UTC-6).
 
 ## Phase 8: Polish and release readiness
 
-- **8.1 Resilience:** offline, error and retry states on every PokéAPI-backed
-  widget. The app stays usable offline with its cached index. Tested with the
-  fake service in error modes.
+- ✅ **8.1 Resilience:** every PokéAPI-backed widget was audited. Most of
+  them were already covered by earlier steps:
+  - Avatars fall back to an icon.
+  - The team detail screen has Retry.
+  - Import and sample teams show one clear offline message and save
+    nothing.
+  - The editor skips the species check offline.
+  - The cached index is the offline fallback (2.1).
+
+  The one gap was the Pokémon autocomplete: a failed search looked like
+  "no matches". Its `search` now returns a `Result`, and both view models
+  pass failures through. The field then says "Can't reach PokéAPI. Keep
+  typing to try again." and clears that on the next successful
+  keystroke.
+  - **Tests:** an acceptance test runs the whole app offline (editor and
+    Log Game) and recovers once back online. The field has widget tests,
+    and the view models' search tests now expect the failure passed
+    through.
 - **8.2 Accessibility:** semantics labels on chips, avatars and stats; text
   scaling to 200 %; contrast in both themes. Covered by widget tests with
   `meetsGuideline` checks.
