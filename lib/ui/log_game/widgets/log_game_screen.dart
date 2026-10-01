@@ -24,6 +24,21 @@ class _LogGameScreenState extends State<LogGameScreen> {
   /// own state, so a new key rebuilds them from the (reset) view model.
   int _formGeneration = 0;
 
+  final _scroll = ScrollController();
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  /// A fresh form (after saving, or for a set's next game) rebuilds its
+  /// fields and starts at the top, where the open-set card shows.
+  void _freshForm() {
+    setState(() => _formGeneration++);
+    if (_scroll.hasClients) _scroll.jumpTo(0);
+  }
+
   @override
   Widget build(BuildContext context) {
     // Its own messenger: snackbars then show in this Scaffold, above the
@@ -31,21 +46,25 @@ class _LogGameScreenState extends State<LogGameScreen> {
     return ScaffoldMessenger(
       child: Scaffold(
         body: SingleChildScrollView(
+          controller: _scroll,
           padding: const EdgeInsets.all(16),
           child: Column(
             key: ValueKey(_formGeneration),
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: const [
-              _SectionLabel('Result'),
-              _ResultPicker(),
-              SizedBox(height: 16),
-              _TeamPicker(),
-              _YourPicks(),
-              _OpponentSection(),
-              Divider(height: 32),
-              _MistakePicker(),
-              SizedBox(height: 12),
-              _NotesField(),
+            children: [
+              // Refilling the form for the next game rebuilds its fields.
+              _OpenSetCard(onNextGame: _freshForm),
+              const _SectionLabel('Result'),
+              const _ResultPicker(),
+              const _SetToggle(),
+              const SizedBox(height: 16),
+              const _TeamPicker(),
+              const _YourPicks(),
+              const _OpponentSection(),
+              const Divider(height: 32),
+              const _MistakePicker(),
+              const SizedBox(height: 12),
+              const _NotesField(),
             ],
           ),
         ),
@@ -53,9 +72,7 @@ class _LogGameScreenState extends State<LogGameScreen> {
         bottomNavigationBar: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: _SaveGameButton(
-              onSaved: () => setState(() => _formGeneration++),
-            ),
+            child: _SaveGameButton(onSaved: _freshForm),
           ),
         ),
       ),
@@ -125,7 +142,10 @@ class _SaveGameButton extends StatelessWidget {
     final messenger = ScaffoldMessenger.of(context);
     await save.execute();
     final message = switch (save.result) {
-      Ok() => 'Game logged ✓',
+      Ok() => switch (viewModel.lastSetResult) {
+        final result? => 'Game logged ✓ · $result',
+        null => 'Game logged ✓',
+      },
       Failure(error: LogGameValidationError(:final message)) => message,
       _ => "Couldn't save the game. Try again.",
     };
@@ -163,6 +183,88 @@ class _SaveGameButton extends StatelessWidget {
           }),
         ),
       );
+  }
+}
+
+/// The open best-of-3, with its next game and a way to end it early.
+class _OpenSetCard extends StatelessWidget {
+  const _OpenSetCard({required this.onNextGame});
+
+  /// Called once the form holds the next game, so its fields rebuild.
+  final VoidCallback onNextGame;
+
+  @override
+  Widget build(BuildContext context) {
+    final viewModel = context.read<LogGameViewModel>();
+    return ListenableBuilder(
+      listenable: viewModel,
+      builder: (context, _) {
+        final title = viewModel.openSetTitle;
+        final next = viewModel.nextSetGame;
+        // Hidden while its next game is already being logged.
+        if (title == null ||
+            next == null ||
+            viewModel.continuingSetGame != null) {
+          return const SizedBox.shrink();
+        }
+        return Card(
+          margin: const EdgeInsets.only(bottom: 16),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    FilledButton(
+                      onPressed: () async {
+                        await viewModel.logNextGame.execute();
+                        onNextGame();
+                      },
+                      child: Text('Log game $next'),
+                    ),
+                    TextButton(
+                      onPressed: viewModel.endSet.execute,
+                      child: const Text('End set'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// "Part of a best-of-3", or which game of the set is being logged.
+class _SetToggle extends StatelessWidget {
+  const _SetToggle();
+
+  @override
+  Widget build(BuildContext context) {
+    final viewModel = context.read<LogGameViewModel>();
+    return ListenableBuilder(
+      listenable: viewModel,
+      builder: (context, _) => switch (viewModel.continuingSetGame) {
+        final game? => Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Text('Game $game of a best-of-3'),
+        ),
+        null => CheckboxListTile(
+          contentPadding: EdgeInsets.zero,
+          controlAffinity: ListTileControlAffinity.leading,
+          title: const Text('Part of a best-of-3'),
+          value: viewModel.partOfSet,
+          onChanged: (value) => viewModel.setPartOfSet(value ?? false),
+        ),
+      },
+    );
   }
 }
 

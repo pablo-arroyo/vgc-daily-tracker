@@ -431,6 +431,180 @@ void main() {
     });
   });
 
+  group('best-of-3', () {
+    final rival = Team(
+      id: 'o1',
+      name: 'Rival Grassy',
+      side: TeamSide.opponent,
+      pokemon: [
+        for (final slug in ['rillaboom', 'sneasler', 'incineroar'])
+          FakePokemonRepository.sampleRef(slug),
+      ],
+    );
+
+    Future<LogGameViewModel> ready() async {
+      teams = FakeTeamRepository(teams: [bigSix, rival]);
+      final viewModel = create();
+      await pumpEventQueue();
+      return viewModel;
+    }
+
+    /// Picks the result and, with your team picked, its 4 + 2, then saves.
+    Future<void> play(LogGameViewModel viewModel, GameResult result) async {
+      viewModel.setResult(result);
+      if (viewModel.selectedTeam case final team?) {
+        for (final p in team.pokemon.take(4)) {
+          viewModel.toggleBrought(p);
+        }
+        for (final p in team.pokemon.take(2)) {
+          viewModel.toggleLead(p);
+        }
+      }
+      await viewModel.save.execute();
+      await pumpEventQueue();
+    }
+
+    Future<List<GameLog>> logged() async =>
+        (await games.watchAll().first).reversed.toList();
+
+    test('game 1 starts a set, shown as open with its score', () async {
+      final viewModel = await ready();
+      viewModel
+        ..setPartOfSet(true)
+        ..selectTeam(bigSix)
+        ..selectOpponentTeam(rival);
+
+      await play(viewModel, GameResult.win);
+
+      final [game] = await logged();
+      expect(game.setId, isNotNull);
+      expect(game.setGame, 1);
+      expect(viewModel.openSetTitle, 'Best-of-3 vs Rival Grassy · 1–0');
+      expect(viewModel.nextSetGame, 2);
+      expect(viewModel.partOfSet, isFalse, reason: 'the form reset');
+    });
+
+    test('without the checkbox a game is a single game', () async {
+      final viewModel = await ready();
+
+      await play(viewModel, GameResult.win);
+
+      expect((await logged()).single.setId, isNull);
+      expect(viewModel.openSetTitle, isNull);
+    });
+
+    test(
+      '"Log game 2" keeps both teams, clears the rest, continues the set',
+      () async {
+        final viewModel = await ready();
+        viewModel
+          ..setPartOfSet(true)
+          ..selectTeam(bigSix)
+          ..selectOpponentTeam(rival)
+          ..setNotes('Game 1 notes');
+        await play(viewModel, GameResult.win);
+
+        await viewModel.logNextGame.execute();
+
+        expect(viewModel.continuingSetGame, 2);
+        expect(viewModel.selectedTeam, bigSix);
+        expect(viewModel.selectedOpponentTeam, rival);
+        expect(viewModel.opponentTeam, rival.pokemon);
+        expect(viewModel.brought, isEmpty);
+        expect(viewModel.result, isNull);
+        expect(viewModel.notes, '');
+
+        await play(viewModel, GameResult.loss);
+
+        final [first, second] = await logged();
+        expect(second.setId, first.setId);
+        expect(second.setGame, 2);
+        expect(viewModel.openSetTitle, 'Best-of-3 vs Rival Grassy · 1–1');
+      },
+    );
+
+    test(
+      "their typed Pokémon carry over when they aren't a saved team",
+      () async {
+        final viewModel = await ready();
+        final typed = [
+          FakePokemonRepository.sampleRef('garchomp'),
+          FakePokemonRepository.sampleRef('kingambit'),
+        ];
+        viewModel
+          ..setPartOfSet(true)
+          ..setOpponentSlot(0, typed[0])
+          ..setOpponentSlot(1, typed[1]);
+        await play(viewModel, GameResult.win);
+        expect(viewModel.openSetTitle, 'Best-of-3 · 1–0');
+
+        await viewModel.logNextGame.execute();
+
+        expect(viewModel.opponentTeam, typed);
+        expect(viewModel.selectedOpponentTeam, isNull);
+      },
+    );
+
+    test('the set closes itself at 2 wins, with the result', () async {
+      final viewModel = await ready();
+      viewModel.setPartOfSet(true);
+      await play(viewModel, GameResult.win);
+      await viewModel.logNextGame.execute();
+      await play(viewModel, GameResult.loss);
+      await viewModel.logNextGame.execute();
+
+      await play(viewModel, GameResult.win);
+
+      expect(viewModel.lastSetResult, 'Set won 2–1');
+      expect(viewModel.openSetTitle, isNull);
+    });
+
+    test('2 losses lose the set', () async {
+      final viewModel = await ready();
+      viewModel.setPartOfSet(true);
+      await play(viewModel, GameResult.loss);
+      await viewModel.logNextGame.execute();
+
+      await play(viewModel, GameResult.loss);
+
+      expect(viewModel.lastSetResult, 'Set lost 0–2');
+      expect(viewModel.openSetTitle, isNull);
+    });
+
+    test('"End set" closes it early', () async {
+      final viewModel = await ready();
+      viewModel.setPartOfSet(true);
+      await play(viewModel, GameResult.win);
+
+      await viewModel.endSet.execute();
+      await pumpEventQueue();
+
+      expect(viewModel.openSetTitle, isNull);
+      expect((await logged()).single.endsSet, isTrue);
+    });
+
+    test('a single game in between leaves the set unfinished', () async {
+      final viewModel = await ready();
+      viewModel.setPartOfSet(true);
+      await play(viewModel, GameResult.win);
+
+      await play(viewModel, GameResult.loss);
+
+      expect(viewModel.openSetTitle, isNull);
+    });
+
+    test('an open set is still open after a restart', () async {
+      final first = await ready();
+      first.setPartOfSet(true);
+      await play(first, GameResult.win);
+
+      final restarted = create();
+      await pumpEventQueue();
+
+      expect(restarted.openSetTitle, 'Best-of-3 · 1–0');
+    });
+  });
+
   group('your team', () {
     test("never offers an opponent's team as yours", () async {
       final rival = bigSix.copyWith(

@@ -38,6 +38,14 @@ abstract class GameLog with _$GameLog {
     /// "What decided this game?", when answered.
     MistakeCategory? mistake,
     @Default('') String notes,
+
+    /// The best-of-3 this game belongs to (null for a single game), and
+    /// which game of it this was (1–3).
+    String? setId,
+    int? setGame,
+
+    /// Set on a set's last logged game when the set was ended early.
+    @Default(false) bool endsSet,
   }) = _GameLog;
 
   factory GameLog.fromJson(Map<String, Object?> json) =>

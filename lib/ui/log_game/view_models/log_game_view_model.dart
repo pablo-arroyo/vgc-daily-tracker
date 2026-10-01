@@ -36,6 +36,14 @@ class LogGameViewModel extends ChangeNotifier {
   }) : _toLocal = toLocal ?? ((utc) => utc.toLocal()) {
     save = Command0(_save);
     addLastGameToNotes = Command0(_addLastGameToNotes);
+    logNextGame = Command0(_logNextGame);
+    endSet = Command0(_endSet);
+    // Watched: the open best-of-3 is derived from the logged games, so it
+    // survives a restart.
+    _gamesSubscription = _gameLogRepository.watchAll().listen((games) {
+      _games = games;
+      notifyListeners();
+    });
     saveMatchupNotes = Command1(_saveMatchupNotes);
     // Watched, so plans edited elsewhere show up while logging.
     _matchupsSubscription = _matchupRepository.watchAll().listen((notes) {
@@ -58,6 +66,102 @@ class LogGameViewModel extends ChangeNotifier {
 
   late final StreamSubscription<List<Team>> _teamsSubscription;
   late final StreamSubscription<List<MatchupNote>> _matchupsSubscription;
+  late final StreamSubscription<List<GameLog>> _gamesSubscription;
+
+  /// Every logged game, newest first.
+  List<GameLog> _games = const [];
+
+  static const _setWinsNeeded = 2;
+
+  bool _partOfSet = false;
+
+  /// "Part of a best-of-3" for the game being logged.
+  bool get partOfSet => _partOfSet;
+
+  void setPartOfSet(bool partOfSet) {
+    _partOfSet = partOfSet;
+    notifyListeners();
+  }
+
+  /// The set being continued by "Log game N", and that game's number.
+  ({String setId, int game})? _continuing;
+
+  /// Which game of the set is being logged, while continuing one.
+  int? get continuingSetGame => _continuing?.game;
+
+  /// The open best-of-3: the set of the latest logged game, while it's
+  /// undecided and wasn't ended early.
+  ({List<GameLog> games, int wins, int losses})? get _openSet {
+    final setId = _games.firstOrNull?.setId;
+    if (setId == null) return null;
+    final games = [
+      for (final g in _games)
+        if (g.setId == setId) g,
+    ];
+    if (games.any((g) => g.endsSet)) return null;
+    final (wins, losses) = _score(games);
+    if (wins >= _setWinsNeeded || losses >= _setWinsNeeded) return null;
+    return (games: games, wins: wins, losses: losses);
+  }
+
+  static (int, int) _score(Iterable<GameLog> games) => (
+    games.where((g) => g.result == GameResult.win).length,
+    games.where((g) => g.result == GameResult.loss).length,
+  );
+
+  /// `Best-of-3 vs Rival Grassy · 1–0`, while a set is open.
+  String? get openSetTitle {
+    final set = _openSet;
+    if (set == null) return null;
+    final against = switch (set.games.first.opponentTeamName) {
+      final name? => ' vs $name',
+      null => '',
+    };
+    return 'Best-of-3$against · ${set.wins}–${set.losses}';
+  }
+
+  /// The number of the open set's next game.
+  int? get nextSetGame => switch (_openSet) {
+    final set? => set.games.length + 1,
+    null => null,
+  };
+
+  String? _lastSetResult;
+
+  /// `Set won 2–1`, when the game just saved decided its set.
+  String? get lastSetResult => _lastSetResult;
+
+  /// Starts the open set's next game: both teams carried over, the rest
+  /// cleared.
+  late final Command0<void> logNextGame;
+
+  /// Closes the open set early (a forfeit, or one you stopped logging).
+  late final Command0<void> endSet;
+
+  Future<Result<void>> _logNextGame() async {
+    final set = _openSet!;
+    final last = set.games.first;
+    _reset();
+    _continuing = (setId: last.setId!, game: set.games.length + 1);
+    _selectedTeam = _teams.where((t) => t.id == last.teamId).firstOrNull;
+    final theirs = _opponentTeams
+        .where((t) => t.id == last.opponentTeamId)
+        .firstOrNull;
+    if (theirs != null) {
+      selectOpponentTeam(theirs);
+    } else {
+      for (final (i, slug) in last.opponentTeam.take(6).indexed) {
+        if (await _pokemonRepository.resolve(slug) case Ok(:final value)) {
+          _opponentSlots[i] = value;
+        }
+      }
+    }
+    notifyListeners();
+    return const Result.ok(null);
+  }
+
+  Future<Result<void>> _endSet() =>
+      _gameLogRepository.add(_openSet!.games.first.copyWith(endsSet: true));
   final MatchupRepository _matchupRepository;
   Map<String, String> _matchupNotes = const {};
 
@@ -289,6 +393,9 @@ class LogGameViewModel extends ChangeNotifier {
     List<String> slugs(Iterable<PokemonRef> pokemon) => [
       for (final p in pokemon) p.slug,
     ];
+    final continuing = _continuing;
+    final setId =
+        continuing?.setId ?? (_partOfSet ? _idGenerator.next() : null);
     final game = GameLog(
       id: _idGenerator.next(),
       playedAt: clock.now().toUtc(),
@@ -305,13 +412,28 @@ class LogGameViewModel extends ChangeNotifier {
       opponentLeads: slugs(_opponentLeads),
       mistake: _mistake,
       notes: _notes.trim(),
+      setId: setId,
+      setGame: continuing?.game ?? (setId == null ? null : 1),
     );
     final saved = await _gameLogRepository.add(game);
     if (saved is Ok) {
       _lastSaved = game;
+      _lastSetResult = setId == null ? null : _setResult(setId, game);
       _reset();
     }
     return saved;
+  }
+
+  /// `Set won 2–1` if [game] decided its set, else null.
+  String? _setResult(String setId, GameLog game) {
+    final (wins, losses) = _score([
+      game,
+      for (final g in _games)
+        if (g.setId == setId && g.id != game.id) g,
+    ]);
+    if (wins >= _setWinsNeeded) return 'Set won $wins–$losses';
+    if (losses >= _setWinsNeeded) return 'Set lost $wins–$losses';
+    return null;
   }
 
   /// The game saved last, for "Add to matchup notes".
@@ -375,6 +497,7 @@ class LogGameViewModel extends ChangeNotifier {
   void dispose() {
     _teamsSubscription.cancel();
     _matchupsSubscription.cancel();
+    _gamesSubscription.cancel();
     super.dispose();
   }
 
@@ -389,6 +512,8 @@ class LogGameViewModel extends ChangeNotifier {
     _opponentLeads.clear();
     _mistake = null;
     _notes = '';
+    _partOfSet = false;
+    _continuing = null;
     notifyListeners();
   }
 }

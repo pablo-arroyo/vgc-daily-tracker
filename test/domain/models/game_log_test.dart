@@ -27,6 +27,8 @@ void main() {
       opponentLeads: const ['rillaboom', 'sneasler'],
       mistake: MistakeCategory.wrongBring,
       notes: 'Lead Kingambit into Rillaboom next time.',
+      setId: 'set-1',
+      setGame: 2,
     );
     final json = {
       'id': 'game-1',
@@ -51,6 +53,9 @@ void main() {
       'opponent_leads': ['rillaboom', 'sneasler'],
       'mistake': 'wrongBring',
       'notes': 'Lead Kingambit into Rillaboom next time.',
+      'set_id': 'set-1',
+      'set_game': 2,
+      'ends_set': false,
     };
 
     test('serializes to the pinned storage shape', () {
@@ -59,6 +64,19 @@ void main() {
 
     test('round-trips through JSON', () {
       expect(GameLog.fromJson(json), game);
+    });
+
+    test('games saved before sets existed load as single games', () {
+      final legacy = {...json}
+        ..remove('set_id')
+        ..remove('set_game')
+        ..remove('ends_set');
+
+      final loaded = GameLog.fromJson(legacy);
+
+      expect(loaded.setId, isNull);
+      expect(loaded.setGame, isNull);
+      expect(loaded.endsSet, isFalse);
     });
 
     test('games saved before opponent teams existed load unlinked', () {
@@ -98,6 +116,9 @@ void main() {
         'opponent_leads': <String>[],
         'mistake': null,
         'notes': '',
+        'set_id': null,
+        'set_game': null,
+        'ends_set': false,
       });
     });
 

@@ -836,7 +836,7 @@ The user chose: best-of-3 with "next game in set", and speed matchups that
 include Megas, Tailwind and Trick Room, Speed items, and ranges for unknown
 opponent spreads.
 
-### 10.1 Best-of-3 sets: logging
+### ✅ 10.1 Best-of-3 sets: logging
 - **Model:** `GameLog` gains `setId` and `setGame` (1–3), both null for
   single games, so older games load unchanged.
 - **Log Game:**
@@ -853,6 +853,20 @@ opponent spreads.
   - Unit: the model JSON (older games load as single games); the view
     model (open set, next game, the score, auto-close, end set).
   - Widget tests, and acceptance: log a set 2–1.
+- **As built:**
+  - The open set is derived from the game log (the latest game's set,
+    if undecided and not ended), so it survives a restart without a
+    new store. `GameLog.endsSet` marks a set ended early. A single game
+    logged in between leaves the set unfinished.
+  - "Log game N" re-resolves their typed Pokémon when they weren't a
+    saved team.
+  - The confirmation adds the result: "Game logged ✓ · Set won 2–1".
+  - **Found on the way:** after saving, the form stayed scrolled down,
+    so the new set card at the top was off screen. A fresh form (after
+    saving, or for the next game) now starts at the top.
+  - Each rule has been checked by breaking it on purpose (ended and
+    decided sets close, a single game leaves the set, reset, scroll),
+    and a macOS journey logs a set won 2–0.
 
 ### 10.2 Best-of-3 sets: Progress
 - A "Best-of-3 sets" card with your set record and set win %, game 1 win

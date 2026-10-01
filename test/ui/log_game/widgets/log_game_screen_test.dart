@@ -249,6 +249,65 @@ void main() {
     });
   });
 
+  group('best-of-3', () {
+    final rival = Team(
+      id: 'o1',
+      name: 'Rival Grassy',
+      side: TeamSide.opponent,
+      pokemon: [FakePokemonRepository.sampleRef('rillaboom')],
+    );
+
+    Future<void> saveGameOne(WidgetTester tester) async {
+      await tester.tap(find.text('Part of a best-of-3'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Win'));
+      await tester.pumpAndSettle();
+      await selectDropdownItem(tester, 'Their team', 'Rival Grassy');
+      await tester.tap(find.widgetWithText(FilledButton, 'Save game'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('after game 1, a card shows the open set', (tester) async {
+      await pumpScreen(tester, extraTeams: [rival]);
+
+      await saveGameOne(tester);
+
+      expect(find.text('Best-of-3 vs Rival Grassy · 1–0'), findsOneWidget);
+      expect(find.widgetWithText(FilledButton, 'Log game 2'), findsOneWidget);
+      expect(find.widgetWithText(TextButton, 'End set'), findsOneWidget);
+    });
+
+    testWidgets('"Log game 2" refills their team and labels the game', (
+      tester,
+    ) async {
+      await pumpScreen(tester, extraTeams: [rival]);
+      await saveGameOne(tester);
+
+      await tester.tap(find.widgetWithText(FilledButton, 'Log game 2'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Game 2 of a best-of-3'), findsOneWidget);
+      expect(find.text('Part of a best-of-3'), findsNothing);
+      expect(
+        tester
+            .widget<TextField>(find.widgetWithText(TextField, 'Opp. Pokémon 1'))
+            .controller
+            ?.text,
+        'Rillaboom',
+      );
+    });
+
+    testWidgets('"End set" closes it', (tester) async {
+      await pumpScreen(tester, extraTeams: [rival]);
+      await saveGameOne(tester);
+
+      await tester.tap(find.widgetWithText(TextButton, 'End set'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Best-of-3 vs'), findsNothing);
+    });
+  });
+
   group('your picks', () {
     testWidgets('limits are enforced visibly: 4 brought, then leads appear', (
       tester,

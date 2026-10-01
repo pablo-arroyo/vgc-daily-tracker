@@ -62,6 +62,9 @@ _GameLog _$GameLogFromJson(Map<String, dynamic> json) => $checkedCreate(
         (v) => $enumDecodeNullable(_$MistakeCategoryEnumMap, v),
       ),
       notes: $checkedConvert('notes', (v) => v as String? ?? ''),
+      setId: $checkedConvert('set_id', (v) => v as String?),
+      setGame: $checkedConvert('set_game', (v) => (v as num?)?.toInt()),
+      endsSet: $checkedConvert('ends_set', (v) => v as bool? ?? false),
     );
     return val;
   },
@@ -74,6 +77,9 @@ _GameLog _$GameLogFromJson(Map<String, dynamic> json) => $checkedCreate(
     'opponentTeam': 'opponent_team',
     'opponentBrought': 'opponent_brought',
     'opponentLeads': 'opponent_leads',
+    'setId': 'set_id',
+    'setGame': 'set_game',
+    'endsSet': 'ends_set',
   },
 );
 
@@ -93,6 +99,9 @@ Map<String, dynamic> _$GameLogToJson(_GameLog instance) => <String, dynamic>{
   'opponent_leads': instance.opponentLeads,
   'mistake': _$MistakeCategoryEnumMap[instance.mistake],
   'notes': instance.notes,
+  'set_id': instance.setId,
+  'set_game': instance.setGame,
+  'ends_set': instance.endsSet,
 };
 
 const _$GameResultEnumMap = {GameResult.win: 'win', GameResult.loss: 'loss'};
