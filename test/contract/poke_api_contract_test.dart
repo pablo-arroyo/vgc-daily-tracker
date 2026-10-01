@@ -9,6 +9,7 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
+import 'package:vgc_daily_tracker/data/services/pokeapi/models/item_api_model.dart';
 import 'package:vgc_daily_tracker/data/services/pokeapi/models/pokemon_detail_api_model.dart';
 import 'package:vgc_daily_tracker/data/services/pokeapi/models/pokemon_list_api_model.dart';
 import 'package:vgc_daily_tracker/data/services/pokeapi/poke_api_service.dart';
@@ -34,6 +35,13 @@ void main() {
       expect(pokemon.stats, hasLength(6));
     });
   }
+
+  test('live /item/metagrossite parses', () async {
+    final result = await service.getItem('metagrossite');
+
+    expect(result, isA<Ok<ItemApiModel>>(), reason: '$result');
+    expect((result as Ok<ItemApiModel>).value.name, 'metagrossite');
+  });
 
   test('live /pokemon?limit=N parses the name index', () async {
     final result = await service.getPokemonList(limit: 3);

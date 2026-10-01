@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:vgc_daily_tracker/data/services/pokeapi/models/item_api_model.dart';
 import 'package:vgc_daily_tracker/data/services/pokeapi/models/pokemon_detail_api_model.dart';
 import 'package:vgc_daily_tracker/data/services/pokeapi/models/pokemon_list_api_model.dart';
 import 'package:vgc_daily_tracker/data/services/pokeapi/poke_api_exception.dart';
@@ -17,9 +18,10 @@ void main() {
   /// A client that serves recorded fixtures by path, and 404s otherwise.
   http.Client fixtureClient() => MockClient((request) async {
     requested.add(request.url);
-    final slug = request.url.pathSegments.lastWhere((s) => s.isNotEmpty);
+    // /api/v2/<resource>/<slug> → fixtures/pokeapi/<resource>_<slug>.json
+    final [_, _, resource, slug, ...] = request.url.pathSegments;
     try {
-      return http.Response(fixture('pokeapi/pokemon_$slug.json'), 200);
+      return http.Response(fixture('pokeapi/${resource}_$slug.json'), 200);
     } on Exception {
       return http.Response('{"status":404,"message":"Not Found"}', 404);
     }
@@ -109,6 +111,30 @@ void main() {
         );
       });
     }
+  });
+
+  group('getItem', () {
+    test('fetches /item/{slug} and parses the recorded response', () async {
+      final service = PokeApiService(client: fixtureClient());
+
+      final result = await service.getItem('metagrossite');
+
+      expect(
+        requested.single.toString(),
+        'https://pokeapi.co/api/v2/item/metagrossite',
+      );
+      final item = (result as Ok<ItemApiModel>).value;
+      expect(item.id, 799);
+      expect(item.name, 'metagrossite');
+    });
+
+    test('an unknown item is a Failure with PokeApiNotFound', () async {
+      final service = PokeApiService(client: fixtureClient());
+
+      final result = await service.getItem('metagrosite');
+
+      expect((result as Failure).error, isA<PokeApiNotFound>());
+    });
   });
 
   group('errors', () {

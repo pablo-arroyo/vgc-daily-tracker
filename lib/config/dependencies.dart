@@ -4,6 +4,8 @@ import 'package:provider/single_child_widget.dart';
 
 import '../data/repositories/game_log/game_log_repository.dart';
 import '../data/repositories/game_log/game_log_repository_local.dart';
+import '../data/repositories/item/item_repository.dart';
+import '../data/repositories/item/item_repository_remote.dart';
 import '../data/repositories/pokemon/pokemon_repository.dart';
 import '../data/repositories/pokemon/pokemon_repository_remote.dart';
 import '../data/repositories/routine/routine_repository.dart';
@@ -36,6 +38,9 @@ List<SingleChildWidget> providersRemote({
       service: context.read(),
       storage: context.read(),
     ),
+  ),
+  Provider<ItemRepository>(
+    create: (context) => ItemRepositoryRemote(service: context.read()),
   ),
   Provider<TeamRepository>(
     create: (context) => TeamRepositoryLocal(storage: context.read()),

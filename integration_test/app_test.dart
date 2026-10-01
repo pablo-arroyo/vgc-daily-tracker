@@ -4,6 +4,7 @@ import 'package:integration_test/integration_test.dart';
 import 'journeys/log_game_journey.dart';
 import 'journeys/smoke_journey.dart';
 import 'journeys/storage_journey.dart';
+import 'journeys/team_import_journey.dart';
 import 'journeys/teams_journey.dart';
 
 /// The single integration entry point. Desktop test runs relaunch the app
@@ -17,4 +18,5 @@ void main() {
   group('storage', storageJourney);
   group('teams', teamsJourney);
   group('log game', logGameJourney);
+  group('team import', teamImportJourney);
 }

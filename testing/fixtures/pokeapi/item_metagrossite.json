@@ -1,0 +1,7 @@
+{
+  "id": 799,
+  "name": "metagrossite",
+  "sprites": {
+    "default": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/metagrossite.png"
+  }
+}

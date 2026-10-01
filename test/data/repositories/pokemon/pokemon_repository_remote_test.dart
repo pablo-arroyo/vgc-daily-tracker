@@ -46,6 +46,7 @@ void main() {
             speed: 50,
           ),
           spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/983.png',
+          abilities: ['defiant', 'supreme-overlord', 'pressure'],
         ),
       );
     });

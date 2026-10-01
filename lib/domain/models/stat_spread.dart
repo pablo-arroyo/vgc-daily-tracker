@@ -3,6 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'stat.dart';
 
 part 'stat_spread.freezed.dart';
+part 'stat_spread.g.dart';
 
 /// A value per stat, used for EVs and IVs.
 @freezed
@@ -17,6 +18,9 @@ abstract class StatSpread with _$StatSpread {
   }) = _StatSpread;
 
   const StatSpread._();
+
+  factory StatSpread.fromJson(Map<String, Object?> json) =>
+      _$StatSpreadFromJson(json);
 
   /// IVs when a paste doesn't list any.
   static const perfectIvs = StatSpread(

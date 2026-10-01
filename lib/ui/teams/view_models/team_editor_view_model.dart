@@ -66,6 +66,9 @@ class TeamEditorViewModel extends ChangeNotifier {
 
   bool _missing = false;
 
+  /// The team as loaded, to carry its imported sets over on save.
+  Team? _original;
+
   /// True when the team being edited no longer exists (e.g. an old link).
   bool get missing => _missing;
 
@@ -75,6 +78,7 @@ class TeamEditorViewModel extends ChangeNotifier {
     if (team == null) {
       _missing = true;
     } else {
+      _original = team;
       _name = team.name;
       _slots.setAll(0, team.pokemon);
     }
@@ -94,7 +98,15 @@ class TeamEditorViewModel extends ChangeNotifier {
     final duplicateError = await _duplicateError(pokemon);
     if (duplicateError != null) return Result.failure(duplicateError);
     return _teamRepository.save(
-      Team(id: _teamId ?? _idGenerator.next(), name: name, pokemon: pokemon),
+      Team(
+        id: _teamId ?? _idGenerator.next(),
+        name: name,
+        pokemon: pokemon,
+        // Imported sets describe the imported Pokémon, slot by slot.
+        sets: listEquals(_original?.pokemon, pokemon)
+            ? _original!.sets
+            : const [],
+      ),
     );
   }
 

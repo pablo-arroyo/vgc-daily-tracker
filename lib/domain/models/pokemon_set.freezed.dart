@@ -12,6 +12,7 @@ part of 'pokemon_set.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
+
 /// @nodoc
 mixin _$PokemonSet {
 
@@ -26,6 +27,8 @@ mixin _$PokemonSet {
 @pragma('vm:prefer-inline')
 $PokemonSetCopyWith<PokemonSet> get copyWith => _$PokemonSetCopyWithImpl<PokemonSet>(this as PokemonSet, _$identity);
 
+  /// Serializes this PokemonSet to a JSON map.
+  Map<String, dynamic> toJson();
 
 
 @override
@@ -34,7 +37,7 @@ bool operator ==(Object other) {
   return identical(this, other) || (other.runtimeType == runtimeType&&other is PokemonSet&&(identical(other.species, _this.species) || other.species == _this.species)&&(identical(other.nickname, _this.nickname) || other.nickname == _this.nickname)&&(identical(other.gender, _this.gender) || other.gender == _this.gender)&&(identical(other.item, _this.item) || other.item == _this.item)&&(identical(other.ability, _this.ability) || other.ability == _this.ability)&&(identical(other.megaAbility, _this.megaAbility) || other.megaAbility == _this.megaAbility)&&(identical(other.level, _this.level) || other.level == _this.level)&&(identical(other.evs, _this.evs) || other.evs == _this.evs)&&(identical(other.ivs, _this.ivs) || other.ivs == _this.ivs)&&(identical(other.nature, _this.nature) || other.nature == _this.nature)&&const DeepCollectionEquality().equals(other.moves, _this.moves));
 }
 
-
+@JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as PokemonSet;
@@ -241,11 +244,11 @@ return $default(_that.species,_that.nickname,_that.gender,_that.item,_that.abili
 }
 
 /// @nodoc
-
+@JsonSerializable()
 
 class _PokemonSet implements PokemonSet {
   const _PokemonSet({required this.species, this.nickname, this.gender, this.item, this.ability, this.megaAbility, this.level = 50, this.evs = const StatSpread(), this.ivs = StatSpread.perfectIvs, this.nature = Nature.serious,  List<String> moves = const []}): _moves = moves;
-  
+  factory _PokemonSet.fromJson(Map<String, dynamic> json) => _$PokemonSetFromJson(json);
 
 @override final  String species;
 @override final  String? nickname;
@@ -275,14 +278,17 @@ class _PokemonSet implements PokemonSet {
 @pragma('vm:prefer-inline')
 _$PokemonSetCopyWith<_PokemonSet> get copyWith => __$PokemonSetCopyWithImpl<_PokemonSet>(this, _$identity);
 
-
+@override
+Map<String, dynamic> toJson() {
+  return _$PokemonSetToJson(this, );
+}
 
 @override
 bool operator ==(Object other) {
     return identical(this, other) || (other.runtimeType == runtimeType&&other is _PokemonSet&&(identical(other.species, species) || other.species == species)&&(identical(other.nickname, nickname) || other.nickname == nickname)&&(identical(other.gender, gender) || other.gender == gender)&&(identical(other.item, item) || other.item == item)&&(identical(other.ability, ability) || other.ability == ability)&&(identical(other.megaAbility, megaAbility) || other.megaAbility == megaAbility)&&(identical(other.level, level) || other.level == level)&&(identical(other.evs, evs) || other.evs == evs)&&(identical(other.ivs, ivs) || other.ivs == ivs)&&(identical(other.nature, nature) || other.nature == nature)&&const DeepCollectionEquality().equals(other.moves, _moves));
 }
 
-
+@JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
     return Object.hash(runtimeType,species,nickname,gender,item,ability,megaAbility,level,evs,ivs,nature,const DeepCollectionEquality().hash(_moves));

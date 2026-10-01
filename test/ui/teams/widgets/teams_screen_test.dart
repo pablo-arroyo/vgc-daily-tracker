@@ -83,6 +83,28 @@ void main() {
     expect(find.byType(PokemonAvatar), findsNWidgets(6));
   });
 
+  testWidgets('offers Import from Showdown beside Add team, both tappable', (
+    tester,
+  ) async {
+    await pumpScreen(tester, FakeTeamRepository());
+    await tester.pumpAndSettle();
+
+    for (final tooltip in ['Import from Showdown', 'Add team']) {
+      final button = find.descendant(
+        of: find.byTooltip(tooltip),
+        matching: find.byType(RawMaterialButton),
+      );
+      expect(
+        tester
+            .hitTestOnBinding(tester.getCenter(button))
+            .path
+            .any((entry) => entry.target == tester.renderObject(button)),
+        isTrue,
+        reason: '$tooltip is covered',
+      );
+    }
+  });
+
   group('deleting', () {
     Future<void> openDeleteDialog(WidgetTester tester) async {
       await tester.tap(find.byTooltip('Delete Big Six'));

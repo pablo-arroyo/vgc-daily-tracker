@@ -156,6 +156,7 @@ class PokemonRepositoryRemote implements PokemonRepository {
         speed: stat('speed'),
       ),
       spriteUrl: api.sprites.frontDefault,
+      abilities: [for (final slot in api.abilities) slot.ability.name],
     );
   }
 }

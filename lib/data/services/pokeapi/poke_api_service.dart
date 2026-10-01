@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:json_annotation/json_annotation.dart';
 
 import '../../../utils/result.dart';
+import 'models/item_api_model.dart';
 import 'models/pokemon_detail_api_model.dart';
 import 'models/pokemon_list_api_model.dart';
 import 'poke_api_exception.dart';
@@ -27,6 +28,9 @@ class PokeApiService {
 
   Future<Result<PokemonDetailApiModel>> getPokemon(String slug) =>
       _getJson('/pokemon/$slug', PokemonDetailApiModel.fromJson);
+
+  Future<Result<ItemApiModel>> getItem(String slug) =>
+      _getJson('/item/$slug', ItemApiModel.fromJson);
 
   /// Every failure comes back as a [Failure] holding a [PokeApiException].
   /// Nothing is thrown.

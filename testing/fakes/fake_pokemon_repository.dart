@@ -58,8 +58,10 @@ class FakePokemonRepository implements PokemonRepository {
     return PokemonRef(id: p.id, slug: p.slug, displayName: p.displayName);
   }
 
-  /// Real PokéAPI data (fetched 2026-09-29): enough for a full team plus a
-  /// Charizard / Charizard-Mega-Y pair for species-clause tests.
+  /// Real PokéAPI data (fetched 2026-09-29, abilities and Team 1's
+  /// Metagross / Kleavor / Raichu added 2026-10-01): enough for full teams,
+  /// the Reg M-C artifact's Team 1 with its Megas, and a Charizard /
+  /// Charizard-Mega-Y pair for species-clause tests.
   static const samplePokemon = [
     Pokemon(
       id: 983,
@@ -76,6 +78,7 @@ class FakePokemonRepository implements PokemonRepository {
         speed: 50,
       ),
       spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/983.png',
+      abilities: ['defiant', 'supreme-overlord', 'pressure'],
     ),
     Pokemon(
       id: 10305,
@@ -92,6 +95,7 @@ class FakePokemonRepository implements PokemonRepository {
         speed: 130,
       ),
       spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10305.png',
+      abilities: ['no-guard'],
     ),
     Pokemon(
       id: 902,
@@ -108,6 +112,7 @@ class FakePokemonRepository implements PokemonRepository {
         speed: 78,
       ),
       spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/902.png',
+      abilities: ['swift-swim', 'adaptability', 'mold-breaker'],
     ),
     Pokemon(
       id: 547,
@@ -124,6 +129,7 @@ class FakePokemonRepository implements PokemonRepository {
         speed: 116,
       ),
       spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/547.png',
+      abilities: ['prankster', 'infiltrator', 'chlorophyll'],
     ),
     Pokemon(
       id: 445,
@@ -140,6 +146,7 @@ class FakePokemonRepository implements PokemonRepository {
         speed: 102,
       ),
       spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/445.png',
+      abilities: ['sand-veil', 'rough-skin'],
     ),
     Pokemon(
       id: 727,
@@ -156,6 +163,7 @@ class FakePokemonRepository implements PokemonRepository {
         speed: 60,
       ),
       spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/727.png',
+      abilities: ['blaze', 'intimidate'],
     ),
     Pokemon(
       id: 812,
@@ -172,6 +180,7 @@ class FakePokemonRepository implements PokemonRepository {
         speed: 85,
       ),
       spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/812.png',
+      abilities: ['overgrow', 'grassy-surge'],
     ),
     Pokemon(
       id: 6,
@@ -188,6 +197,7 @@ class FakePokemonRepository implements PokemonRepository {
         speed: 100,
       ),
       spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png',
+      abilities: ['blaze', 'solar-power'],
     ),
     Pokemon(
       id: 10035,
@@ -204,6 +214,75 @@ class FakePokemonRepository implements PokemonRepository {
         speed: 100,
       ),
       spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10035.png',
+      abilities: ['drought'],
+    ),
+    Pokemon(
+      id: 376,
+      slug: 'metagross',
+      speciesSlug: 'metagross',
+      displayName: 'Metagross',
+      types: ['steel', 'psychic'],
+      baseStats: BaseStats(
+        hp: 80,
+        attack: 135,
+        defense: 130,
+        specialAttack: 95,
+        specialDefense: 90,
+        speed: 70,
+      ),
+      spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/376.png',
+      abilities: ['clear-body', 'light-metal'],
+    ),
+    Pokemon(
+      id: 10076,
+      slug: 'metagross-mega',
+      speciesSlug: 'metagross',
+      displayName: 'Metagross-Mega',
+      types: ['steel', 'psychic'],
+      baseStats: BaseStats(
+        hp: 80,
+        attack: 145,
+        defense: 150,
+        specialAttack: 105,
+        specialDefense: 110,
+        speed: 110,
+      ),
+      spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10076.png',
+      abilities: ['tough-claws'],
+    ),
+    Pokemon(
+      id: 900,
+      slug: 'kleavor',
+      speciesSlug: 'kleavor',
+      displayName: 'Kleavor',
+      types: ['bug', 'rock'],
+      baseStats: BaseStats(
+        hp: 70,
+        attack: 135,
+        defense: 95,
+        specialAttack: 45,
+        specialDefense: 70,
+        speed: 85,
+      ),
+      spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/900.png',
+      abilities: ['swarm', 'sheer-force', 'sharpness'],
+    ),
+    Pokemon(
+      id: 26,
+      slug: 'raichu',
+      speciesSlug: 'raichu',
+      displayName: 'Raichu',
+      types: ['electric'],
+      baseStats: BaseStats(
+        hp: 60,
+        attack: 90,
+        defense: 55,
+        specialAttack: 90,
+        specialDefense: 80,
+        speed: 110,
+      ),
+      spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/26.png',
+      abilities: ['static', 'lightning-rod'],
     ),
   ];
 }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:vgc_daily_tracker/data/repositories/item/item_repository.dart';
+import 'package:vgc_daily_tracker/data/repositories/item/item_repository_remote.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:vgc_daily_tracker/config/dependencies.dart';
@@ -16,6 +18,7 @@ import 'package:vgc_daily_tracker/utils/id_generator.dart';
 
 import '../../testing/app.dart';
 import '../../testing/fakes/fake_game_log_repository.dart';
+import '../../testing/fakes/fake_item_repository.dart';
 import '../../testing/fakes/fake_id_generator.dart';
 import '../../testing/fakes/fake_pokemon_repository.dart';
 import '../../testing/fakes/fake_routine_repository.dart';
@@ -33,6 +36,7 @@ void main() {
     expect(context.read<GameLogRepository>(), isA<FakeGameLogRepository>());
     expect(context.read<IdGenerator>(), isA<SequentialIdGenerator>());
     expect(context.read<RoutineRepository>(), isA<FakeRoutineRepository>());
+    expect(context.read<ItemRepository>(), isA<FakeItemRepository>());
   });
 
   testWidgets('providersRemote wires the real PokemonRepositoryRemote', (
@@ -45,6 +49,7 @@ void main() {
     late GameLogRepository games;
     late IdGenerator ids;
     late RoutineRepository routine;
+    late ItemRepository items;
     await tester.pumpWidget(
       MultiProvider(
         providers: providersRemote(storage: storage),
@@ -56,6 +61,7 @@ void main() {
             games = context.read<GameLogRepository>();
             ids = context.read<IdGenerator>();
             routine = context.read<RoutineRepository>();
+            items = context.read<ItemRepository>();
             return const SizedBox.shrink();
           },
         ),
@@ -68,5 +74,6 @@ void main() {
     expect(games, isA<GameLogRepositoryLocal>());
     expect(ids, isA<RandomIdGenerator>());
     expect(routine, isA<RoutineRepositoryLocal>());
+    expect(items, isA<ItemRepositoryRemote>());
   });
 }

@@ -19,10 +19,23 @@ class TeamsScreen extends StatelessWidget {
     // the Add team button above them. The shell's would cover it.
     return ScaffoldMessenger(
       child: Scaffold(
-        floatingActionButton: FloatingActionButton(
-          tooltip: 'Add team',
-          onPressed: () => context.push(Routes.newTeam),
-          child: const Icon(Icons.add),
+        floatingActionButton: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FloatingActionButton.small(
+              tooltip: 'Import from Showdown',
+              // Two buttons on one page need distinct hero tags.
+              heroTag: 'import-team',
+              onPressed: () => context.push(Routes.importTeam),
+              child: const Icon(Icons.content_paste),
+            ),
+            const SizedBox(height: 12),
+            FloatingActionButton(
+              tooltip: 'Add team',
+              onPressed: () => context.push(Routes.newTeam),
+              child: const Icon(Icons.add),
+            ),
+          ],
         ),
         body: ListenableBuilder(
           listenable: viewModel,
@@ -55,41 +68,45 @@ class _TeamCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    team.name,
-                    style: Theme.of(context).textTheme.titleMedium,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => context.push(Routes.team(team.id)),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      team.name,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
                   ),
-                ),
-                IconButton(
-                  tooltip: 'Edit ${team.name}',
-                  icon: const Icon(Icons.edit_outlined),
-                  onPressed: () => context.push(Routes.editTeam(team.id)),
-                ),
-                IconButton(
-                  tooltip: 'Delete ${team.name}',
-                  icon: const Icon(Icons.delete_outline),
-                  onPressed: () => _confirmAndDelete(context),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final pokemon in team.pokemon)
-                  _TeamMember(pokemon: pokemon),
-              ],
-            ),
-          ],
+                  IconButton(
+                    tooltip: 'Edit ${team.name}',
+                    icon: const Icon(Icons.edit_outlined),
+                    onPressed: () => context.push(Routes.editTeam(team.id)),
+                  ),
+                  IconButton(
+                    tooltip: 'Delete ${team.name}',
+                    icon: const Icon(Icons.delete_outline),
+                    onPressed: () => _confirmAndDelete(context),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final pokemon in team.pokemon)
+                    _TeamMember(pokemon: pokemon),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

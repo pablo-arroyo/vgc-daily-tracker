@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vgc_daily_tracker/domain/models/pokemon_ref.dart';
+import 'package:vgc_daily_tracker/domain/models/pokemon_set.dart';
 import 'package:vgc_daily_tracker/domain/models/team.dart';
 import 'package:vgc_daily_tracker/ui/teams/view_models/team_editor_view_model.dart';
 import 'package:vgc_daily_tracker/utils/result.dart';
@@ -165,6 +166,39 @@ void main() {
       expect(await teams.watchAll().first, [
         existing.copyWith(name: 'Big Six (Worlds)'),
       ]);
+    });
+
+    group('an imported team', () {
+      final imported = existing.copyWith(
+        sets: [for (final p in bigSix) PokemonSet(species: p.displayName)],
+      );
+
+      test('keeps its sets when only the name changes', () async {
+        teams = FakeTeamRepository(teams: [imported]);
+        final viewModel = create(teamId: 't9');
+        await pumpEventQueue();
+
+        viewModel.setName('Renamed');
+        await viewModel.save.execute();
+
+        expect(await teams.watchAll().first, [
+          imported.copyWith(name: 'Renamed'),
+        ]);
+      });
+
+      test('drops its sets once a Pokémon changes, since they no longer '
+          'match', () async {
+        teams = FakeTeamRepository(teams: [imported]);
+        final viewModel = create(teamId: 't9');
+        await pumpEventQueue();
+
+        viewModel.setSlot(5, ref('basculegion-male'));
+        await viewModel.save.execute();
+
+        final [saved] = await teams.watchAll().first;
+        expect(saved.pokemon[5].slug, 'basculegion-male');
+        expect(saved.sets, isEmpty);
+      });
     });
 
     test('a team that no longer exists is reported, not a crash', () async {

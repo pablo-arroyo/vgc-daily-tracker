@@ -12,6 +12,7 @@ part of 'stat_spread.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
+
 /// @nodoc
 mixin _$StatSpread {
 
@@ -22,6 +23,8 @@ mixin _$StatSpread {
 @pragma('vm:prefer-inline')
 $StatSpreadCopyWith<StatSpread> get copyWith => _$StatSpreadCopyWithImpl<StatSpread>(this as StatSpread, _$identity);
 
+  /// Serializes this StatSpread to a JSON map.
+  Map<String, dynamic> toJson();
 
 
 @override
@@ -30,7 +33,7 @@ bool operator ==(Object other) {
   return identical(this, other) || (other.runtimeType == runtimeType&&other is StatSpread&&(identical(other.hp, _this.hp) || other.hp == _this.hp)&&(identical(other.atk, _this.atk) || other.atk == _this.atk)&&(identical(other.def, _this.def) || other.def == _this.def)&&(identical(other.spa, _this.spa) || other.spa == _this.spa)&&(identical(other.spd, _this.spd) || other.spd == _this.spd)&&(identical(other.spe, _this.spe) || other.spe == _this.spe));
 }
 
-
+@JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as StatSpread;
@@ -214,11 +217,11 @@ return $default(_that.hp,_that.atk,_that.def,_that.spa,_that.spd,_that.spe);case
 }
 
 /// @nodoc
-
+@JsonSerializable()
 
 class _StatSpread extends StatSpread {
   const _StatSpread({this.hp = 0, this.atk = 0, this.def = 0, this.spa = 0, this.spd = 0, this.spe = 0}): super._();
-  
+  factory _StatSpread.fromJson(Map<String, dynamic> json) => _$StatSpreadFromJson(json);
 
 @override@JsonKey() final  int hp;
 @override@JsonKey() final  int atk;
@@ -233,14 +236,17 @@ class _StatSpread extends StatSpread {
 @pragma('vm:prefer-inline')
 _$StatSpreadCopyWith<_StatSpread> get copyWith => __$StatSpreadCopyWithImpl<_StatSpread>(this, _$identity);
 
-
+@override
+Map<String, dynamic> toJson() {
+  return _$StatSpreadToJson(this, );
+}
 
 @override
 bool operator ==(Object other) {
     return identical(this, other) || (other.runtimeType == runtimeType&&other is _StatSpread&&(identical(other.hp, hp) || other.hp == hp)&&(identical(other.atk, atk) || other.atk == atk)&&(identical(other.def, def) || other.def == def)&&(identical(other.spa, spa) || other.spa == spa)&&(identical(other.spd, spd) || other.spd == spd)&&(identical(other.spe, spe) || other.spe == spe));
 }
 
-
+@JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
     return Object.hash(runtimeType,hp,atk,def,spa,spd,spe);

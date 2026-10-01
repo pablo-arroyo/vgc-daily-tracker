@@ -402,7 +402,11 @@ the device timezone (injectable, so tests pin UTC-6).
   - The screen.
   - A visual check at a desktop window size.
 - **Not included:** resetting at midnight while the app stays open (a
-  fresh load of the tab resets). One known uncovered line: the local
+  fresh load of the tab resets).
+- **Fixed during 7.3:** ticks are now saved under the day that was
+  loaded. Before, a tick made after midnight with the tab still open
+  saved the previous day's ticks into the new day. A test that only
+  passed on 2026-09-30 exposed it. One known uncovered line: the local
   repository's "storage read failed" branch (in-memory storage can't fail).
 
 ## Phase 7: Team analysis (from the Reg M-C artifact)
@@ -460,18 +464,46 @@ the device timezone (injectable, so tests pin UTC-6).
   - I broke each part of the formula on purpose, one at a time, and a
     test failed every time.
 
-### 7.3 Full team sets in the app
-- `Team` gets optional `PokemonSet`s. Teams without them keep working.
-- Teams tab: an "Import from Showdown" action, and a **team detail** screen
-  showing each Pokémon's avatar, types, item, ability, moves, computed stats
-  and a **speed-tier list** sorted fastest to slowest, with Mega speeds.
-- Species, items and abilities are validated through PokéAPI (the service
-  gains `/item/{slug}`).
+### ✅ 7.3 Full team sets in the app
+- **Data:**
+  - `PokeApiService.getItem` (`/item/{slug}`, with a recorded fixture
+    and a contract test).
+  - A new `ItemRepository` (remote with a per-item cache, and a fake).
+  - `Pokemon.abilities` is now mapped from PokéAPI.
+  - `Team.sets` is an optional list lined up with `pokemon`.
+  - `PokemonSet` and `StatSpread` gained stored JSON, with pinned-JSON
+    tests. Teams saved before this load with no sets, so no schema bump
+    was needed.
+- **Import (`TeamImportViewModel` and screen, from "Import from
+  Showdown" on the Teams tab):**
+  - It parses the paste and lists every problem: paste errors with
+    their line numbers, a team that isn't exactly 6, unknown species
+    or items, abilities the Pokémon can't have, a Mega ability without
+    the stone or that the Mega can't have, and the species clause.
+  - If PokéAPI can't be reached, it shows one clear message and saves
+    nothing.
+  - The team stores base forms (as the editor does); the sets keep the
+    paste.
+- **Detail (`TeamDetailViewModel` and screen, opened by tapping a
+  team):**
+  - Each Pokémon's battle form: the Mega when it holds its stone.
+  - Each card shows avatar, types, item, ability (`A → B`), moves and
+    calculated stats.
+  - The Speed order lists the team fastest first; ties keep team
+    order.
+  - A team without sets shows its Pokémon and suggests importing.
+  - Missing teams and failed lookups (with Retry) are handled.
+- **Editor:** it keeps the sets when only the name changes, and drops
+  them once a Pokémon changes, since they'd no longer match.
 - **Tests:**
-  - Unit: the import view model and speed-tier ordering.
-  - Widget: the detail screen.
-  - **Integration:** paste Team 1 → open the detail screen → Mega Metagross
-    shows 178 Spe.
+  - Unit tests: stored JSON, service, item repository, both view
+    models, and the editor's set rule.
+  - Widget tests: both screens and the Teams tab buttons.
+  - An acceptance test through the app.
+  - **Integration (macOS):** paste Team 1 → open it → Mega Metagross
+    178 Spe.
+  - I broke each check on purpose, one at a time, and a test failed
+    every time. I also checked screenshots at a desktop window size.
 
 ### 7.4 Sample teams
 - An "Add sample teams" action on an empty Teams tab that imports the

@@ -9,9 +9,13 @@ import '../ui/progress/view_models/progress_view_model.dart';
 import '../ui/progress/widgets/progress_screen.dart';
 import '../ui/routine/view_models/routine_view_model.dart';
 import '../ui/routine/widgets/routine_screen.dart';
+import '../ui/teams/view_models/team_detail_view_model.dart';
 import '../ui/teams/view_models/team_editor_view_model.dart';
+import '../ui/teams/view_models/team_import_view_model.dart';
 import '../ui/teams/view_models/teams_view_model.dart';
+import '../ui/teams/widgets/team_detail_screen.dart';
 import '../ui/teams/widgets/team_editor_screen.dart';
+import '../ui/teams/widgets/team_import_screen.dart';
 import '../ui/teams/widgets/teams_screen.dart';
 import 'routes.dart';
 
@@ -51,6 +55,30 @@ GoRouter createRouter() => GoRouter(
                 GoRoute(
                   path: 'new',
                   builder: (context, state) => _teamEditor(),
+                ),
+                GoRoute(
+                  path: 'import',
+                  builder: (context, state) => ChangeNotifierProvider(
+                    create: (context) => TeamImportViewModel(
+                      teamRepository: context.read(),
+                      pokemonRepository: context.read(),
+                      itemRepository: context.read(),
+                      idGenerator: context.read(),
+                    ),
+                    child: const TeamImportScreen(),
+                  ),
+                ),
+                // After `new` and `import`, so those aren't read as ids.
+                GoRoute(
+                  path: ':id',
+                  builder: (context, state) => ChangeNotifierProvider(
+                    create: (context) => TeamDetailViewModel(
+                      teamRepository: context.read(),
+                      pokemonRepository: context.read(),
+                      teamId: state.pathParameters['id']!,
+                    )..load.execute(),
+                    child: const TeamDetailScreen(),
+                  ),
                 ),
                 GoRoute(
                   path: ':id/edit',

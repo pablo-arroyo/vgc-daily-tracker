@@ -4,6 +4,7 @@ import 'nature.dart';
 import 'stat_spread.dart';
 
 part 'pokemon_set.freezed.dart';
+part 'pokemon_set.g.dart';
 
 /// One Pokémon's full build, as a Showdown paste describes it. Names are
 /// kept as written; mapping them to PokéAPI happens in the data layer.
@@ -30,4 +31,7 @@ abstract class PokemonSet with _$PokemonSet {
     @Default(Nature.serious) Nature nature,
     @Default([]) List<String> moves,
   }) = _PokemonSet;
+
+  factory PokemonSet.fromJson(Map<String, Object?> json) =>
+      _$PokemonSetFromJson(json);
 }

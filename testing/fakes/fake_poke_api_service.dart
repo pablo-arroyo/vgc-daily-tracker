@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:vgc_daily_tracker/data/services/pokeapi/models/item_api_model.dart';
 import 'package:vgc_daily_tracker/data/services/pokeapi/models/pokemon_detail_api_model.dart';
 import 'package:vgc_daily_tracker/data/services/pokeapi/models/pokemon_list_api_model.dart';
 import 'package:vgc_daily_tracker/data/services/pokeapi/poke_api_exception.dart';
@@ -17,6 +18,12 @@ class FakePokeApiService implements PokeApiService {
 
   /// Slugs passed to `getPokemon`, in call order.
   final detailRequests = <String>[];
+
+  /// Items available from `getItem`, keyed by slug.
+  final items = <String, ItemApiModel>{};
+
+  /// Slugs passed to `getItem`, in call order.
+  final itemRequests = <String>[];
 
   /// The name index served by `getPokemonList`.
   PokemonListApiModel? index;
@@ -53,6 +60,16 @@ class FakePokeApiService implements PokeApiService {
     return detail == null
         ? Result.failure(PokeApiNotFound(slug))
         : Result.ok(detail);
+  }
+
+  @override
+  Future<Result<ItemApiModel>> getItem(String slug) async {
+    itemRequests.add(slug);
+    if (offline) return Result.failure(PokeApiNetworkUnavailable(slug));
+    final item = items[slug];
+    return item == null
+        ? Result.failure(PokeApiNotFound(slug))
+        : Result.ok(item);
   }
 
   @override

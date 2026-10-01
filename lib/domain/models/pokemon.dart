@@ -24,6 +24,9 @@ abstract class Pokemon with _$Pokemon {
     required List<String> types,
     required BaseStats baseStats,
     required String spriteUrl,
+
+    /// Ability slugs, hidden ability last, e.g. `['defiant', ...]`.
+    @Default([]) List<String> abilities,
   }) = _Pokemon;
 }
 
