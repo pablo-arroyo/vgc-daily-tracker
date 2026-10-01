@@ -14,6 +14,7 @@ import '../../../domain/models/pokemon_ref.dart';
 import '../../../domain/models/team.dart';
 import '../../../utils/command.dart';
 import '../../../utils/id_generator.dart';
+import '../../../utils/iso_date.dart';
 import '../../../utils/result.dart';
 
 /// Why a game can't be logged yet, in the original tracker's words.
@@ -27,19 +28,21 @@ class LogGameValidationError implements Exception {
 class LogGameViewModel extends ChangeNotifier {
   LogGameViewModel({
     required this._gameLogRepository,
-    required TeamRepository teamRepository,
+    required this._teamRepository,
     required this._pokemonRepository,
     required this._matchupRepository,
     required this._idGenerator,
-  }) {
+    DateTime Function(DateTime utc)? toLocal,
+  }) : _toLocal = toLocal ?? ((utc) => utc.toLocal()) {
     save = Command0(_save);
+    addLastGameToNotes = Command0(_addLastGameToNotes);
     saveMatchupNotes = Command1(_saveMatchupNotes);
     // Watched, so plans edited elsewhere show up while logging.
     _matchupsSubscription = _matchupRepository.watchAll().listen((notes) {
       _matchupNotes = {for (final n in notes) n.key: n.notes};
       notifyListeners();
     });
-    _teamsSubscription = teamRepository.watchAll().listen((teams) {
+    _teamsSubscription = _teamRepository.watchAll().listen((teams) {
       // Only the player's own teams can be "your team used".
       _teams = [
         for (final team in teams)
@@ -100,6 +103,8 @@ class LogGameViewModel extends ChangeNotifier {
       );
 
   final GameLogRepository _gameLogRepository;
+  final TeamRepository _teamRepository;
+  final DateTime Function(DateTime utc) _toLocal;
   final PokemonRepository _pokemonRepository;
   final IdGenerator _idGenerator;
 
@@ -284,27 +289,86 @@ class LogGameViewModel extends ChangeNotifier {
     List<String> slugs(Iterable<PokemonRef> pokemon) => [
       for (final p in pokemon) p.slug,
     ];
-    final saved = await _gameLogRepository.add(
-      GameLog(
-        id: _idGenerator.next(),
-        playedAt: clock.now().toUtc(),
-        result: result,
-        teamId: team?.id,
-        teamName: team?.name,
-        team: slugs(team?.pokemon ?? const []),
-        brought: slugs(_brought),
-        leads: slugs(_leads),
-        opponentTeamId: _selectedOpponentTeam?.id,
-        opponentTeamName: _selectedOpponentTeam?.name,
-        opponentTeam: slugs(opponentTeam),
-        opponentBrought: slugs(_opponentBrought),
-        opponentLeads: slugs(_opponentLeads),
-        mistake: _mistake,
-        notes: _notes.trim(),
-      ),
+    final game = GameLog(
+      id: _idGenerator.next(),
+      playedAt: clock.now().toUtc(),
+      result: result,
+      teamId: team?.id,
+      teamName: team?.name,
+      team: slugs(team?.pokemon ?? const []),
+      brought: slugs(_brought),
+      leads: slugs(_leads),
+      opponentTeamId: _selectedOpponentTeam?.id,
+      opponentTeamName: _selectedOpponentTeam?.name,
+      opponentTeam: slugs(opponentTeam),
+      opponentBrought: slugs(_opponentBrought),
+      opponentLeads: slugs(_opponentLeads),
+      mistake: _mistake,
+      notes: _notes.trim(),
     );
-    if (saved is Ok) _reset();
+    final saved = await _gameLogRepository.add(game);
+    if (saved is Ok) {
+      _lastSaved = game;
+      _reset();
+    }
     return saved;
+  }
+
+  /// The game saved last, for "Add to matchup notes".
+  GameLog? _lastSaved;
+
+  /// Whether the game just saved can add its notes to the plan: it was
+  /// against a saved opponent team and has notes.
+  bool get canAddLastGameToNotes =>
+      _lastSaved?.opponentTeamId != null &&
+      (_lastSaved?.notes.isNotEmpty ?? false);
+
+  /// Where the notes would go: the matchup plan when your team was picked,
+  /// otherwise their team's notes.
+  String get addToNotesLabel => _lastSaved?.teamId != null
+      ? 'Add to matchup notes'
+      : 'Add to their notes';
+
+  /// Appends the last game's notes, dated by its local day, to the plan
+  /// (or their team's notes). Completes with where they went.
+  late final Command0<String> addLastGameToNotes;
+
+  Future<Result<String>> _addLastGameToNotes() async {
+    final game = _lastSaved!;
+    final entry = '${isoDate(_toLocal(game.playedAt))}: ${game.notes}';
+    String appended(String existing) =>
+        existing.isEmpty ? entry : '$existing\n$entry';
+
+    if (game.teamId case final myTeamId?) {
+      final key = MatchupNote.keyOf(myTeamId, game.opponentTeamId!);
+      final saved = await _matchupRepository.save(
+        MatchupNote(
+          myTeamId: myTeamId,
+          opponentTeamId: game.opponentTeamId!,
+          notes: appended(_matchupNotes[key] ?? ''),
+          updatedAt: clock.now().toUtc(),
+        ),
+      );
+      return switch (saved) {
+        Ok() => Result.ok('${game.teamName} vs ${game.opponentTeamName}'),
+        Failure(:final error) => Result.failure(error),
+      };
+    }
+    final theirs = _opponentTeams
+        .where((t) => t.id == game.opponentTeamId)
+        .firstOrNull;
+    if (theirs == null) {
+      return const Result.failure(
+        LogGameValidationError('Their team is no longer saved.'),
+      );
+    }
+    final saved = await _teamRepository.save(
+      theirs.copyWith(notes: appended(theirs.notes)),
+    );
+    return switch (saved) {
+      Ok() => Result.ok("${theirs.name}'s notes"),
+      Failure(:final error) => Result.failure(error),
+    };
   }
 
   @override

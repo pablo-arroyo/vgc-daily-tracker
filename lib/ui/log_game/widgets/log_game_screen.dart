@@ -120,7 +120,8 @@ class _SaveGameButton extends StatelessWidget {
   }
 
   Future<void> _save(BuildContext context) async {
-    final save = context.read<LogGameViewModel>().save;
+    final viewModel = context.read<LogGameViewModel>();
+    final save = viewModel.save;
     final messenger = ScaffoldMessenger.of(context);
     await save.execute();
     final message = switch (save.result) {
@@ -130,8 +131,38 @@ class _SaveGameButton extends StatelessWidget {
     };
     messenger
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          action: save.completed && viewModel.canAddLastGameToNotes
+              ? SnackBarAction(
+                  label: viewModel.addToNotesLabel,
+                  onPressed: () => _addToNotes(viewModel, messenger),
+                )
+              : null,
+        ),
+      );
     if (save.completed) onSaved();
+  }
+
+  /// Runs after the form has reset, so it uses what was captured at save.
+  Future<void> _addToNotes(
+    LogGameViewModel viewModel,
+    ScaffoldMessengerState messenger,
+  ) async {
+    final add = viewModel.addLastGameToNotes;
+    await add.execute();
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(switch (add.result) {
+            Ok(value: final target) => 'Added to $target',
+            Failure(error: LogGameValidationError(:final message)) => message,
+            _ => "Couldn't add the notes. Try again.",
+          }),
+        ),
+      );
   }
 }
 

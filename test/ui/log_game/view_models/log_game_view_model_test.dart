@@ -269,6 +269,168 @@ void main() {
     });
   });
 
+  group("adding a game's notes to the plan", () {
+    final rival = Team(
+      id: 'o1',
+      name: 'Rival Grassy',
+      side: TeamSide.opponent,
+      notes: 'Fake Out Sneasler turn 1.',
+      pokemon: [FakePokemonRepository.sampleRef('rillaboom')],
+    );
+    // 2026-09-30 22:00 in UTC-6: already Oct 1 in UTC.
+    final lateEvening = DateTime.utc(2026, 10, 1, 4);
+    DateTime costaRica(DateTime utc) => utc.subtract(const Duration(hours: 6));
+
+    LogGameViewModel withTeams({List<MatchupNote> notes = const []}) {
+      teams = FakeTeamRepository(teams: [bigSix, rival]);
+      matchups = FakeMatchupRepository(notes: notes);
+      final viewModel = LogGameViewModel(
+        gameLogRepository: games,
+        teamRepository: teams,
+        pokemonRepository: FakePokemonRepository(),
+        matchupRepository: matchups,
+        idGenerator: SequentialIdGenerator(),
+        toLocal: costaRica,
+      );
+      addTearDown(viewModel.dispose);
+      return viewModel;
+    }
+
+    /// Logs a loss against [rival], with your team when [withMine].
+    Future<void> logAgainstRival(
+      LogGameViewModel viewModel, {
+      bool withMine = true,
+      String notes = 'Lost the speed tie: Tailwind first.',
+    }) async {
+      await pumpEventQueue();
+      viewModel
+        ..setResult(GameResult.loss)
+        ..selectOpponentTeam(rival)
+        ..setNotes(notes);
+      if (withMine) {
+        viewModel.selectTeam(bigSix);
+        for (final p in bigSix.pokemon.take(4)) {
+          viewModel.toggleBrought(p);
+        }
+        for (final p in bigSix.pokemon.take(2)) {
+          viewModel.toggleLead(p);
+        }
+      }
+      await withClock(Clock.fixed(lateEvening), viewModel.save.execute);
+      await pumpEventQueue();
+    }
+
+    test(
+      'is offered after a game against a saved opponent team with notes',
+      () async {
+        final viewModel = withTeams();
+        expect(viewModel.canAddLastGameToNotes, isFalse);
+
+        await logAgainstRival(viewModel);
+
+        expect(viewModel.canAddLastGameToNotes, isTrue);
+        expect(viewModel.addToNotesLabel, 'Add to matchup notes');
+      },
+    );
+
+    test('not for a game without notes', () async {
+      final viewModel = withTeams();
+
+      await logAgainstRival(viewModel, notes: '  ');
+
+      expect(viewModel.canAddLastGameToNotes, isFalse);
+    });
+
+    test('appends the dated note to the matchup plan', () async {
+      final viewModel = withTeams(
+        notes: [
+          MatchupNote(
+            myTeamId: 't1',
+            opponentTeamId: 'o1',
+            notes: 'Lead Whimsicott.',
+            updatedAt: DateTime.utc(2026, 9, 1),
+          ),
+        ],
+      );
+      await logAgainstRival(viewModel);
+
+      await withClock(
+        Clock.fixed(lateEvening),
+        viewModel.addLastGameToNotes.execute,
+      );
+
+      expect(
+        (viewModel.addLastGameToNotes.result! as Ok<String>).value,
+        'Big Six vs Rival Grassy',
+      );
+      final [plan] = await matchups.watchAll().first;
+      expect(
+        plan.notes,
+        'Lead Whimsicott.\n2026-09-30: Lost the speed tie: Tailwind first.',
+      );
+      expect(plan.updatedAt, lateEvening);
+    });
+
+    test('starts the plan when there was none', () async {
+      final viewModel = withTeams();
+      await logAgainstRival(viewModel);
+
+      await viewModel.addLastGameToNotes.execute();
+
+      expect(
+        (await matchups.watchAll().first).single.notes,
+        '2026-09-30: Lost the speed tie: Tailwind first.',
+      );
+    });
+
+    test("without your team, it goes to their team's notes", () async {
+      final viewModel = withTeams();
+      await logAgainstRival(viewModel, withMine: false);
+      expect(viewModel.addToNotesLabel, 'Add to their notes');
+
+      await viewModel.addLastGameToNotes.execute();
+
+      expect(
+        (viewModel.addLastGameToNotes.result! as Ok<String>).value,
+        "Rival Grassy's notes",
+      );
+      final saved = (await teams.watchAll().first).firstWhere(
+        (t) => t.id == 'o1',
+      );
+      expect(
+        saved,
+        rival.copyWith(
+          notes:
+              'Fake Out Sneasler turn 1.\n'
+              '2026-09-30: Lost the speed tie: Tailwind first.',
+        ),
+      );
+      expect(await matchups.watchAll().first, isEmpty);
+    });
+
+    test('their team deleted meanwhile: says so, saves nothing', () async {
+      final viewModel = withTeams();
+      await logAgainstRival(viewModel, withMine: false);
+      await teams.delete('o1');
+      await pumpEventQueue();
+
+      await viewModel.addLastGameToNotes.execute();
+
+      expect(viewModel.addLastGameToNotes.error, isTrue);
+      expect((await teams.watchAll().first).map((t) => t.id), ['t1']);
+    });
+
+    test('a failed save is an error', () async {
+      final viewModel = withTeams();
+      await logAgainstRival(viewModel);
+      matchups.failWith = Exception('disk full');
+
+      await viewModel.addLastGameToNotes.execute();
+
+      expect(viewModel.addLastGameToNotes.error, isTrue);
+    });
+  });
+
   group('your team', () {
     test("never offers an opponent's team as yours", () async {
       final rival = bigSix.copyWith(

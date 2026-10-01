@@ -676,13 +676,25 @@ Not in the original. Added 2026-10-01 at the user's request (7.9–7.12).
     notes, live matchup notes, trimming, and showing the card only once
     their team is picked.
 
-### 7.12 Turn a game's notes into matchup notes
+### ✅ 7.12 Turn a game's notes into matchup notes
 - After saving a game against a saved opponent team, if the game had
   notes, the confirmation snackbar offers **"Add to matchup notes"**.
   It appends the date and the note to the notes for your team against
   theirs, or to their team's notes if no team of yours was picked.
 - **Tests:** the view model (appending, the target with and without
   your team), widget, and acceptance.
+- **As built:**
+  - `LogGameViewModel` remembers the last saved game and appends
+    `<local date>: <notes>` on a new line, or as the first line when
+    there's nothing yet. The local date uses an injectable `toLocal`,
+    like Routine and Progress.
+  - The action's label says where the notes go: "Add to matchup notes"
+    or "Add to their notes". The confirmation names the target ("Added
+    to Big Six vs Rival Grassy").
+  - If their team was deleted meanwhile, it says so and saves nothing.
+  - Each rule has been checked by breaking it on purpose: no blank
+    first line, local date, notes required, matchup when your team was
+    picked.
 
 ## Phase 8: Polish and release readiness
 

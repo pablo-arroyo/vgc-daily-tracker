@@ -205,6 +205,50 @@ void main() {
     });
   });
 
+  group("after saving, the game's notes can join the plan", () {
+    final rival = Team(
+      id: 'o1',
+      name: 'Rival Grassy',
+      side: TeamSide.opponent,
+      pokemon: [FakePokemonRepository.sampleRef('rillaboom')],
+    );
+
+    Future<void> logLossVsRival(
+      WidgetTester tester, {
+      String notes = '',
+    }) async {
+      await tester.tap(find.text('Loss'));
+      await tester.pumpAndSettle();
+      await selectDropdownItem(tester, 'Their team', 'Rival Grassy');
+      await tester.enterText(find.widgetWithText(TextField, 'Notes'), notes);
+      await tester.tap(find.widgetWithText(FilledButton, 'Save game'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('the snackbar offers it, and confirms where it went', (
+      tester,
+    ) async {
+      await pumpScreen(tester, extraTeams: [rival]);
+
+      await logLossVsRival(tester, notes: 'Watch for Trick Room.');
+      await tester.tap(
+        find.widgetWithText(SnackBarAction, 'Add to their notes'),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text("Added to Rival Grassy's notes"), findsOneWidget);
+    });
+
+    testWidgets('a game without notes gets no offer', (tester) async {
+      await pumpScreen(tester, extraTeams: [rival]);
+
+      await logLossVsRival(tester);
+
+      expect(find.text('Game logged ✓'), findsOneWidget);
+      expect(find.byType(SnackBarAction), findsNothing);
+    });
+  });
+
   group('your picks', () {
     testWidgets('limits are enforced visibly: 4 brought, then leads appear', (
       tester,
