@@ -589,12 +589,23 @@ so that backup covers it from the start.
   - Each rule has been checked by breaking it on purpose, and the macOS
     opponent journey covers the flow.
 
-### 7.8 Matchup stats
+### ✅ 7.8 Matchup stats
 - A Progress card "Vs opponent teams" gives the record and win % per
   saved opponent team, grouped by id (as team records are, 5.1). Only
   games linked to an opponent team count.
 - **Tests:** stats unit tests (grouping, renamed teams, unlinked games
   ignored), widget, and acceptance.
+- **As built:**
+  - `ProgressStats.opponentTeamRecords` reuses `TeamRecord`. The team
+    record logic is now one `_records(games, id:, name:)` helper shared
+    by both. One `_RecordsCard` widget serves "Win rate by team" and
+    "Vs opponent teams", and screen readers hear each row as one phrase.
+  - The Progress screenshots were re-recorded on purpose for the new
+    card, after checking them.
+  - Breaking it on purpose: grouping by your team id, and the card
+    showing your records, are both caught. One survivor, a name
+    fallback, is equivalent: id and name are always saved together.
+  - The macOS journey checks the record after "Save their team".
 
 ## Phase 8: Polish and release readiness
 

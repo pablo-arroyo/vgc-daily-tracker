@@ -153,6 +153,7 @@ class ProgressViewModel extends ChangeNotifier {
     weeklyFocus: null,
     mistakeBreakdown: [],
     teamRecords: [],
+    opponentTeamRecords: [],
     opponentLeads: [],
     recentGames: [],
   );
@@ -168,7 +169,16 @@ class ProgressViewModel extends ChangeNotifier {
       dayStreak: _dayStreak(games, today),
       weeklyFocus: _weeklyFocus(games, today),
       mistakeBreakdown: _mistakeBreakdown(games),
-      teamRecords: _teamRecords(games),
+      teamRecords: _records(
+        games,
+        id: (g) => g.teamId,
+        name: (g) => g.teamName,
+      ),
+      opponentTeamRecords: _records(
+        games,
+        id: (g) => g.opponentTeamId,
+        name: (g) => g.opponentTeamName,
+      ),
       opponentLeads: _opponentLeads(games),
       // The repository already lists games newest first.
       recentGames: games,
@@ -206,18 +216,24 @@ class ProgressViewModel extends ChangeNotifier {
   /// Record per team, grouped by id (the original grouped by name, so a
   /// rename split the stats). Shows the name from the team's most recent
   /// game; most games first, then by name.
-  static List<TeamRecord> _teamRecords(List<GameLog> games) {
+  /// Records per team, using [id] and [name] to read which team a game
+  /// counts for: your team, or the opponent team it was against.
+  static List<TeamRecord> _records(
+    List<GameLog> games, {
+    required String? Function(GameLog) id,
+    required String? Function(GameLog) name,
+  }) {
     final byTeam = <String, List<GameLog>>{};
     for (final g in games) {
-      if (g.teamId case final id?) (byTeam[id] ??= []).add(g);
+      if (id(g) case final teamId?) (byTeam[teamId] ??= []).add(g);
     }
     final records = [
-      for (final MapEntry(key: id, value: teamGames) in byTeam.entries)
+      for (final MapEntry(key: teamId, value: teamGames) in byTeam.entries)
         TeamRecord(
-          teamId: id,
-          teamName: teamGames
-              .reduce((a, b) => a.playedAt.isAfter(b.playedAt) ? a : b)
-              .teamName!,
+          teamId: teamId,
+          teamName: name(
+            teamGames.reduce((a, b) => a.playedAt.isAfter(b.playedAt) ? a : b),
+          )!,
           wins: teamGames.where((g) => g.result == GameResult.win).length,
           losses: teamGames.where((g) => g.result == GameResult.loss).length,
           winRatePercent: _winRate(teamGames)!,

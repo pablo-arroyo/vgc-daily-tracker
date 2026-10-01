@@ -166,7 +166,47 @@ void main() {
           findsOneWidget,
         );
         expect(find.text('No opponent lead data logged yet.'), findsOneWidget);
+        expect(
+          find.text(
+            'Pick or save an opponent team when logging a game to see '
+            'your matchups.',
+          ),
+          findsOneWidget,
+        );
         expect(find.text('No games logged yet.'), findsWidgets);
+      });
+    });
+
+    testWidgets('vs opponent teams: a row per team, read as one phrase', (
+      tester,
+    ) async {
+      await withClock(Clock.fixed(now), () async {
+        await pumpProgress(tester, [
+          game(
+            'a',
+            day: 29,
+          ).copyWith(opponentTeamId: 'o1', opponentTeamName: 'Rival Grassy'),
+          game(
+            'b',
+            day: 30,
+            result: GameResult.loss,
+          ).copyWith(opponentTeamId: 'o1', opponentTeamName: 'Rival Grassy'),
+        ]);
+        final semantics = tester.ensureSemantics();
+
+        final row = find.ancestor(
+          of: find.text('Rival Grassy (1-1)'),
+          matching: find.byType(Row),
+        );
+        expect(
+          find.descendant(of: row, matching: find.text('50%')),
+          findsOneWidget,
+        );
+        expect(
+          find.bySemanticsLabel('Rival Grassy (1-1): 50%'),
+          findsOneWidget,
+        );
+        semantics.dispose();
       });
     });
 

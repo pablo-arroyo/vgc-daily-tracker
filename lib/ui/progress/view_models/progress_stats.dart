@@ -18,6 +18,9 @@ abstract class ProgressStats with _$ProgressStats {
     required WeeklyFocus? weeklyFocus,
     required List<MistakeCount> mistakeBreakdown,
     required List<TeamRecord> teamRecords,
+
+    /// Your record against each saved opponent team (games linked to one).
+    required List<TeamRecord> opponentTeamRecords,
     required List<LeadRecord> opponentLeads,
     required List<GameLog> recentGames,
   }) = _ProgressStats;
@@ -42,8 +45,8 @@ abstract class MistakeCount with _$MistakeCount {
   }) = _MistakeCount;
 }
 
-/// Your record with one team, grouped by team id; [teamName] is the name
-/// from the most recent game with it.
+/// Your record with one team (or against one opponent team), grouped by
+/// team id; [teamName] is the name from the most recent game with it.
 @freezed
 abstract class TeamRecord with _$TeamRecord {
   const factory TeamRecord({

@@ -32,7 +32,18 @@ class ProgressScreen extends StatelessWidget {
                     children: [
                       _OverviewCard(stats: stats),
                       _FocusCard(stats: stats),
-                      _TeamRatesCard(stats: stats),
+                      _RecordsCard(
+                        title: 'Win rate by team',
+                        records: stats.teamRecords,
+                        emptyNote: 'No games logged with a saved team yet.',
+                      ),
+                      _RecordsCard(
+                        title: 'Vs opponent teams',
+                        records: stats.opponentTeamRecords,
+                        emptyNote:
+                            'Pick or save an opponent team when logging a game '
+                            'to see your matchups.',
+                      ),
                       _OpponentLeadsCard(stats: stats),
                       _MistakeBreakdownCard(stats: stats),
                     ],
@@ -259,20 +270,28 @@ class _RateRow extends StatelessWidget {
   }
 }
 
-class _TeamRatesCard extends StatelessWidget {
-  const _TeamRatesCard({required this.stats});
+/// Win/loss records per team: yours ("Win rate by team"), or against
+/// saved opponent teams ("Vs opponent teams").
+class _RecordsCard extends StatelessWidget {
+  const _RecordsCard({
+    required this.title,
+    required this.records,
+    required this.emptyNote,
+  });
 
-  final ProgressStats stats;
+  final String title;
+  final List<TeamRecord> records;
+  final String emptyNote;
 
   @override
   Widget build(BuildContext context) {
     return _Card(
-      title: 'Win rate by team',
-      child: stats.teamRecords.isEmpty
-          ? const _EmptyNote('No games logged with a saved team yet.')
+      title: title,
+      child: records.isEmpty
+          ? _EmptyNote(emptyNote)
           : Column(
               children: [
-                for (final team in stats.teamRecords)
+                for (final team in records)
                   _RateRow(
                     label: '${team.teamName} (${team.wins}-${team.losses})',
                     value: '${team.winRatePercent}%',

@@ -76,6 +76,10 @@ void opponentTeamsJourney() {
     await tester.tap(find.widgetWithText(FilledButton, 'Save'));
     await tester.pumpAndSettle();
 
+    // The game now counts toward the matchup.
+    await scrollTo(tester, find.text('Ladder Grassy (0-1)'));
+    expect(find.text('Ladder Grassy (0-1)'), findsOneWidget);
+
     await tester.tap(find.text('Teams'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Opponents'));

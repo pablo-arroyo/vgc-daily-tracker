@@ -15,7 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ProgressStats {
 
- int get totalGames; int? get winRatePercent; int get gamesLast7Days; int? get winRateLast7DaysPercent; int get dayStreak; WeeklyFocus? get weeklyFocus; List<MistakeCount> get mistakeBreakdown; List<TeamRecord> get teamRecords; List<LeadRecord> get opponentLeads; List<GameLog> get recentGames;
+ int get totalGames; int? get winRatePercent; int get gamesLast7Days; int? get winRateLast7DaysPercent; int get dayStreak; WeeklyFocus? get weeklyFocus; List<MistakeCount> get mistakeBreakdown; List<TeamRecord> get teamRecords;/// Your record against each saved opponent team (games linked to one).
+ List<TeamRecord> get opponentTeamRecords; List<LeadRecord> get opponentLeads; List<GameLog> get recentGames;
 /// Create a copy of ProgressStats
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -27,20 +28,20 @@ $ProgressStatsCopyWith<ProgressStats> get copyWith => _$ProgressStatsCopyWithImp
 @override
 bool operator ==(Object other) {
   final _this = this as ProgressStats;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProgressStats&&(identical(other.totalGames, _this.totalGames) || other.totalGames == _this.totalGames)&&(identical(other.winRatePercent, _this.winRatePercent) || other.winRatePercent == _this.winRatePercent)&&(identical(other.gamesLast7Days, _this.gamesLast7Days) || other.gamesLast7Days == _this.gamesLast7Days)&&(identical(other.winRateLast7DaysPercent, _this.winRateLast7DaysPercent) || other.winRateLast7DaysPercent == _this.winRateLast7DaysPercent)&&(identical(other.dayStreak, _this.dayStreak) || other.dayStreak == _this.dayStreak)&&(identical(other.weeklyFocus, _this.weeklyFocus) || other.weeklyFocus == _this.weeklyFocus)&&const DeepCollectionEquality().equals(other.mistakeBreakdown, _this.mistakeBreakdown)&&const DeepCollectionEquality().equals(other.teamRecords, _this.teamRecords)&&const DeepCollectionEquality().equals(other.opponentLeads, _this.opponentLeads)&&const DeepCollectionEquality().equals(other.recentGames, _this.recentGames));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProgressStats&&(identical(other.totalGames, _this.totalGames) || other.totalGames == _this.totalGames)&&(identical(other.winRatePercent, _this.winRatePercent) || other.winRatePercent == _this.winRatePercent)&&(identical(other.gamesLast7Days, _this.gamesLast7Days) || other.gamesLast7Days == _this.gamesLast7Days)&&(identical(other.winRateLast7DaysPercent, _this.winRateLast7DaysPercent) || other.winRateLast7DaysPercent == _this.winRateLast7DaysPercent)&&(identical(other.dayStreak, _this.dayStreak) || other.dayStreak == _this.dayStreak)&&(identical(other.weeklyFocus, _this.weeklyFocus) || other.weeklyFocus == _this.weeklyFocus)&&const DeepCollectionEquality().equals(other.mistakeBreakdown, _this.mistakeBreakdown)&&const DeepCollectionEquality().equals(other.teamRecords, _this.teamRecords)&&const DeepCollectionEquality().equals(other.opponentTeamRecords, _this.opponentTeamRecords)&&const DeepCollectionEquality().equals(other.opponentLeads, _this.opponentLeads)&&const DeepCollectionEquality().equals(other.recentGames, _this.recentGames));
 }
 
 
 @override
 int get hashCode {
   final _this = this as ProgressStats;
-  return Object.hash(runtimeType,_this.totalGames,_this.winRatePercent,_this.gamesLast7Days,_this.winRateLast7DaysPercent,_this.dayStreak,_this.weeklyFocus,const DeepCollectionEquality().hash(_this.mistakeBreakdown),const DeepCollectionEquality().hash(_this.teamRecords),const DeepCollectionEquality().hash(_this.opponentLeads),const DeepCollectionEquality().hash(_this.recentGames));
+  return Object.hash(runtimeType,_this.totalGames,_this.winRatePercent,_this.gamesLast7Days,_this.winRateLast7DaysPercent,_this.dayStreak,_this.weeklyFocus,const DeepCollectionEquality().hash(_this.mistakeBreakdown),const DeepCollectionEquality().hash(_this.teamRecords),const DeepCollectionEquality().hash(_this.opponentTeamRecords),const DeepCollectionEquality().hash(_this.opponentLeads),const DeepCollectionEquality().hash(_this.recentGames));
 }
 
 @override
 String toString() {
   final _this = this as ProgressStats;
-  return 'ProgressStats(totalGames: ${_this.totalGames}, winRatePercent: ${_this.winRatePercent}, gamesLast7Days: ${_this.gamesLast7Days}, winRateLast7DaysPercent: ${_this.winRateLast7DaysPercent}, dayStreak: ${_this.dayStreak}, weeklyFocus: ${_this.weeklyFocus}, mistakeBreakdown: ${_this.mistakeBreakdown}, teamRecords: ${_this.teamRecords}, opponentLeads: ${_this.opponentLeads}, recentGames: ${_this.recentGames})';
+  return 'ProgressStats(totalGames: ${_this.totalGames}, winRatePercent: ${_this.winRatePercent}, gamesLast7Days: ${_this.gamesLast7Days}, winRateLast7DaysPercent: ${_this.winRateLast7DaysPercent}, dayStreak: ${_this.dayStreak}, weeklyFocus: ${_this.weeklyFocus}, mistakeBreakdown: ${_this.mistakeBreakdown}, teamRecords: ${_this.teamRecords}, opponentTeamRecords: ${_this.opponentTeamRecords}, opponentLeads: ${_this.opponentLeads}, recentGames: ${_this.recentGames})';
 }
 
 
@@ -51,7 +52,7 @@ abstract mixin class $ProgressStatsCopyWith<$Res>  {
   factory $ProgressStatsCopyWith(ProgressStats value, $Res Function(ProgressStats) _then) = _$ProgressStatsCopyWithImpl;
 @useResult
 $Res call({
- int totalGames, int? winRatePercent, int gamesLast7Days, int? winRateLast7DaysPercent, int dayStreak, WeeklyFocus? weeklyFocus, List<MistakeCount> mistakeBreakdown, List<TeamRecord> teamRecords, List<LeadRecord> opponentLeads, List<GameLog> recentGames
+ int totalGames, int? winRatePercent, int gamesLast7Days, int? winRateLast7DaysPercent, int dayStreak, WeeklyFocus? weeklyFocus, List<MistakeCount> mistakeBreakdown, List<TeamRecord> teamRecords, List<TeamRecord> opponentTeamRecords, List<LeadRecord> opponentLeads, List<GameLog> recentGames
 });
 
 
@@ -68,7 +69,7 @@ class _$ProgressStatsCopyWithImpl<$Res>
 
 /// Create a copy of ProgressStats
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? totalGames = null,Object? winRatePercent = freezed,Object? gamesLast7Days = null,Object? winRateLast7DaysPercent = freezed,Object? dayStreak = null,Object? weeklyFocus = freezed,Object? mistakeBreakdown = null,Object? teamRecords = null,Object? opponentLeads = null,Object? recentGames = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? totalGames = null,Object? winRatePercent = freezed,Object? gamesLast7Days = null,Object? winRateLast7DaysPercent = freezed,Object? dayStreak = null,Object? weeklyFocus = freezed,Object? mistakeBreakdown = null,Object? teamRecords = null,Object? opponentTeamRecords = null,Object? opponentLeads = null,Object? recentGames = null,}) {
   return _then(ProgressStats(
 totalGames: null == totalGames ? _self.totalGames : totalGames // ignore: cast_nullable_to_non_nullable
 as int,winRatePercent: freezed == winRatePercent ? _self.winRatePercent : winRatePercent // ignore: cast_nullable_to_non_nullable
@@ -78,6 +79,7 @@ as int?,dayStreak: null == dayStreak ? _self.dayStreak : dayStreak // ignore: ca
 as int,weeklyFocus: freezed == weeklyFocus ? _self.weeklyFocus : weeklyFocus // ignore: cast_nullable_to_non_nullable
 as WeeklyFocus?,mistakeBreakdown: null == mistakeBreakdown ? _self.mistakeBreakdown : mistakeBreakdown // ignore: cast_nullable_to_non_nullable
 as List<MistakeCount>,teamRecords: null == teamRecords ? _self.teamRecords : teamRecords // ignore: cast_nullable_to_non_nullable
+as List<TeamRecord>,opponentTeamRecords: null == opponentTeamRecords ? _self.opponentTeamRecords : opponentTeamRecords // ignore: cast_nullable_to_non_nullable
 as List<TeamRecord>,opponentLeads: null == opponentLeads ? _self.opponentLeads : opponentLeads // ignore: cast_nullable_to_non_nullable
 as List<LeadRecord>,recentGames: null == recentGames ? _self.recentGames : recentGames // ignore: cast_nullable_to_non_nullable
 as List<GameLog>,
@@ -177,10 +179,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int totalGames,  int? winRatePercent,  int gamesLast7Days,  int? winRateLast7DaysPercent,  int dayStreak,  WeeklyFocus? weeklyFocus,  List<MistakeCount> mistakeBreakdown,  List<TeamRecord> teamRecords,  List<LeadRecord> opponentLeads,  List<GameLog> recentGames)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int totalGames,  int? winRatePercent,  int gamesLast7Days,  int? winRateLast7DaysPercent,  int dayStreak,  WeeklyFocus? weeklyFocus,  List<MistakeCount> mistakeBreakdown,  List<TeamRecord> teamRecords,  List<TeamRecord> opponentTeamRecords,  List<LeadRecord> opponentLeads,  List<GameLog> recentGames)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ProgressStats() when $default != null:
-return $default(_that.totalGames,_that.winRatePercent,_that.gamesLast7Days,_that.winRateLast7DaysPercent,_that.dayStreak,_that.weeklyFocus,_that.mistakeBreakdown,_that.teamRecords,_that.opponentLeads,_that.recentGames);case _:
+return $default(_that.totalGames,_that.winRatePercent,_that.gamesLast7Days,_that.winRateLast7DaysPercent,_that.dayStreak,_that.weeklyFocus,_that.mistakeBreakdown,_that.teamRecords,_that.opponentTeamRecords,_that.opponentLeads,_that.recentGames);case _:
   return orElse();
 
 }
@@ -198,10 +200,10 @@ return $default(_that.totalGames,_that.winRatePercent,_that.gamesLast7Days,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int totalGames,  int? winRatePercent,  int gamesLast7Days,  int? winRateLast7DaysPercent,  int dayStreak,  WeeklyFocus? weeklyFocus,  List<MistakeCount> mistakeBreakdown,  List<TeamRecord> teamRecords,  List<LeadRecord> opponentLeads,  List<GameLog> recentGames)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int totalGames,  int? winRatePercent,  int gamesLast7Days,  int? winRateLast7DaysPercent,  int dayStreak,  WeeklyFocus? weeklyFocus,  List<MistakeCount> mistakeBreakdown,  List<TeamRecord> teamRecords,  List<TeamRecord> opponentTeamRecords,  List<LeadRecord> opponentLeads,  List<GameLog> recentGames)  $default,) {final _that = this;
 switch (_that) {
 case _ProgressStats():
-return $default(_that.totalGames,_that.winRatePercent,_that.gamesLast7Days,_that.winRateLast7DaysPercent,_that.dayStreak,_that.weeklyFocus,_that.mistakeBreakdown,_that.teamRecords,_that.opponentLeads,_that.recentGames);case _:
+return $default(_that.totalGames,_that.winRatePercent,_that.gamesLast7Days,_that.winRateLast7DaysPercent,_that.dayStreak,_that.weeklyFocus,_that.mistakeBreakdown,_that.teamRecords,_that.opponentTeamRecords,_that.opponentLeads,_that.recentGames);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -218,10 +220,10 @@ return $default(_that.totalGames,_that.winRatePercent,_that.gamesLast7Days,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int totalGames,  int? winRatePercent,  int gamesLast7Days,  int? winRateLast7DaysPercent,  int dayStreak,  WeeklyFocus? weeklyFocus,  List<MistakeCount> mistakeBreakdown,  List<TeamRecord> teamRecords,  List<LeadRecord> opponentLeads,  List<GameLog> recentGames)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int totalGames,  int? winRatePercent,  int gamesLast7Days,  int? winRateLast7DaysPercent,  int dayStreak,  WeeklyFocus? weeklyFocus,  List<MistakeCount> mistakeBreakdown,  List<TeamRecord> teamRecords,  List<TeamRecord> opponentTeamRecords,  List<LeadRecord> opponentLeads,  List<GameLog> recentGames)?  $default,) {final _that = this;
 switch (_that) {
 case _ProgressStats() when $default != null:
-return $default(_that.totalGames,_that.winRatePercent,_that.gamesLast7Days,_that.winRateLast7DaysPercent,_that.dayStreak,_that.weeklyFocus,_that.mistakeBreakdown,_that.teamRecords,_that.opponentLeads,_that.recentGames);case _:
+return $default(_that.totalGames,_that.winRatePercent,_that.gamesLast7Days,_that.winRateLast7DaysPercent,_that.dayStreak,_that.weeklyFocus,_that.mistakeBreakdown,_that.teamRecords,_that.opponentTeamRecords,_that.opponentLeads,_that.recentGames);case _:
   return null;
 
 }
@@ -233,7 +235,7 @@ return $default(_that.totalGames,_that.winRatePercent,_that.gamesLast7Days,_that
 
 
 class _ProgressStats implements ProgressStats {
-  const _ProgressStats({required this.totalGames, required this.winRatePercent, required this.gamesLast7Days, required this.winRateLast7DaysPercent, required this.dayStreak, required this.weeklyFocus, required  List<MistakeCount> mistakeBreakdown, required  List<TeamRecord> teamRecords, required  List<LeadRecord> opponentLeads, required  List<GameLog> recentGames}): _mistakeBreakdown = mistakeBreakdown,_teamRecords = teamRecords,_opponentLeads = opponentLeads,_recentGames = recentGames;
+  const _ProgressStats({required this.totalGames, required this.winRatePercent, required this.gamesLast7Days, required this.winRateLast7DaysPercent, required this.dayStreak, required this.weeklyFocus, required  List<MistakeCount> mistakeBreakdown, required  List<TeamRecord> teamRecords, required  List<TeamRecord> opponentTeamRecords, required  List<LeadRecord> opponentLeads, required  List<GameLog> recentGames}): _mistakeBreakdown = mistakeBreakdown,_teamRecords = teamRecords,_opponentTeamRecords = opponentTeamRecords,_opponentLeads = opponentLeads,_recentGames = recentGames;
   
 
 @override final  int totalGames;
@@ -254,6 +256,15 @@ class _ProgressStats implements ProgressStats {
   if (_teamRecords is EqualUnmodifiableListView) return _teamRecords;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_teamRecords);
+}
+
+/// Your record against each saved opponent team (games linked to one).
+ final  List<TeamRecord> _opponentTeamRecords;
+/// Your record against each saved opponent team (games linked to one).
+@override List<TeamRecord> get opponentTeamRecords {
+  if (_opponentTeamRecords is EqualUnmodifiableListView) return _opponentTeamRecords;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_opponentTeamRecords);
 }
 
  final  List<LeadRecord> _opponentLeads;
@@ -281,18 +292,18 @@ _$ProgressStatsCopyWith<_ProgressStats> get copyWith => __$ProgressStatsCopyWith
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProgressStats&&(identical(other.totalGames, totalGames) || other.totalGames == totalGames)&&(identical(other.winRatePercent, winRatePercent) || other.winRatePercent == winRatePercent)&&(identical(other.gamesLast7Days, gamesLast7Days) || other.gamesLast7Days == gamesLast7Days)&&(identical(other.winRateLast7DaysPercent, winRateLast7DaysPercent) || other.winRateLast7DaysPercent == winRateLast7DaysPercent)&&(identical(other.dayStreak, dayStreak) || other.dayStreak == dayStreak)&&(identical(other.weeklyFocus, weeklyFocus) || other.weeklyFocus == weeklyFocus)&&const DeepCollectionEquality().equals(other.mistakeBreakdown, _mistakeBreakdown)&&const DeepCollectionEquality().equals(other.teamRecords, _teamRecords)&&const DeepCollectionEquality().equals(other.opponentLeads, _opponentLeads)&&const DeepCollectionEquality().equals(other.recentGames, _recentGames));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProgressStats&&(identical(other.totalGames, totalGames) || other.totalGames == totalGames)&&(identical(other.winRatePercent, winRatePercent) || other.winRatePercent == winRatePercent)&&(identical(other.gamesLast7Days, gamesLast7Days) || other.gamesLast7Days == gamesLast7Days)&&(identical(other.winRateLast7DaysPercent, winRateLast7DaysPercent) || other.winRateLast7DaysPercent == winRateLast7DaysPercent)&&(identical(other.dayStreak, dayStreak) || other.dayStreak == dayStreak)&&(identical(other.weeklyFocus, weeklyFocus) || other.weeklyFocus == weeklyFocus)&&const DeepCollectionEquality().equals(other.mistakeBreakdown, _mistakeBreakdown)&&const DeepCollectionEquality().equals(other.teamRecords, _teamRecords)&&const DeepCollectionEquality().equals(other.opponentTeamRecords, _opponentTeamRecords)&&const DeepCollectionEquality().equals(other.opponentLeads, _opponentLeads)&&const DeepCollectionEquality().equals(other.recentGames, _recentGames));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,totalGames,winRatePercent,gamesLast7Days,winRateLast7DaysPercent,dayStreak,weeklyFocus,const DeepCollectionEquality().hash(_mistakeBreakdown),const DeepCollectionEquality().hash(_teamRecords),const DeepCollectionEquality().hash(_opponentLeads),const DeepCollectionEquality().hash(_recentGames));
+    return Object.hash(runtimeType,totalGames,winRatePercent,gamesLast7Days,winRateLast7DaysPercent,dayStreak,weeklyFocus,const DeepCollectionEquality().hash(_mistakeBreakdown),const DeepCollectionEquality().hash(_teamRecords),const DeepCollectionEquality().hash(_opponentTeamRecords),const DeepCollectionEquality().hash(_opponentLeads),const DeepCollectionEquality().hash(_recentGames));
 }
 
 @override
 String toString() {
-    return 'ProgressStats(totalGames: $totalGames, winRatePercent: $winRatePercent, gamesLast7Days: $gamesLast7Days, winRateLast7DaysPercent: $winRateLast7DaysPercent, dayStreak: $dayStreak, weeklyFocus: $weeklyFocus, mistakeBreakdown: $mistakeBreakdown, teamRecords: $teamRecords, opponentLeads: $opponentLeads, recentGames: $recentGames)';
+    return 'ProgressStats(totalGames: $totalGames, winRatePercent: $winRatePercent, gamesLast7Days: $gamesLast7Days, winRateLast7DaysPercent: $winRateLast7DaysPercent, dayStreak: $dayStreak, weeklyFocus: $weeklyFocus, mistakeBreakdown: $mistakeBreakdown, teamRecords: $teamRecords, opponentTeamRecords: $opponentTeamRecords, opponentLeads: $opponentLeads, recentGames: $recentGames)';
 }
 
 
@@ -303,7 +314,7 @@ abstract mixin class _$ProgressStatsCopyWith<$Res> implements $ProgressStatsCopy
   factory _$ProgressStatsCopyWith(_ProgressStats value, $Res Function(_ProgressStats) _then) = __$ProgressStatsCopyWithImpl;
 @override @useResult
 $Res call({
- int totalGames, int? winRatePercent, int gamesLast7Days, int? winRateLast7DaysPercent, int dayStreak, WeeklyFocus? weeklyFocus, List<MistakeCount> mistakeBreakdown, List<TeamRecord> teamRecords, List<LeadRecord> opponentLeads, List<GameLog> recentGames
+ int totalGames, int? winRatePercent, int gamesLast7Days, int? winRateLast7DaysPercent, int dayStreak, WeeklyFocus? weeklyFocus, List<MistakeCount> mistakeBreakdown, List<TeamRecord> teamRecords, List<TeamRecord> opponentTeamRecords, List<LeadRecord> opponentLeads, List<GameLog> recentGames
 });
 
 
@@ -320,7 +331,7 @@ class __$ProgressStatsCopyWithImpl<$Res>
 
 /// Create a copy of ProgressStats
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? totalGames = null,Object? winRatePercent = freezed,Object? gamesLast7Days = null,Object? winRateLast7DaysPercent = freezed,Object? dayStreak = null,Object? weeklyFocus = freezed,Object? mistakeBreakdown = null,Object? teamRecords = null,Object? opponentLeads = null,Object? recentGames = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? totalGames = null,Object? winRatePercent = freezed,Object? gamesLast7Days = null,Object? winRateLast7DaysPercent = freezed,Object? dayStreak = null,Object? weeklyFocus = freezed,Object? mistakeBreakdown = null,Object? teamRecords = null,Object? opponentTeamRecords = null,Object? opponentLeads = null,Object? recentGames = null,}) {
   return _then(_ProgressStats(
 totalGames: null == totalGames ? _self.totalGames : totalGames // ignore: cast_nullable_to_non_nullable
 as int,winRatePercent: freezed == winRatePercent ? _self.winRatePercent : winRatePercent // ignore: cast_nullable_to_non_nullable
@@ -330,6 +341,7 @@ as int?,dayStreak: null == dayStreak ? _self.dayStreak : dayStreak // ignore: ca
 as int,weeklyFocus: freezed == weeklyFocus ? _self.weeklyFocus : weeklyFocus // ignore: cast_nullable_to_non_nullable
 as WeeklyFocus?,mistakeBreakdown: null == mistakeBreakdown ? _self._mistakeBreakdown : mistakeBreakdown // ignore: cast_nullable_to_non_nullable
 as List<MistakeCount>,teamRecords: null == teamRecords ? _self._teamRecords : teamRecords // ignore: cast_nullable_to_non_nullable
+as List<TeamRecord>,opponentTeamRecords: null == opponentTeamRecords ? _self._opponentTeamRecords : opponentTeamRecords // ignore: cast_nullable_to_non_nullable
 as List<TeamRecord>,opponentLeads: null == opponentLeads ? _self._opponentLeads : opponentLeads // ignore: cast_nullable_to_non_nullable
 as List<LeadRecord>,recentGames: null == recentGames ? _self._recentGames : recentGames // ignore: cast_nullable_to_non_nullable
 as List<GameLog>,

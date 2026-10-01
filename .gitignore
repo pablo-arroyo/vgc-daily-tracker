@@ -46,3 +46,6 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Diff images written when a golden test fails (never committed)
+**/goldens/failures/

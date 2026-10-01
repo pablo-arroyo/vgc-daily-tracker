@@ -28,6 +28,8 @@ GameLog game(
   MistakeCategory? mistake,
   String? teamId,
   String? teamName,
+  String? opponentTeamId,
+  String? opponentTeamName,
   List<String> opponentLeads = const [],
 }) => GameLog(
   id: id,
@@ -37,6 +39,8 @@ GameLog game(
   mistake: mistake,
   teamId: teamId,
   teamName: teamName,
+  opponentTeamId: opponentTeamId,
+  opponentTeamName: opponentTeamName,
   opponentLeads: opponentLeads,
 );
 
@@ -71,6 +75,7 @@ void main() {
     expect(stats.weeklyFocus, isNull);
     expect(stats.mistakeBreakdown, isEmpty);
     expect(stats.teamRecords, isEmpty);
+    expect(stats.opponentTeamRecords, isEmpty);
     expect(stats.opponentLeads, isEmpty);
     expect(stats.recentGames, isEmpty);
   });
@@ -232,6 +237,55 @@ void main() {
         winRatePercent: 100,
       ),
     ]);
+  });
+
+  test('vs opponent teams: grouped by id (renames stay one row), deleted '
+      'teams kept, unlinked games ignored, most games first', () async {
+    final stats = (await progressOf([
+      game('a', day: 1, opponentTeamId: 'o1', opponentTeamName: 'Rival'),
+      game(
+        'b',
+        day: 2,
+        opponentTeamId: 'o1',
+        opponentTeamName: 'Rival Grassy', // renamed since
+        result: GameResult.loss,
+      ),
+      game('c', day: 3, opponentTeamId: 'o2', opponentTeamName: 'Ladder Rain'),
+      game(
+        'd',
+        day: 4,
+        opponentTeamId: 'o9',
+        opponentTeamName: 'Old rival', // since deleted
+        result: GameResult.loss,
+      ),
+      game('e', day: 5, teamId: 't1', teamName: 'Big Six'), // no opponent
+    ])).stats;
+
+    expect(stats.opponentTeamRecords, const [
+      TeamRecord(
+        teamId: 'o1',
+        teamName: 'Rival Grassy',
+        wins: 1,
+        losses: 1,
+        winRatePercent: 50,
+      ),
+      TeamRecord(
+        teamId: 'o2',
+        teamName: 'Ladder Rain',
+        wins: 1,
+        losses: 0,
+        winRatePercent: 100,
+      ),
+      TeamRecord(
+        teamId: 'o9',
+        teamName: 'Old rival',
+        wins: 0,
+        losses: 1,
+        winRatePercent: 0,
+      ),
+    ]);
+    // Your own team records don't pick up opponent teams.
+    expect(stats.teamRecords.map((r) => r.teamId), ['t1']);
   });
 
   test('opponent leads: the 8 most seen (ties: most recently seen first), '
