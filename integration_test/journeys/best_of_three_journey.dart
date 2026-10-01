@@ -5,8 +5,10 @@ import 'package:vgc_daily_tracker/domain/models/team.dart';
 import '../../testing/app.dart';
 import '../../testing/fakes/fake_pokemon_repository.dart';
 import '../../testing/log_game_actions.dart';
+import '../../testing/progress_actions.dart';
 
-/// A best-of-3 on the real app: two wins close the set.
+/// A best-of-3 on the real app: two wins close the set, and Progress
+/// records it.
 void bestOfThreeJourney() {
   testWidgets('log a set won 2–0', (tester) async {
     final rival = Team(
@@ -35,5 +37,10 @@ void bestOfThreeJourney() {
     await tester.pumpAndSettle();
 
     expect(find.text('Game logged ✓ · Set won 2–0'), findsOneWidget);
+
+    await tester.tap(find.text('Progress'));
+    await tester.pumpAndSettle();
+    await scrollTo(tester, find.text('Set record (1-0)'));
+    expect(find.text('Rival Grassy · Won 2–0 · W W'), findsOneWidget);
   });
 }

@@ -44,6 +44,7 @@ class ProgressScreen extends StatelessWidget {
                             'Pick or save an opponent team when logging a game '
                             'to see your matchups.',
                       ),
+                      _SetsCard(stats: stats),
                       _OpponentLeadsCard(stats: stats),
                       _MistakeBreakdownCard(stats: stats),
                     ],
@@ -295,6 +296,56 @@ class _RecordsCard extends StatelessWidget {
                   _RateRow(
                     label: '${team.teamName} (${team.wins}-${team.losses})',
                     value: '${team.winRatePercent}%',
+                  ),
+              ],
+            ),
+    );
+  }
+}
+
+/// Best-of-3 records: sets won and lost, game 1 against games 2–3, and
+/// the most recent sets.
+class _SetsCard extends StatelessWidget {
+  const _SetsCard({required this.stats});
+
+  final ProgressStats stats;
+
+  @override
+  Widget build(BuildContext context) {
+    final decided = stats.setWinRatePercent;
+    final game1 = stats.game1WinRatePercent;
+    final later = stats.laterGamesWinRatePercent;
+    return _Card(
+      title: 'Best-of-3 sets',
+      child: stats.recentSets.isEmpty
+          ? const _EmptyNote(
+              'Tick "Part of a best-of-3" when logging to track your sets.',
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (decided != null)
+                  _RateRow(
+                    label: 'Set record (${stats.setsWon}-${stats.setsLost})',
+                    value: '$decided%',
+                  ),
+                if (game1 != null)
+                  _RateRow(label: 'Game 1 win rate', value: '$game1%'),
+                if (later != null)
+                  _RateRow(label: 'Games 2–3 win rate', value: '$later%'),
+                if (stats.unfinishedSets > 0)
+                  _RateRow(
+                    label: 'Unfinished sets',
+                    value: '${stats.unfinishedSets}',
+                  ),
+                const SizedBox(height: 8),
+                for (final set in stats.recentSets)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      set.label,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   ),
               ],
             ),

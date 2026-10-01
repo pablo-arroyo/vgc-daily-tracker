@@ -868,12 +868,26 @@ opponent spreads.
     decided sets close, a single game leaves the set, reset, scroll),
     and a macOS journey logs a set won 2–0.
 
-### 10.2 Best-of-3 sets: Progress
+### ✅ 10.2 Best-of-3 sets: Progress
 - A "Best-of-3 sets" card with your set record and set win %, game 1 win
   % against games 2–3 (how well you adapt), and the last few sets with
   their games.
 - **Tests:** stats unit tests (sets grouped by `setId`, unfinished sets
   counted apart, single games ignored), widget, and acceptance.
+- **As built:**
+  - `ProgressStats` gained set wins and losses, set win %, unfinished
+    sets, game 1 and games 2–3 win %, and the 5 most recent sets as
+    one-line `SetRecord`s ("Rival Grassy · Won 2–1 · W L W").
+  - The Progress card sits after "Vs opponent teams", with an empty
+    note when there are no sets.
+  - A shared `_percent` helper now backs `_winRate` too.
+  - The Progress goldens were re-recorded on purpose for the new card.
+  - **Found by breaking it on purpose:** listing a set's games newest
+    first went unnoticed, because the test sets read the same both
+    ways. A set lost then won twice ("L W W") now covers it. The other
+    rules (games 2–3 only, 5 recent sets, unfinished sets counted apart)
+    were caught already.
+  - The macOS best-of-3 journey checks the Progress card.
 
 ### 10.3 Speed matchups in the Game plan
 - **Domain:** a pure speed-order calculator, built on 7.2's stats.

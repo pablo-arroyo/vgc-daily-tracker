@@ -174,6 +174,35 @@ void main() {
           findsOneWidget,
         );
         expect(find.text('No games logged yet.'), findsWidgets);
+        expect(
+          find.text(
+            'Tick "Part of a best-of-3" when logging to track your sets.',
+          ),
+          findsOneWidget,
+        );
+      });
+    });
+
+    testWidgets('best-of-3 sets: record, game 1 vs later, recent sets', (
+      tester,
+    ) async {
+      await withClock(Clock.fixed(now), () async {
+        GameLog inSet(String id, int n, GameResult result) => game(
+          id,
+          day: 20 + n,
+          result: result,
+        ).copyWith(setId: 's1', setGame: n, opponentTeamName: 'Rival Grassy');
+        await pumpProgress(tester, [
+          inSet('a', 1, GameResult.win),
+          inSet('b', 2, GameResult.win),
+        ]);
+        final semantics = tester.ensureSemantics();
+
+        expect(find.text('Set record (1-0)'), findsOneWidget);
+        expect(find.bySemanticsLabel('Set record (1-0): 100%'), findsOneWidget);
+        expect(find.text('Rival Grassy · Won 2–0 · W W'), findsOneWidget);
+        expect(find.text('Unfinished sets'), findsNothing);
+        semantics.dispose();
       });
     });
 

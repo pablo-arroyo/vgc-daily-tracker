@@ -406,6 +406,105 @@ void main() {
     },
   );
 
+  group('best-of-3 sets', () {
+    GameLog inSet(
+      String setId,
+      int game,
+      GameResult result, {
+      required int hour,
+      String? against,
+      bool endsSet = false,
+    }) => GameLog(
+      id: '$setId-$game',
+      playedAt: DateTime.utc(2026, 9, 29, hour),
+      result: result,
+      setId: setId,
+      setGame: game,
+      opponentTeamName: against,
+      endsSet: endsSet,
+    );
+
+    final sets = [
+      inSet('a', 1, GameResult.win, hour: 1, against: 'Rival Grassy'),
+      inSet('a', 2, GameResult.loss, hour: 2, against: 'Rival Grassy'),
+      inSet('a', 3, GameResult.win, hour: 3, against: 'Rival Grassy'),
+      inSet('b', 1, GameResult.loss, hour: 4, against: 'Ladder Rain'),
+      inSet('b', 2, GameResult.loss, hour: 5, against: 'Ladder Rain'),
+      inSet('c', 1, GameResult.win, hour: 6, endsSet: true),
+      game('single', day: 29, result: GameResult.win),
+    ];
+
+    test(
+      'decided sets make the record; ended or open ones count apart',
+      () async {
+        final stats = (await progressOf(sets)).stats;
+
+        expect(stats.setsWon, 1);
+        expect(stats.setsLost, 1);
+        expect(stats.setWinRatePercent, 50);
+        expect(stats.unfinishedSets, 1);
+      },
+    );
+
+    test('game 1 against games 2–3, from set games only', () async {
+      final stats = (await progressOf(sets)).stats;
+
+      expect(stats.game1WinRatePercent, 67); // 2 of 3
+      expect(stats.laterGamesWinRatePercent, 33); // 1 of 3
+    });
+
+    test('recent sets, newest first, read as one line each', () async {
+      final stats = (await progressOf(sets)).stats;
+
+      expect(stats.recentSets.map((s) => s.label), [
+        'Unfinished 1–0 · W',
+        'Ladder Rain · Lost 0–2 · L L',
+        'Rival Grassy · Won 2–1 · W L W',
+      ]);
+    });
+
+    test("a set's games read in the order they were played", () async {
+      final stats = (await progressOf([
+        inSet('e', 1, GameResult.loss, hour: 1),
+        inSet('e', 2, GameResult.win, hour: 2),
+        inSet('e', 3, GameResult.win, hour: 3),
+      ])).stats;
+
+      expect(stats.recentSets.single.label, 'Won 2–1 · L W W');
+    });
+
+    test('a set still being played counts as unfinished', () async {
+      final stats = (await progressOf([
+        inSet('d', 1, GameResult.win, hour: 7, against: 'Rival Grassy'),
+      ])).stats;
+
+      expect(stats.unfinishedSets, 1);
+      expect(stats.setWinRatePercent, isNull);
+      expect(
+        stats.recentSets.single.label,
+        'Rival Grassy · Unfinished 1–0 · W',
+      );
+    });
+
+    test('no sets: nothing to show', () async {
+      final stats = (await progressOf([game('single', day: 29)])).stats;
+
+      expect(stats.setWinRatePercent, isNull);
+      expect(stats.game1WinRatePercent, isNull);
+      expect(stats.recentSets, isEmpty);
+    });
+
+    test('only the 5 most recent sets are listed', () async {
+      final stats = (await progressOf([
+        for (var i = 0; i < 7; i++)
+          inSet('s$i', 1, GameResult.win, hour: i, endsSet: true),
+      ])).stats;
+
+      expect(stats.recentSets, hasLength(5));
+      expect(stats.unfinishedSets, 7);
+    });
+  });
+
   group("saving a game's opponent as a team", () {
     const six = [
       'rillaboom',

@@ -22,6 +22,20 @@ abstract class ProgressStats with _$ProgressStats {
     /// Your record against each saved opponent team (games linked to one).
     required List<TeamRecord> opponentTeamRecords,
     required List<LeadRecord> opponentLeads,
+
+    /// Best-of-3 sets: decided ones make the record; ended early or still
+    /// open ones count as unfinished.
+    required int setsWon,
+    required int setsLost,
+    required int? setWinRatePercent,
+    required int unfinishedSets,
+
+    /// Win % in game 1 of a set, against games 2–3 (how you adapt).
+    required int? game1WinRatePercent,
+    required int? laterGamesWinRatePercent,
+
+    /// The most recent sets, newest first.
+    required List<SetRecord> recentSets,
     required List<GameLog> recentGames,
   }) = _ProgressStats;
 }
@@ -67,4 +81,12 @@ abstract class LeadRecord with _$LeadRecord {
     required int timesSeen,
     required int winRatePercent,
   }) = _LeadRecord;
+}
+
+/// One best-of-3, as a single line, e.g.
+/// `Rival Grassy · Won 2–1 · W L W`.
+@freezed
+abstract class SetRecord with _$SetRecord {
+  const factory SetRecord({required String setId, required String label}) =
+      _SetRecord;
 }

@@ -155,12 +155,20 @@ class ProgressViewModel extends ChangeNotifier {
     teamRecords: [],
     opponentTeamRecords: [],
     opponentLeads: [],
+    setsWon: 0,
+    setsLost: 0,
+    setWinRatePercent: null,
+    unfinishedSets: 0,
+    game1WinRatePercent: null,
+    laterGamesWinRatePercent: null,
+    recentSets: [],
     recentGames: [],
   );
 
   ProgressStats _compute(List<GameLog> games) {
     final today = _localDay(clock.now().toUtc());
     final last7 = games.where((g) => _isWithinDays(g, today, 7)).toList();
+    final sets = _setStats(games);
     return _empty.copyWith(
       totalGames: games.length,
       winRatePercent: _winRate(games),
@@ -180,8 +188,84 @@ class ProgressViewModel extends ChangeNotifier {
         name: (g) => g.opponentTeamName,
       ),
       opponentLeads: _opponentLeads(games),
+      setsWon: sets.won,
+      setsLost: sets.lost,
+      setWinRatePercent: _percent(sets.won, sets.won + sets.lost),
+      unfinishedSets: sets.unfinished,
+      game1WinRatePercent: _winRate(sets.firstGames),
+      laterGamesWinRatePercent: _winRate(sets.laterGames),
+      recentSets: sets.recent,
       // The repository already lists games newest first.
       recentGames: games,
+    );
+  }
+
+  static const _setWinsNeeded = 2;
+  static const _recentSetCount = 5;
+
+  /// Best-of-3 sets from [games] (newest first), grouped by set id.
+  static ({
+    int won,
+    int lost,
+    int unfinished,
+    List<GameLog> firstGames,
+    List<GameLog> laterGames,
+    List<SetRecord> recent,
+  })
+  _setStats(List<GameLog> games) {
+    // Insertion order follows [games]: newest set first.
+    final bySet = <String, List<GameLog>>{};
+    for (final g in games) {
+      if (g.setId case final id?) (bySet[id] ??= []).add(g);
+    }
+    var won = 0, lost = 0, unfinished = 0;
+    final recent = <SetRecord>[];
+    for (final MapEntry(key: setId, value: newestFirst) in bySet.entries) {
+      final setGames = newestFirst.reversed.toList();
+      final wins = setGames.where((g) => g.result == GameResult.win).length;
+      final losses = setGames.length - wins;
+      final outcome = wins >= _setWinsNeeded
+          ? 'Won'
+          : losses >= _setWinsNeeded
+          ? 'Lost'
+          : 'Unfinished';
+      switch (outcome) {
+        case 'Won':
+          won++;
+        case 'Lost':
+          lost++;
+        default:
+          unfinished++;
+      }
+      if (recent.length < _recentSetCount) {
+        final results = [
+          for (final g in setGames) g.result == GameResult.win ? 'W' : 'L',
+        ].join(' ');
+        recent.add(
+          SetRecord(
+            setId: setId,
+            label: [
+              ?setGames.first.opponentTeamName,
+              '$outcome $wins–$losses',
+              results,
+            ].join(' · '),
+          ),
+        );
+      }
+    }
+    return (
+      won: won,
+      lost: lost,
+      unfinished: unfinished,
+      firstGames: [
+        for (final g in games)
+          if (g.setGame == 1) g,
+      ],
+      laterGames: [
+        for (final g in games)
+          if ((g.setGame ?? 0) > 1) g,
+      ],
+      recent: recent,
     );
   }
 
@@ -326,11 +410,14 @@ class ProgressViewModel extends ChangeNotifier {
   }
 
   /// Win % rounded like the original (`Math.round`); null with no games.
-  static int? _winRate(Iterable<GameLog> games) {
-    if (games.isEmpty) return null;
-    final wins = games.where((g) => g.result == GameResult.win).length;
-    return (wins * 100 / games.length).round();
-  }
+  static int? _winRate(Iterable<GameLog> games) => _percent(
+    games.where((g) => g.result == GameResult.win).length,
+    games.length,
+  );
+
+  /// [part] of [whole] as a rounded %, or null when [whole] is 0.
+  static int? _percent(int part, int whole) =>
+      whole == 0 ? null : (part * 100 / whole).round();
 
   @override
   void dispose() {
