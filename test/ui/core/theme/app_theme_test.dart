@@ -20,6 +20,26 @@ void main() {
     });
   });
 
+  test('text on the accent meets WCAG AA (4.5:1) in both themes', () {
+    double contrast(Color a, Color b) {
+      final (light, dark) = (
+        a.computeLuminance() > b.computeLuminance() ? a : b,
+        a.computeLuminance() > b.computeLuminance() ? b : a,
+      );
+      return (light.computeLuminance() + 0.05) /
+          (dark.computeLuminance() + 0.05);
+    }
+
+    for (final theme in [AppTheme.light, AppTheme.dark]) {
+      final scheme = theme.colorScheme;
+      expect(
+        contrast(scheme.primary, scheme.onPrimary),
+        greaterThanOrEqualTo(4.5),
+        reason: '${theme.brightness}',
+      );
+    }
+  });
+
   group('AppColors', () {
     test('lerp returns each end at t = 0 and t = 1', () {
       final light = AppTheme.light.extension<AppColors>()!;

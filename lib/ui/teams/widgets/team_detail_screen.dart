@@ -204,11 +204,17 @@ class _StatsRow extends StatelessWidget {
       children: [
         for (final stat in Stat.values)
           Expanded(
-            child: Column(
-              children: [
-                Text(stat.label, style: textTheme.labelSmall),
-                Text('${stats.of(stat)}', style: textTheme.titleSmall),
-              ],
+            // Read as "Speed 178", not "Spe", "178".
+            child: Semantics(
+              label: '${stat.fullName} ${stats.of(stat)}',
+              container: true,
+              excludeSemantics: true,
+              child: Column(
+                children: [
+                  Text(stat.label, style: textTheme.labelSmall),
+                  Text('${stats.of(stat)}', style: textTheme.titleSmall),
+                ],
+              ),
             ),
           ),
       ],

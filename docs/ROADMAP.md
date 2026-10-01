@@ -547,9 +547,24 @@ the device timezone (injectable, so tests pin UTC-6).
     Log Game) and recovers once back online. The field has widget tests,
     and the view models' search tests now expect the failure passed
     through.
-- **8.2 Accessibility:** semantics labels on chips, avatars and stats; text
-  scaling to 200 %; contrast in both themes. Covered by widget tests with
-  `meetsGuideline` checks.
+- ✅ **8.2 Accessibility:** an acceptance test visits all 8 screens and
+  scrolls each page by page, so lazy rows are checked too.
+  - **Guidelines:** text contrast, labelled tap targets, and Android/iOS
+    tap-target size, in both themes. At 200 % text, nothing may
+    overflow.
+  - **Found and fixed:**
+    - Dark-mode text on the accent was 4.48:1, under WCAG AA. It now
+      uses the background color (about 6.3:1), keeping the original
+      accent. A theme test checks the ratio in both themes.
+    - Log Game's team dropdown overflowed at 200 % with long team
+      names; it now expands and shortens them.
+  - **Screen readers:**
+    - Bring/lead chips say their role ("Kingambit, lead"), which was
+      shown only by color.
+    - Team detail stats read in full ("Speed 178", via `Stat.fullName`).
+    - Progress stat boxes, rate rows and mistake bars each read as one
+      phrase ("overall win rate: 50%").
+    - Avatars were already labelled.
 - **8.3 Performance pass:** follow `performance.md`. Profile the Progress
   screen with 1,000 generated games in profile mode and record frame times.
 - **8.4 Backup:** export and import all data as JSON, since data is local

@@ -3,7 +3,19 @@ import 'package:flutter/material.dart';
 import 'theme/app_theme.dart';
 
 /// What a chip marks in the bring/lead pickers.
-enum PokemonChipRole { none, brought, lead, opponentBrought, opponentLead }
+enum PokemonChipRole {
+  none(null),
+  brought('brought'),
+  lead('lead'),
+  opponentBrought('opponent brought'),
+  opponentLead('opponent lead');
+
+  const PokemonChipRole(this.spoken);
+
+  /// Read after the name by screen readers, since the role is otherwise
+  /// shown only by color.
+  final String? spoken;
+}
 
 /// A tappable Pokémon name used by the bring/lead pickers, colored by its
 /// [role] like the original tracker's chips.
@@ -49,6 +61,9 @@ class PokemonChip extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Text(
               label,
+              semanticsLabel: role.spoken == null
+                  ? label
+                  : '$label, ${role.spoken}',
               style: Theme.of(context).textTheme.labelLarge
                   ?.copyWith(color: picked ? foreground : scheme.onSurface),
             ),

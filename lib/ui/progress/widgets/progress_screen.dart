@@ -134,17 +134,23 @@ class _StatBox extends StatelessWidget {
         ),
         child: Padding(
           padding: const EdgeInsets.all(12),
-          child: Column(
-            children: [
-              Text(
-                value,
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  color: theme.colorScheme.primary,
-                  fontWeight: FontWeight.w800,
+          // Read as one phrase: "overall win rate: 50%".
+          child: Semantics(
+            label: '$label: $value',
+            container: true,
+            excludeSemantics: true,
+            child: Column(
+              children: [
+                Text(
+                  value,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-              ),
-              Text(label, style: theme.textTheme.labelSmall),
-            ],
+                Text(label, style: theme.textTheme.labelSmall),
+              ],
+            ),
           ),
         ),
       ),
@@ -231,17 +237,22 @@ class _RateRow extends StatelessWidget {
     final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Expanded(child: Text(label)),
-          Text(
-            value,
-            style: TextStyle(
-              color: theme.colorScheme.primary,
-              fontWeight: FontWeight.w700,
+      child: Semantics(
+        label: '$label: $value',
+        container: true,
+        excludeSemantics: true,
+        child: Row(
+          children: [
+            Expanded(child: Text(label)),
+            Text(
+              value,
+              style: TextStyle(
+                color: theme.colorScheme.primary,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -344,36 +355,42 @@ class _MistakeBar extends StatelessWidget {
     return Padding(
       key: const ValueKey('mistake-bar'),
       padding: const EdgeInsets.only(bottom: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Expanded(child: Text(label, style: theme.textTheme.bodySmall)),
-              Text('$count', style: theme.textTheme.bodySmall),
-            ],
-          ),
-          const SizedBox(height: 4),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: theme.colorScheme.outlineVariant,
-              borderRadius: radius,
+      // The bar only restates the count, so read just "label: count".
+      child: Semantics(
+        label: '$label: $count',
+        container: true,
+        excludeSemantics: true,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(child: Text(label, style: theme.textTheme.bodySmall)),
+                Text('$count', style: theme.textTheme.bodySmall),
+              ],
             ),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: FractionallySizedBox(
-                widthFactor: fraction,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary,
-                    borderRadius: radius,
+            const SizedBox(height: 4),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: theme.colorScheme.outlineVariant,
+                borderRadius: radius,
+              ),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: FractionallySizedBox(
+                  widthFactor: fraction,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primary,
+                      borderRadius: radius,
+                    ),
+                    child: const SizedBox(height: 8),
                   ),
-                  child: const SizedBox(height: 8),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

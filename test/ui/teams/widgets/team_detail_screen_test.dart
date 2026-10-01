@@ -84,6 +84,15 @@ void main() {
     expect(find.text('207'), findsOneWidget); // Kingambit's HP
   });
 
+  testWidgets('screen readers hear each stat in full', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await pumpDetail(tester);
+
+    expect(find.bySemanticsLabel('Speed 178'), findsOneWidget);
+    expect(find.bySemanticsLabel('HP 207'), findsOneWidget);
+    semantics.dispose();
+  });
+
   testWidgets('a mega ability shows after an arrow', (tester) async {
     final withMegaAbility = imported.copyWith(
       sets: [

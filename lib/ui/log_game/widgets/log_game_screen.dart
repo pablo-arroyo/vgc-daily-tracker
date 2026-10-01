@@ -200,10 +200,15 @@ class _TeamPicker extends StatelessWidget {
       builder: (context, _) => DropdownButtonFormField<Team?>(
         initialValue: viewModel.selectedTeam,
         decoration: const InputDecoration(labelText: 'Your team used'),
+        // Long team names shorten instead of overflowing at large text.
+        isExpanded: true,
         items: [
           const DropdownMenuItem(child: Text('No saved team')),
           for (final team in viewModel.teams)
-            DropdownMenuItem(value: team, child: Text(team.name)),
+            DropdownMenuItem(
+              value: team,
+              child: Text(team.name, overflow: TextOverflow.ellipsis),
+            ),
         ],
         onChanged: viewModel.selectTeam,
       ),

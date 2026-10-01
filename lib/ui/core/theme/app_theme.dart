@@ -12,6 +12,9 @@ abstract final class AppTheme {
   static final dark = _build(
     brightness: Brightness.dark,
     accent: const Color(0xFF8A8AFF),
+    // The seed's own text color on this accent is 4.48:1, just under WCAG
+    // AA; the background color gives about 6.3:1.
+    onAccent: const Color(0xFF14141F),
     background: const Color(0xFF14141F),
     colors: AppColors.dark,
   );
@@ -21,11 +24,13 @@ abstract final class AppTheme {
     required Color accent,
     required Color background,
     required AppColors colors,
+    Color? onAccent,
   }) {
     return ThemeData(
       colorScheme: ColorScheme.fromSeed(
         seedColor: accent,
         primary: accent,
+        onPrimary: onAccent,
         brightness: brightness,
       ),
       scaffoldBackgroundColor: background,

@@ -111,6 +111,10 @@ void main() {
           ),
         ]);
 
+        final semantics = tester.ensureSemantics();
+        // Screen readers hear each number with what it measures.
+        expect(find.bySemanticsLabel('overall win rate: 50%'), findsOneWidget);
+        semantics.dispose();
         expect(statValue(tester, 'games logged'), '2');
         expect(statValue(tester, 'overall win rate'), '50%');
         expect(statValue(tester, 'last 7 days'), '50%');
@@ -198,6 +202,13 @@ void main() {
           findsOneWidget,
         );
         expect(find.text('Rillaboom (seen 2×)'), findsOneWidget);
+        final semantics = tester.ensureSemantics();
+        expect(find.bySemanticsLabel('Big Six (2-1): 67%'), findsOneWidget);
+        expect(
+          find.bySemanticsLabel('${MistakeCategory.protectCall.label}: 2'),
+          findsOneWidget,
+        );
+        semantics.dispose();
         expect(find.text('50% win'), findsOneWidget);
 
         // The label also shows in a recent game's summary, so look for it

@@ -17,6 +17,24 @@ void main() {
     ),
   );
 
+  testWidgets('tells screen readers the role, not only the color', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    for (final (role, label) in [
+      (PokemonChipRole.none, 'Kingambit'),
+      (PokemonChipRole.brought, 'Kingambit, brought'),
+      (PokemonChipRole.lead, 'Kingambit, lead'),
+      (PokemonChipRole.opponentBrought, 'Kingambit, opponent brought'),
+      (PokemonChipRole.opponentLead, 'Kingambit, opponent lead'),
+    ]) {
+      await pumpChip(tester, role: role, onTap: () {});
+
+      expect(find.bySemanticsLabel(label), findsOneWidget, reason: '$role');
+    }
+    semantics.dispose();
+  });
+
   testWidgets('shows the name and reports taps', (tester) async {
     var taps = 0;
     await pumpChip(tester, onTap: () => taps++);

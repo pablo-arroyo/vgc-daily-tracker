@@ -21,6 +21,17 @@ void main() {
     expect(spread.withStat(Stat.spd, 4), const StatSpread(spa: 252, spd: 4));
   });
 
+  test('Stat full names are for screen readers', () {
+    expect(Stat.values.map((s) => s.fullName), [
+      'HP',
+      'Attack',
+      'Defense',
+      'Special Attack',
+      'Special Defense',
+      'Speed',
+    ]);
+  });
+
   test('Stat labels are the Showdown ones', () {
     expect(Stat.values.map((s) => s.label), [
       'HP',
