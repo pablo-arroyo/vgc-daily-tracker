@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 
@@ -15,8 +17,16 @@ class RoutineViewModel extends ChangeNotifier {
   }) : _toLocal = toLocal ?? ((utc) => utc.toLocal()) {
     toggle = Command1(_toggle);
     _day = isoDate(_toLocal(clock.now().toUtc()));
-    _load();
+    // Watched, not read once: ticks saved elsewhere (a restored backup)
+    // show up without reopening the tab.
+    _subscription = _routineRepository.watchOn(_day).listen((checked) {
+      _checked = checked;
+      _loaded = true;
+      notifyListeners();
+    });
   }
+
+  late final StreamSubscription<Set<String>> _subscription;
 
   final RoutineRepository _routineRepository;
   final DateTime Function(DateTime utc) _toLocal;
@@ -36,13 +46,6 @@ class RoutineViewModel extends ChangeNotifier {
   /// screen; the next load starts the new day.
   late final String _day;
 
-  Future<void> _load() async {
-    final result = await _routineRepository.checkedOn(_day);
-    if (result case Ok(:final value)) _checked = value;
-    _loaded = true;
-    notifyListeners();
-  }
-
   Future<Result<void>> _toggle(String itemId) async {
     final before = _checked;
     _checked = before.contains(itemId)
@@ -55,5 +58,11 @@ class RoutineViewModel extends ChangeNotifier {
       notifyListeners();
     }
     return saved;
+  }
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
   }
 }

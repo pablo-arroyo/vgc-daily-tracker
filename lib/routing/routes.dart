@@ -21,4 +21,5 @@ abstract final class Routes {
   static String editTeam(String id) => '/teams/$id/edit';
   static const logGame = '/log';
   static const progress = '/progress';
+  static const backup = '/backup';
 }

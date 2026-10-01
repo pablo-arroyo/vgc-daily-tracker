@@ -17,6 +17,14 @@ class _NeverLoadsRoutine implements RoutineRepository {
   @override
   Future<Result<Set<String>>> checkedOn(String day) => _never.future;
   @override
+  Stream<Set<String>> watchOn(String day) =>
+      StreamController<Set<String>>().stream;
+
+  @override
+  Future<Result<Map<String, Set<String>>>> allDays() =>
+      Completer<Result<Map<String, Set<String>>>>().future;
+
+  @override
   Future<Result<void>> save(String day, Set<String> checked) async =>
       const Result.ok(null);
 }

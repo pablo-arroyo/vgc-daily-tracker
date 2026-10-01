@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
@@ -34,6 +35,9 @@ Future<void> pumpApp(
 }) async {
   await tester.pumpWidget(
     VgcApp(
+      // A fresh key per call: calling pumpApp again launches a new app (as
+      // after a restart), rather than rebuilding the old one in place.
+      key: UniqueKey(),
       providers: providersFake(
         teams: teams,
         games: games,

@@ -74,6 +74,18 @@ void main() {
     );
   });
 
+  test('ticks saved elsewhere for today (a restored backup) show up', () async {
+    final viewModel = await routineAt(lateEvening);
+    var notified = 0;
+    viewModel.addListener(() => notified++);
+
+    await repository.save('2026-09-30', {'speed-order'});
+    await pumpEventQueue();
+
+    expect(viewModel.isChecked('speed-order'), isTrue);
+    expect(notified, greaterThan(0));
+  });
+
   test('the next day starts with nothing ticked', () async {
     await repository.save('2026-09-30', {'speed-order'});
 

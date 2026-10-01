@@ -672,8 +672,38 @@ so that backup covers it from the start.
     test that reads both files.
   - **Tooling:** `flutter_driver` (SDK, test-only) was added, with the
     user's OK.
-- **8.4 Backup:** export and import all data as JSON, since data is local
-  only. Unit test the round trip.
+- ✅ **8.4 Backup:** all data is exported and imported as JSON, since
+  it's local only. The user chose the clipboard (no new package) and
+  merge-by-id restore on 2026-10-01.
+  - **Where:** a "Backup & restore" icon in the header opens `/backup`,
+    a full-screen route capped at 640 px like the tabs.
+  - **Copy backup** puts the JSON on the clipboard with a summary
+    ("2 teams, 1 game, 1 routine day").
+  - **Restore** merges a pasted backup: the backup's copy replaces
+    anything with the same id, and everything else stays, so restoring
+    twice changes nothing.
+  - **The format:** `BackupFormat` is a pure encode/decode, marked with
+    the app name and `format_version` 1. It covers teams (both sides,
+    with sets), games and routine days; the Pokémon index is left out
+    because it can be downloaded again. It refuses non-JSON, other
+    JSON, newer versions and damaged backups, each with a clear
+    message.
+  - **New storage and repository calls:** `LocalStorageService.getAll`
+    and `watch`, plus `RoutineRepository.allDays` and `watchOn`. Restore
+    exposed a bug: the Routine tab read its day once, so a restore (or
+    any change made elsewhere) didn't show until a restart. It now
+    watches its day, like Teams and Progress do.
+  - **Test setup fix:** each `pumpApp` call now builds a fresh app (it
+    has a unique key), so tests that simulate a restart really get one.
+  - **Tests:**
+    - Round trip and every refusal (unit).
+    - Merge, idempotency, export contents and errors (view model).
+    - The screen (widget).
+    - Acceptance: copy from one app, restore into an empty one;
+      everything is back, live.
+    - A macOS journey, using a fake clipboard so test runs never
+      overwrite the developer's real one.
+    - Six rules broken on purpose, one at a time; a test caught each.
 - **8.5 CI (optional):** a GitHub Actions workflow running `flutter analyze`,
   `flutter test` and the integration tests on macOS.
 - **8.6 App identity and README:** app name and icon, and a README with

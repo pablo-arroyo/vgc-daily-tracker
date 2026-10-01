@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../config/format_config.dart';
+import '../../routing/routes.dart';
 
 /// Frame around every tab: the tracker header, the current tab's content
 /// (capped at 640 px wide, like the original) and the tab bar.
@@ -67,21 +68,35 @@ class _Header extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 18, 16, 6),
-      child: Column(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '🎮 VGC Daily Practice Tracker',
-            style: textTheme.titleLarge,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '${context.read<FormatConfig>().label} · at least 1 game a day, '
-            'review every one',
-            style: textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+          // Balances the button on the right, so the title stays centered.
+          const SizedBox(width: 48),
+          Expanded(
+            child: Column(
+              children: [
+                Text(
+                  '🎮 VGC Daily Practice Tracker',
+                  style: textTheme.titleLarge,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${context.read<FormatConfig>().label} · at least 1 game a day, '
+                  'review every one',
+                  style: textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
-            textAlign: TextAlign.center,
+          ),
+          IconButton(
+            tooltip: 'Backup & restore',
+            icon: const Icon(Icons.backup_outlined),
+            onPressed: () => context.push(Routes.backup),
           ),
         ],
       ),

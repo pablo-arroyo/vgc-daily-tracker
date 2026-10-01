@@ -33,4 +33,30 @@ void routineRepositoryContract(Future<RoutineRepository> Function() create) {
 
     expect(await checked('2026-09-30'), {'log-fast'});
   });
+
+  test('allDays lists every saved day with its ticks', () async {
+    await repository.save('2026-09-29', {'log-fast'});
+    await repository.save('2026-09-30', {'speed-order', 'log-fast'});
+
+    final days = await repository.allDays();
+
+    expect((days as Ok<Map<String, Set<String>>>).value, {
+      '2026-09-29': {'log-fast'},
+      '2026-09-30': {'speed-order', 'log-fast'},
+    });
+  });
+
+  test('watchOn emits the day now, then after each save to it', () async {
+    await repository.save('2026-09-30', {'log-fast'});
+    final emissions = repository.watchOn('2026-09-30').take(2).toList();
+
+    await Future<void>.delayed(Duration.zero);
+    await repository.save('2026-09-29', {'speed-order'}); // another day
+    await repository.save('2026-09-30', {'log-fast', 'speed-order'});
+
+    expect(await emissions, [
+      {'log-fast'},
+      {'log-fast', 'speed-order'},
+    ]);
+  });
 }

@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
+import 'journeys/backup_journey.dart';
 import 'journeys/log_game_journey.dart';
 import 'journeys/opponent_teams_journey.dart';
 import 'journeys/sample_teams_journey.dart';
@@ -23,4 +24,5 @@ void main() {
   group('team import', teamImportJourney);
   group('sample teams', sampleTeamsJourney);
   group('opponent teams', opponentTeamsJourney);
+  group('backup', backupJourney);
 }

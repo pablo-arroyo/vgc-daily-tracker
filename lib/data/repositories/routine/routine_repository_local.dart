@@ -22,6 +22,27 @@ class RoutineRepositoryLocal implements RoutineRepository {
   }
 
   @override
+  Stream<Set<String>> watchOn(String day) => _storage
+      .watch(_store, day)
+      .map(
+        (document) => {
+          ...?(document?['checked'] as List<Object?>?)?.cast<String>(),
+        },
+      );
+
+  @override
+  Future<Result<Map<String, Set<String>>>> allDays() async {
+    final result = await _storage.getAll(_store);
+    return switch (result) {
+      Ok(value: final documents) => Result.ok({
+        for (final MapEntry(key: day, value: document) in documents.entries)
+          day: {...(document['checked']! as List<Object?>).cast<String>()},
+      }),
+      Failure(:final error) => Result.failure(error),
+    };
+  }
+
+  @override
   Future<Result<void>> save(String day, Set<String> checked) =>
       _storage.put(_store, day, {'checked': checked.toList()..sort()});
 }

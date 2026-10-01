@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../domain/models/team.dart';
+import '../ui/backup/view_models/backup_view_model.dart';
+import '../ui/backup/widgets/backup_screen.dart';
 import '../ui/core/app_shell.dart';
 import '../ui/log_game/view_models/log_game_view_model.dart';
 import '../ui/log_game/widgets/log_game_screen.dart';
@@ -26,6 +28,18 @@ import 'routes.dart';
 GoRouter createRouter() => GoRouter(
   initialLocation: Routes.routine,
   routes: [
+    // Full screen, over the tabs.
+    GoRoute(
+      path: Routes.backup,
+      builder: (context, state) => ChangeNotifierProvider(
+        create: (context) => BackupViewModel(
+          teamRepository: context.read(),
+          gameLogRepository: context.read(),
+          routineRepository: context.read(),
+        ),
+        child: const BackupScreen(),
+      ),
+    ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) =>
           AppShell(navigationShell: navigationShell),

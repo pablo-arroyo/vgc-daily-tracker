@@ -56,6 +56,45 @@ void main() {
     );
   });
 
+  test(
+    'watch emits one document (null when missing), then each change',
+    () async {
+      final emissions = storage.watch('routine', '2026-09-30').take(3).toList();
+
+      await Future<void>.delayed(Duration.zero);
+      await storage.put('routine', '2026-09-30', {
+        'checked': ['log-fast'],
+      });
+      await storage.put('routine', '2026-09-29', {'checked': <String>[]});
+      await storage.delete('routine', '2026-09-30');
+
+      expect(await emissions, [
+        null,
+        {
+          'checked': ['log-fast'],
+        },
+        null,
+      ]);
+    },
+  );
+
+  test('getAll returns every document in a store by its key', () async {
+    await storage.put('routine', '2026-09-29', {'checked': <String>[]});
+    await storage.put('routine', '2026-09-30', {
+      'checked': ['log-fast'],
+    });
+    await storage.put('teams', 'other-store', {'name': 'ignored'});
+
+    final all = await storage.getAll('routine');
+
+    expect((all as Ok<Map<String, Map<String, Object?>>>).value, {
+      '2026-09-29': {'checked': <String>[]},
+      '2026-09-30': {
+        'checked': ['log-fast'],
+      },
+    });
+  });
+
   test('delete removes a document', () async {
     await storage.put('teams', 'a', {'name': 'A'});
 

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:vgc_daily_tracker/config/format_config.dart';
 import 'package:vgc_daily_tracker/routing/router.dart';
 import 'package:vgc_daily_tracker/routing/routes.dart';
+import 'package:vgc_daily_tracker/ui/backup/widgets/backup_screen.dart';
 import 'package:vgc_daily_tracker/ui/core/app_shell.dart';
 import 'package:vgc_daily_tracker/ui/routine/widgets/routine_screen.dart';
 
@@ -47,6 +48,18 @@ void main() {
       find.text('Reg Z · at least 1 game a day, review every one'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('the header opens Backup & restore', (tester) async {
+    await pumpShell(tester);
+
+    await tester.tap(find.byTooltip('Backup & restore'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(BackupScreen), findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.byType(RoutineScreen), findsOneWidget);
   });
 
   testWidgets('highlights the tab of the current route, even on deep links', (
