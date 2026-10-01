@@ -89,6 +89,42 @@ void main() {
     expect(find.text('No teams saved yet.'), findsOneWidget);
   });
 
+  group('My teams / Opponents toggle', () {
+    final rival = bigSix.copyWith(
+      id: 'o1',
+      name: 'Rival Rain',
+      side: TeamSide.opponent,
+    );
+
+    testWidgets('switches between your teams and your opponents', (
+      tester,
+    ) async {
+      await pumpScreen(tester, FakeTeamRepository(teams: [bigSix, rival]));
+      await tester.pumpAndSettle();
+      expect(find.text('Big Six'), findsOneWidget);
+      expect(find.text('Rival Rain'), findsNothing);
+
+      await tester.tap(find.text('Opponents'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Rival Rain'), findsOneWidget);
+      expect(find.text('Big Six'), findsNothing);
+    });
+
+    testWidgets('no opponents yet: says so, without the sample teams', (
+      tester,
+    ) async {
+      await pumpScreen(tester, FakeTeamRepository());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Opponents'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('No opponent teams saved yet.'), findsOneWidget);
+      expect(find.text('Add Reg M-C sample teams'), findsNothing);
+    });
+  });
+
   group('an empty tab offers the sample teams', () {
     testWidgets('and adds them', (tester) async {
       await pumpScreen(tester, FakeTeamRepository());

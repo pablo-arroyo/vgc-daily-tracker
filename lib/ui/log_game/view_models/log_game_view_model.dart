@@ -31,7 +31,11 @@ class LogGameViewModel extends ChangeNotifier {
   }) {
     save = Command0(_save);
     _teamsSubscription = teamRepository.watchAll().listen((teams) {
-      _teams = teams;
+      // Only the player's own teams can be "your team used".
+      _teams = [
+        for (final team in teams)
+          if (team.side == TeamSide.mine) team,
+      ];
       notifyListeners();
     });
   }

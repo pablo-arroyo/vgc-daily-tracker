@@ -88,6 +88,19 @@ void main() {
   });
 
   group('your team', () {
+    test("never offers an opponent's team as yours", () async {
+      final rival = bigSix.copyWith(
+        id: 'o1',
+        name: 'Rival',
+        side: TeamSide.opponent,
+      );
+      teams = FakeTeamRepository(teams: [bigSix, rival]);
+      final viewModel = create();
+      await pumpEventQueue();
+
+      expect(viewModel.teams, [bigSix]);
+    });
+
     test('offers the saved teams and lets you pick one or none', () async {
       teams = FakeTeamRepository(teams: [bigSix]);
       final viewModel = create();

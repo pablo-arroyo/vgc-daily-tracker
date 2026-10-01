@@ -21,8 +21,9 @@ void main() {
     items = FakeItemRepository();
   });
 
-  TeamImportViewModel create() {
+  TeamImportViewModel create({TeamSide side = TeamSide.mine}) {
     final viewModel = TeamImportViewModel(
+      side: side,
       teamRepository: teams,
       importTeam: ImportTeamUseCase(
         pokemonRepository: pokemon,
@@ -74,6 +75,17 @@ void main() {
       'Basculegion',
     ]);
     expect(team.sets[2].item, 'Metagrossite');
+  });
+
+  test("imports an opponent's team on the opponent side", () async {
+    final viewModel = create(side: TeamSide.opponent)
+      ..setName('Rival')
+      ..setPaste(team1Paste);
+
+    await viewModel.import.execute();
+
+    final [team] = await saved();
+    expect(team.side, TeamSide.opponent);
   });
 
   test('needs a name', () async {

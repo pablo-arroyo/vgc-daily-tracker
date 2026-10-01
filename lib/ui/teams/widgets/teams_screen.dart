@@ -26,33 +26,70 @@ class TeamsScreen extends StatelessWidget {
               tooltip: 'Import from Showdown',
               // Two buttons on one page need distinct hero tags.
               heroTag: 'import-team',
-              onPressed: () => context.push(Routes.importTeam),
+              onPressed: () =>
+                  context.push(Routes.importTeamOn(viewModel.side)),
               child: const Icon(Icons.content_paste),
             ),
             const SizedBox(height: 12),
             FloatingActionButton(
               tooltip: 'Add team',
-              onPressed: () => context.push(Routes.newTeam),
+              onPressed: () => context.push(Routes.newTeamOn(viewModel.side)),
               child: const Icon(Icons.add),
             ),
           ],
         ),
-        body: ListenableBuilder(
-          listenable: viewModel,
-          builder: (context, _) {
-            if (!viewModel.loaded) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (viewModel.teams.isEmpty) {
-              return const _EmptyTeams();
-            }
-            return ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: viewModel.teams.length,
-              itemBuilder: (context, index) =>
-                  _TeamCard(team: viewModel.teams[index]),
-            );
-          },
+        body: Column(
+          children: [
+            const _SideToggle(),
+            Expanded(
+              child: ListenableBuilder(
+                listenable: viewModel,
+                builder: (context, _) {
+                  if (!viewModel.loaded) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (viewModel.teams.isEmpty) {
+                    return viewModel.side == TeamSide.mine
+                        ? const _EmptyTeams()
+                        : const Center(
+                            child: Text('No opponent teams saved yet.'),
+                          );
+                  }
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: viewModel.teams.length,
+                    itemBuilder: (context, index) =>
+                        _TeamCard(team: viewModel.teams[index]),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// "My teams" / "Opponents": which side the list shows.
+class _SideToggle extends StatelessWidget {
+  const _SideToggle();
+
+  @override
+  Widget build(BuildContext context) {
+    final viewModel = context.read<TeamsViewModel>();
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: ListenableBuilder(
+        listenable: viewModel,
+        builder: (context, _) => SegmentedButton<TeamSide>(
+          segments: const [
+            ButtonSegment(value: TeamSide.mine, label: Text('My teams')),
+            ButtonSegment(value: TeamSide.opponent, label: Text('Opponents')),
+          ],
+          selected: {viewModel.side},
+          onSelectionChanged: (selection) =>
+              viewModel.setSide(selection.single),
         ),
       ),
     );

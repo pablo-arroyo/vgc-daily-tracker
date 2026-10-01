@@ -7,9 +7,9 @@ void main() {
   // outgoing connection, so PokéAPI and sprites fail on every build type.
   for (final file in ['DebugProfile', 'Release']) {
     test('$file entitlements allow outgoing network connections', () {
-      final plist = File(
-        'macos/Runner/$file.entitlements',
-      ).readAsStringSync().replaceAll(RegExp(r'\s'), '');
+      final plist = File('macos/Runner/$file.entitlements')
+          .readAsStringSync()
+          .replaceAll(RegExp(r'\s'), '');
 
       expect(
         plist,

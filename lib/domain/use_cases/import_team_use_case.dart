@@ -38,6 +38,7 @@ class ImportTeamUseCase {
   Future<Result<Team>> call({
     required String name,
     required String paste,
+    TeamSide side = TeamSide.mine,
   }) async {
     name = name.trim();
     if (name.isEmpty) return _problems(['Give the team a name.']);
@@ -85,6 +86,7 @@ class ImportTeamUseCase {
         name: name,
         pokemon: [for (final (:ref, speciesSlug: _) in checked) ref],
         sets: sets,
+        side: side,
       ),
     );
   }

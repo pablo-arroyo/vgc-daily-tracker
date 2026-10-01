@@ -34,12 +34,13 @@ void main() {
     pokemon = FakePokemonRepository();
   });
 
-  TeamEditorViewModel create({String? teamId}) {
+  TeamEditorViewModel create({String? teamId, TeamSide side = TeamSide.mine}) {
     final viewModel = TeamEditorViewModel(
       teamRepository: teams,
       pokemonRepository: pokemon,
       idGenerator: SequentialIdGenerator(),
       teamId: teamId,
+      side: side,
     );
     addTearDown(viewModel.dispose);
     return viewModel;
@@ -139,6 +140,41 @@ void main() {
         await viewModel.search('chariz'),
         isA<Failure<List<PokemonRef>>>(),
       );
+    });
+  });
+
+  group("an opponent's team", () {
+    test('a new one is saved on the opponent side', () async {
+      final viewModel = create(side: TeamSide.opponent);
+      fill(viewModel, 'Rival', bigSix);
+
+      await viewModel.save.execute();
+
+      final [saved] = await teams.watchAll().first;
+      expect(saved.side, TeamSide.opponent);
+      expect(viewModel.side, TeamSide.opponent);
+    });
+
+    test('editing one keeps it on the opponent side', () async {
+      teams = FakeTeamRepository(
+        teams: [
+          Team(
+            id: 'o1',
+            name: 'Rival',
+            pokemon: bigSix,
+            side: TeamSide.opponent,
+          ),
+        ],
+      );
+      final viewModel = create(teamId: 'o1');
+      await pumpEventQueue();
+
+      viewModel.setName('Rival (finals)');
+      await viewModel.save.execute();
+
+      final [saved] = await teams.watchAll().first;
+      expect(saved.side, TeamSide.opponent);
+      expect(viewModel.side, TeamSide.opponent);
     });
   });
 

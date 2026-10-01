@@ -73,6 +73,32 @@ void main() {
     expect(viewModel.teams, [bigSix, metagross]);
   });
 
+  group('sides', () {
+    const rival = Team(
+      id: 'o1',
+      name: 'Rival Rain',
+      pokemon: [],
+      side: TeamSide.opponent,
+    );
+
+    test('lists your teams first, and opponents once switched', () async {
+      final teams = create(FakeTeamRepository(teams: [bigSix, rival]));
+      addTearDown(teams.dispose);
+      var notified = 0;
+      teams.addListener(() => notified++);
+      await pumpEventQueue();
+
+      expect(teams.side, TeamSide.mine);
+      expect(teams.teams, [bigSix]);
+
+      teams.setSide(TeamSide.opponent);
+
+      expect(teams.side, TeamSide.opponent);
+      expect(teams.teams, [rival]);
+      expect(notified, greaterThan(1));
+    });
+  });
+
   group('sample teams', () {
     test("labels the action with the format's name", () {
       expect(viewModel.sampleTeamsLabel, 'Add Reg M-C sample teams');

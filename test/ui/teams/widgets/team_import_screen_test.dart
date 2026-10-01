@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:vgc_daily_tracker/ui/core/theme/app_theme.dart';
+import 'package:vgc_daily_tracker/domain/models/team.dart';
 import 'package:vgc_daily_tracker/domain/use_cases/import_team_use_case.dart';
 import 'package:vgc_daily_tracker/ui/teams/view_models/team_import_view_model.dart';
 import 'package:vgc_daily_tracker/ui/teams/widgets/team_import_screen.dart';
@@ -14,7 +15,10 @@ import '../../../../testing/showdown_pastes.dart';
 
 void main() {
   /// The import screen, pushed over a host page, like the real route.
-  Future<FakeTeamRepository> pumpImport(WidgetTester tester) async {
+  Future<FakeTeamRepository> pumpImport(
+    WidgetTester tester, {
+    TeamSide side = TeamSide.mine,
+  }) async {
     final teams = FakeTeamRepository();
     await tester.pumpWidget(
       MaterialApp(
@@ -26,6 +30,7 @@ void main() {
                 MaterialPageRoute<void>(
                   builder: (_) => ChangeNotifierProvider(
                     create: (_) => TeamImportViewModel(
+                      side: side,
                       teamRepository: teams,
                       importTeam: ImportTeamUseCase(
                         pokemonRepository: FakePokemonRepository(),
@@ -79,6 +84,14 @@ void main() {
       isTrue,
       reason: 'Import team is covered',
     );
+  });
+
+  testWidgets("importing an opponent's team says so in the title", (
+    tester,
+  ) async {
+    await pumpImport(tester, side: TeamSide.opponent);
+
+    expect(find.text('Import opponent team'), findsOneWidget);
   });
 
   testWidgets('lists every problem with the paste', (tester) async {

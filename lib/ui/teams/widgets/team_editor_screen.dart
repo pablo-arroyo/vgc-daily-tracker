@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../domain/models/team.dart';
 import '../../../utils/result.dart';
 import '../../core/pokemon_autocomplete_field.dart';
 import '../view_models/team_editor_view_model.dart';
@@ -19,7 +20,12 @@ class TeamEditorScreen extends StatelessWidget {
         final ready = viewModel.loaded && !viewModel.missing;
         return Scaffold(
           appBar: AppBar(
-            title: Text(viewModel.isEditing ? 'Edit team' : 'New team'),
+            title: Text(switch ((viewModel.isEditing, viewModel.side)) {
+              (true, TeamSide.mine) => 'Edit team',
+              (true, TeamSide.opponent) => 'Edit opponent team',
+              (false, TeamSide.mine) => 'New team',
+              (false, TeamSide.opponent) => 'New opponent team',
+            }),
           ),
           body: switch (viewModel) {
             TeamEditorViewModel(loaded: false) => const Center(

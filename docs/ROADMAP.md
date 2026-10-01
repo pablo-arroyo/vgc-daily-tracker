@@ -527,6 +527,55 @@ the device timezone (injectable, so tests pin UTC-6).
     (including all-or-nothing, where the last team fails) and the
     Teams tab states.
 
+### ✅ 7.5 Opponent teams: save and manage
+Not in the original. Added 2026-10-01 at the user's request, before 8.4,
+so that backup covers it from the start.
+- **Model:** `Team` gains `side` (`mine` or `opponent`), defaulting to
+  `mine`, so saved teams keep loading without a migration. One
+  repository and one store. View models filter by side, so "your team"
+  pickers never list opponents.
+- **Teams tab:** a "My teams" / "Opponents" toggle at the top. Add, edit,
+  delete, Showdown import (VGC open team sheets) and the detail screen
+  all work for either side. Sample teams stay "mine".
+- **Tests:** unit tests for the model JSON (old teams load as `mine`)
+  and the view model filtering, widget tests for the toggle, and an
+  acceptance test that adds an opponent team which then never appears
+  under My teams.
+- **As built:**
+  - `Routes.newTeamOn` / `importTeamOn` add `?side=opponent`, and the
+    router reads it back with `Routes.sideOf` (unknown values mean
+    `mine`).
+  - `ImportTeamUseCase` takes the side.
+  - Editing a team keeps its side.
+  - Log Game's "Your team used" lists only `mine`.
+  - The opponent screens say so in their titles: "New opponent team",
+    "Import opponent team".
+  - **Tests:** a macOS journey was added too. Breaking each side rule
+    on purpose fails a test (Teams filter, Log Game filter, the editor
+    keeping and saving the side, import side).
+
+### 7.6 Pick the opponent's team in Log Game
+- A "Their team" picker lists saved opponent teams. Picking one fills the
+  opponent's 6 Pokémon, and they can still be edited.
+- `GameLog` gains `opponentTeamId` and `opponentTeamName`, like
+  `teamId` and `teamName`, with null for older games.
+- **Tests:** view model (fill, edit after picking, cleared on reset),
+  widget, and an acceptance test that logs a game against a saved
+  opponent team.
+
+### 7.7 Save an opponent team from a logged game
+- "Save their team" on a recent game whose opponent's 6 Pokémon were
+  entered. It asks for a name and saves an opponent team. The game is
+  then linked to it, so its matchup record counts it.
+- **Tests:** view model (needs all 6, linking), widget, and acceptance.
+
+### 7.8 Matchup stats
+- A Progress card "Vs opponent teams" gives the record and win % per
+  saved opponent team, grouped by id (as team records are, 5.1). Only
+  games linked to an opponent team count.
+- **Tests:** stats unit tests (grouping, renamed teams, unlinked games
+  ignored), widget, and acceptance.
+
 ## Phase 8: Polish and release readiness
 
 - ✅ **8.1 Resilience:** every PokéAPI-backed widget was audited. Most of
@@ -625,6 +674,7 @@ the device timezone (injectable, so tests pin UTC-6).
 | Per-user persistence | 2.1, 2.2 (Phase 9 for sync) |
 | Reg M-C teams in Showdown format | 7.1, 7.4 |
 | Level 50 EV / speed analysis | 7.2, 7.3 |
+| *(new)* Saved opponent teams, Log Game picker, matchup stats | 7.5–7.8 |
 
 ## Differences from the original
 

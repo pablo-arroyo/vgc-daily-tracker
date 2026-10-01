@@ -56,6 +56,7 @@ void main() {
   Future<FakeTeamRepository> pumpEditor(
     WidgetTester tester, {
     String? teamId,
+    TeamSide side = TeamSide.mine,
   }) async {
     final teams = FakeTeamRepository(teams: [existing]);
     await tester.pumpWidget(
@@ -72,6 +73,7 @@ void main() {
                       pokemonRepository: FakePokemonRepository(),
                       idGenerator: SequentialIdGenerator(),
                       teamId: teamId,
+                      side: side,
                     ),
                     child: const TeamEditorScreen(),
                   ),
@@ -100,6 +102,13 @@ void main() {
       expect(find.widgetWithText(TextField, 'Pokémon $i'), findsOneWidget);
     }
     expect(find.widgetWithText(FilledButton, 'Save team'), findsOneWidget);
+  });
+
+  testWidgets("a new opponent's team says so in the title", (tester) async {
+    await pumpEditor(tester, side: TeamSide.opponent);
+    await tester.pumpAndSettle();
+
+    expect(find.text('New opponent team'), findsOneWidget);
   });
 
   testWidgets('shows why a team cannot be saved', (tester) async {

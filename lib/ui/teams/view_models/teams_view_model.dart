@@ -20,7 +20,8 @@ class TeamsViewModel extends ChangeNotifier {
     undoDelete = Command0(_undoDelete);
     addSampleTeams = Command0(_addSampleTeams);
     _subscription = _teamRepository.watchAll().listen((teams) {
-      _teams = teams;
+      _all = teams;
+      _teams = _onSide(_side);
       _loaded = true;
       notifyListeners();
     });
@@ -47,12 +48,30 @@ class TeamsViewModel extends ChangeNotifier {
   Team? _lastDeleted;
 
   bool _loaded = false;
+  List<Team> _all = const [];
   List<Team> _teams = const [];
+  TeamSide _side = TeamSide.mine;
+
+  /// Whose teams are listed: the player's, or their opponents'.
+  TeamSide get side => _side;
+
+  void setSide(TeamSide side) {
+    _side = side;
+    // Filtered here, once, rather than on every build.
+    _teams = _onSide(side);
+    notifyListeners();
+  }
+
+  List<Team> _onSide(TeamSide side) => [
+    for (final team in _all)
+      if (team.side == side) team,
+  ];
 
   /// False until the first list arrives, so the view can show a spinner
   /// rather than a misleading "no teams" message.
   bool get loaded => _loaded;
 
+  /// The teams on [side], in name order.
   List<Team> get teams => _teams;
 
   Future<Result<void>> _deleteTeam(Team team) {

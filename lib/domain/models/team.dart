@@ -6,7 +6,10 @@ import 'pokemon_set.dart';
 part 'team.freezed.dart';
 part 'team.g.dart';
 
-/// One of the player's saved teams.
+/// Whose team it is: the player's own, or one they play against.
+enum TeamSide { mine, opponent }
+
+/// A saved team: one of the player's, or an opponent's (see [side]).
 @freezed
 abstract class Team with _$Team {
   const factory Team({
@@ -17,6 +20,9 @@ abstract class Team with _$Team {
     /// Full builds from a Showdown import, one per [pokemon] in the same
     /// order, or empty for a team built by picking Pokémon.
     @Default([]) List<PokemonSet> sets,
+
+    /// Teams saved before sides existed are the player's own.
+    @Default(TeamSide.mine) TeamSide side,
   }) = _Team;
 
   factory Team.fromJson(Map<String, Object?> json) => _$TeamFromJson(json);

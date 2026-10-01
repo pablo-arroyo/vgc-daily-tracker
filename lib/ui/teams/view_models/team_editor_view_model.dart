@@ -23,6 +23,7 @@ class TeamEditorViewModel extends ChangeNotifier {
     required this._pokemonRepository,
     required this._idGenerator,
     String? teamId,
+    this._side = TeamSide.mine,
   }) : _teamId = teamId,
        _loaded = teamId == null {
     save = Command0(_save);
@@ -33,6 +34,12 @@ class TeamEditorViewModel extends ChangeNotifier {
   final String? _teamId;
 
   bool get isEditing => _teamId != null;
+
+  TeamSide _side;
+
+  /// Whose team this is. A new team takes the side it was opened for; an
+  /// existing one keeps its own.
+  TeamSide get side => _side;
 
   final TeamRepository _teamRepository;
   final PokemonRepository _pokemonRepository;
@@ -76,6 +83,7 @@ class TeamEditorViewModel extends ChangeNotifier {
       _missing = true;
     } else {
       _original = team;
+      _side = team.side;
       _name = team.name;
       _slots.setAll(0, team.pokemon);
     }
@@ -99,6 +107,7 @@ class TeamEditorViewModel extends ChangeNotifier {
         id: _teamId ?? _idGenerator.next(),
         name: name,
         pokemon: pokemon,
+        side: _side,
         // Imported sets describe the imported Pokémon, slot by slot.
         sets: listEquals(_original?.pokemon, pokemon)
             ? _original!.sets

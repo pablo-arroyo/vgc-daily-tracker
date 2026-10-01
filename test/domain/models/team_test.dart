@@ -20,6 +20,7 @@ void main() {
       {'id': 900, 'slug': 'kleavor', 'display_name': 'Kleavor'},
     ],
     'sets': <Object?>[],
+    'side': 'mine',
   };
 
   test('serializes to plain JSON storage can hold', () {
@@ -35,6 +36,19 @@ void main() {
 
     expect(Team.fromJson(legacy), team);
     expect(team.sets, isEmpty);
+  });
+
+  test('teams saved before sides existed load as mine', () {
+    final legacy = {...json}..remove('side');
+
+    expect(Team.fromJson(legacy).side, TeamSide.mine);
+  });
+
+  test("an opponent's team stores its side", () {
+    final opponent = team.copyWith(side: TeamSide.opponent);
+
+    expect(opponent.toJson()['side'], 'opponent');
+    expect(Team.fromJson(opponent.toJson()), opponent);
   });
 
   test('imported sets round-trip with the team', () {

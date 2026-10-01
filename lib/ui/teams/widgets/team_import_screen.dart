@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../domain/models/team.dart';
 import '../../../utils/result.dart';
 import '../view_models/team_import_view_model.dart';
 
@@ -28,8 +29,13 @@ class _ImportAppBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   @override
-  Widget build(BuildContext context) =>
-      AppBar(title: const Text('Import from Showdown'));
+  Widget build(BuildContext context) => AppBar(
+    title: Text(
+      context.read<TeamImportViewModel>().side == TeamSide.opponent
+          ? 'Import opponent team'
+          : 'Import from Showdown',
+    ),
+  );
 }
 
 class _ImportForm extends StatelessWidget {

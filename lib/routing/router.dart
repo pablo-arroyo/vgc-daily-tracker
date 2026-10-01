@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../domain/models/team.dart';
 import '../ui/core/app_shell.dart';
 import '../ui/log_game/view_models/log_game_view_model.dart';
 import '../ui/log_game/widgets/log_game_screen.dart';
@@ -57,7 +58,8 @@ GoRouter createRouter() => GoRouter(
               routes: [
                 GoRoute(
                   path: 'new',
-                  builder: (context, state) => _teamEditor(),
+                  builder: (context, state) =>
+                      _teamEditor(side: Routes.sideOf(state.uri)),
                 ),
                 GoRoute(
                   path: 'import',
@@ -65,6 +67,7 @@ GoRouter createRouter() => GoRouter(
                     create: (context) => TeamImportViewModel(
                       teamRepository: context.read(),
                       importTeam: context.read(),
+                      side: Routes.sideOf(state.uri),
                     ),
                     child: const TeamImportScreen(),
                   ),
@@ -123,12 +126,14 @@ GoRouter createRouter() => GoRouter(
   ],
 );
 
-Widget _teamEditor({String? teamId}) => ChangeNotifierProvider(
-  create: (context) => TeamEditorViewModel(
-    teamRepository: context.read(),
-    pokemonRepository: context.read(),
-    idGenerator: context.read(),
-    teamId: teamId,
-  ),
-  child: const TeamEditorScreen(),
-);
+Widget _teamEditor({String? teamId, TeamSide side = TeamSide.mine}) =>
+    ChangeNotifierProvider(
+      create: (context) => TeamEditorViewModel(
+        teamRepository: context.read(),
+        pokemonRepository: context.read(),
+        idGenerator: context.read(),
+        teamId: teamId,
+        side: side,
+      ),
+      child: const TeamEditorScreen(),
+    );

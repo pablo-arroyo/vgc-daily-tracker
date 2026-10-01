@@ -25,6 +25,21 @@ void main() {
     expect(team.sets, hasLength(6));
   });
 
+  test(
+    "builds a team on the side it's asked for, the player's by default",
+    () async {
+      final mine = await create()(name: 'Mine', paste: team1Paste);
+      final theirs = await create()(
+        name: 'Theirs',
+        paste: team1Paste,
+        side: TeamSide.opponent,
+      );
+
+      expect((mine as Ok<Team>).value.side, TeamSide.mine);
+      expect((theirs as Ok<Team>).value.side, TeamSide.opponent);
+    },
+  );
+
   test('reports every problem found', () async {
     final result = await create()(name: '', paste: team1Paste);
 
