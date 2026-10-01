@@ -9,6 +9,8 @@ import 'package:vgc_daily_tracker/ui/progress/view_models/progress_view_model.da
 import 'package:vgc_daily_tracker/ui/progress/widgets/progress_screen.dart';
 
 import '../../../../testing/fakes/fake_game_log_repository.dart';
+import '../../../../testing/generated_games.dart';
+import '../../../../testing/progress_actions.dart';
 
 /// "Now": 2026-09-30 10:00 in UTC-6.
 final now = DateTime.utc(2026, 9, 30, 16);
@@ -290,6 +292,23 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(items, findsNWidgets(20));
+      });
+    });
+
+    testWidgets('1,000 games after "Show all": only rows near the screen '
+        'are built', (tester) async {
+      await withClock(Clock.fixed(now), () async {
+        await pumpProgress(tester, generateGames(1000, now: now));
+
+        await scrollTo(tester, find.text('Show all (1000)'));
+        await tester.tap(find.text('Show all (1000)'));
+        await tester.pumpAndSettle();
+
+        expect(
+          find.byTooltip('Delete game').evaluate().length,
+          lessThan(100),
+          reason: 'Recent games must stay lazy',
+        );
       });
     });
 

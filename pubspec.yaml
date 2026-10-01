@@ -59,6 +59,9 @@ dev_dependencies:
   json_serializable: ^6.14.1
   integration_test:
     sdk: flutter
+  # Profile-mode frame timing via `flutter drive` (step 8.3); test-only.
+  flutter_driver:
+    sdk: flutter
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

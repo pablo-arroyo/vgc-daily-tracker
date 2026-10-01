@@ -565,8 +565,33 @@ the device timezone (injectable, so tests pin UTC-6).
     - Progress stat boxes, rate rows and mistake bars each read as one
       phrase ("overall win rate: 50%").
     - Avatars were already labelled.
-- **8.3 Performance pass:** follow `performance.md`. Profile the Progress
-  screen with 1,000 generated games in profile mode and record frame times.
+- ✅ **8.3 Performance pass:**
+  - **Audit against `performance.md`: clean.** No `Opacity`, intrinsic
+    sizing, `saveLayer` triggers or clipping. Growing lists use
+    `.builder` or slivers. No sorting or filtering in `build()`. No
+    widget-returning helpers. Progress computes stats once per data
+    change.
+  - **Measured (2026-10-01, macOS, profile mode, via
+    `integration_test/perf/progress_perf.dart`):** Progress with 1,000
+    generated games — open, "Show all (1000)", fling through and back
+    (61 frames):
+
+    | | avg | p90 | p99 | worst | over budget |
+    |---|---|---|---|---|---|
+    | build | 1.9 ms | 3.9 ms | 7.6 ms | 7.7 ms | 0 |
+    | raster | 1.1 ms | 1.8 ms | 1.9 ms | 1.9 ms | 0 |
+
+    Every frame is within the ≤8 ms build target, so no code changes
+    were needed.
+  - **Guard:** a widget test checks that with 1,000 games and "Show
+    all", fewer than 100 rows are built. Making the list eager builds
+    all 1,000 and fails it.
+  - **Found on the way:** both macOS entitlements files lacked
+    `com.apple.security.network.client`, so the sandboxed macOS app
+    couldn't reach PokéAPI or load sprites in any build. Added, with a
+    test that reads both files.
+  - **Tooling:** `flutter_driver` (SDK, test-only) was added, with the
+    user's OK.
 - **8.4 Backup:** export and import all data as JSON, since data is local
   only. Unit test the round trip.
 - **8.5 CI (optional):** a GitHub Actions workflow running `flutter analyze`,
