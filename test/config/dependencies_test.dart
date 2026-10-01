@@ -5,6 +5,8 @@ import 'package:vgc_daily_tracker/domain/use_cases/import_team_use_case.dart';
 import 'package:vgc_daily_tracker/data/repositories/item/item_repository_remote.dart';
 import 'package:vgc_daily_tracker/data/repositories/matchup/matchup_repository.dart';
 import 'package:vgc_daily_tracker/data/repositories/matchup/matchup_repository_local.dart';
+import 'package:vgc_daily_tracker/data/repositories/type/type_repository.dart';
+import 'package:vgc_daily_tracker/data/repositories/type/type_repository_remote.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:vgc_daily_tracker/config/dependencies.dart';
@@ -24,6 +26,7 @@ import '../../testing/app.dart';
 import '../../testing/fakes/fake_game_log_repository.dart';
 import '../../testing/fakes/fake_item_repository.dart';
 import '../../testing/fakes/fake_matchup_repository.dart';
+import '../../testing/fakes/fake_type_repository.dart';
 import '../../testing/fakes/fake_id_generator.dart';
 import '../../testing/fakes/fake_pokemon_repository.dart';
 import '../../testing/fakes/fake_routine_repository.dart';
@@ -43,6 +46,7 @@ void main() {
     expect(context.read<RoutineRepository>(), isA<FakeRoutineRepository>());
     expect(context.read<ItemRepository>(), isA<FakeItemRepository>());
     expect(context.read<MatchupRepository>(), isA<FakeMatchupRepository>());
+    expect(context.read<TypeRepository>(), isA<FakeTypeRepository>());
   });
 
   testWidgets('providersRemote wires the real PokemonRepositoryRemote', (
@@ -58,6 +62,7 @@ void main() {
     late ItemRepository items;
     late FormatConfig format;
     late MatchupRepository matchups;
+    late TypeRepository types;
     late ImportTeamUseCase importTeam;
     await tester.pumpWidget(
       MultiProvider(
@@ -73,6 +78,7 @@ void main() {
             items = context.read<ItemRepository>();
             format = context.read<FormatConfig>();
             matchups = context.read<MatchupRepository>();
+            types = context.read<TypeRepository>();
             importTeam = context.read<ImportTeamUseCase>();
             return const SizedBox.shrink();
           },
@@ -89,6 +95,7 @@ void main() {
     expect(items, isA<ItemRepositoryRemote>());
     expect(format, same(FormatConfig.regMC));
     expect(matchups, isA<MatchupRepositoryLocal>());
+    expect(types, isA<TypeRepositoryRemote>());
     expect(importTeam, isA<ImportTeamUseCase>());
   });
 }

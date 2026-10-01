@@ -13,6 +13,8 @@ import '../data/repositories/pokemon/pokemon_repository_remote.dart';
 import '../data/repositories/routine/routine_repository.dart';
 import '../data/repositories/routine/routine_repository_local.dart';
 import '../data/repositories/team/team_repository.dart';
+import '../data/repositories/type/type_repository.dart';
+import '../data/repositories/type/type_repository_remote.dart';
 import '../data/repositories/team/team_repository_local.dart';
 import '../data/services/pokeapi/poke_api_service.dart';
 import '../data/services/storage/local_storage_service.dart';
@@ -58,6 +60,10 @@ List<SingleChildWidget> providersRemote({
   ),
   Provider<MatchupRepository>(
     create: (context) => MatchupRepositoryLocal(storage: context.read()),
+  ),
+  Provider<TypeRepository>(
+    create: (context) =>
+        TypeRepositoryRemote(service: context.read(), storage: context.read()),
   ),
   Provider<ImportTeamUseCase>(
     create: (context) => ImportTeamUseCase(

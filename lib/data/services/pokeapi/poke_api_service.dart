@@ -8,6 +8,7 @@ import '../../../utils/result.dart';
 import 'models/item_api_model.dart';
 import 'models/pokemon_detail_api_model.dart';
 import 'models/pokemon_list_api_model.dart';
+import 'models/type_api_model.dart';
 import 'poke_api_exception.dart';
 
 /// Stateless client for https://pokeapi.co/api/v2. Returns API models that
@@ -31,6 +32,9 @@ class PokeApiService {
 
   Future<Result<ItemApiModel>> getItem(String slug) =>
       _getJson('/item/$slug', ItemApiModel.fromJson);
+
+  Future<Result<TypeApiModel>> getType(String name) =>
+      _getJson('/type/$name', TypeApiModel.fromJson);
 
   /// Every failure comes back as a [Failure] holding a [PokeApiException].
   /// Nothing is thrown.

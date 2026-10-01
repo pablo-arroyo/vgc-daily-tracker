@@ -9,6 +9,7 @@ import 'package:vgc_daily_tracker/data/repositories/matchup/matchup_repository.d
 import 'package:vgc_daily_tracker/data/repositories/pokemon/pokemon_repository.dart';
 import 'package:vgc_daily_tracker/data/repositories/routine/routine_repository.dart';
 import 'package:vgc_daily_tracker/data/repositories/team/team_repository.dart';
+import 'package:vgc_daily_tracker/data/repositories/type/type_repository.dart';
 import 'package:vgc_daily_tracker/domain/models/game_log.dart';
 import 'package:vgc_daily_tracker/domain/models/team.dart';
 import 'package:vgc_daily_tracker/domain/use_cases/import_team_use_case.dart';
@@ -22,6 +23,7 @@ import 'fakes/fake_matchup_repository.dart';
 import 'fakes/fake_pokemon_repository.dart';
 import 'fakes/fake_routine_repository.dart';
 import 'fakes/fake_team_repository.dart';
+import 'fakes/fake_type_repository.dart';
 
 /// Builds the whole app and waits until it has settled on its first screen.
 ///
@@ -70,6 +72,7 @@ List<SingleChildWidget> providersFake({
     create: (_) => pokemon ?? FakePokemonRepository(),
   ),
   Provider<ItemRepository>(create: (_) => FakeItemRepository()),
+  Provider<TypeRepository>(create: (_) => FakeTypeRepository()),
   Provider<MatchupRepository>(
     create: (_) => matchups ?? FakeMatchupRepository(),
   ),

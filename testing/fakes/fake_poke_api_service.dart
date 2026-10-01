@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:vgc_daily_tracker/data/services/pokeapi/models/item_api_model.dart';
 import 'package:vgc_daily_tracker/data/services/pokeapi/models/pokemon_detail_api_model.dart';
 import 'package:vgc_daily_tracker/data/services/pokeapi/models/pokemon_list_api_model.dart';
+import 'package:vgc_daily_tracker/data/services/pokeapi/models/type_api_model.dart';
 import 'package:vgc_daily_tracker/data/services/pokeapi/poke_api_exception.dart';
 import 'package:vgc_daily_tracker/data/services/pokeapi/poke_api_service.dart';
 import 'package:vgc_daily_tracker/utils/result.dart';
@@ -21,6 +22,50 @@ class FakePokeApiService implements PokeApiService {
 
   /// Items available from `getItem`, keyed by slug.
   final items = <String, ItemApiModel>{};
+
+  /// Types available from `getType`, keyed by name.
+  final types = <String, TypeApiModel>{};
+
+  /// Names passed to `getType`, in call order.
+  final typeRequests = <String>[];
+
+  /// Loads the 18 recorded `/type/{name}` fixtures into [types].
+  void useTypeFixtures() {
+    for (final name in const [
+      'normal',
+      'fighting',
+      'flying',
+      'poison',
+      'ground',
+      'rock',
+      'bug',
+      'ghost',
+      'steel',
+      'fire',
+      'water',
+      'grass',
+      'electric',
+      'psychic',
+      'ice',
+      'dragon',
+      'dark',
+      'fairy',
+    ]) {
+      types[name] = TypeApiModel.fromJson(
+        jsonDecode(fixture('pokeapi/type_$name.json')) as Map<String, Object?>,
+      );
+    }
+  }
+
+  @override
+  Future<Result<TypeApiModel>> getType(String name) async {
+    typeRequests.add(name);
+    if (offline) return Result.failure(PokeApiNetworkUnavailable(name));
+    final type = types[name];
+    return type == null
+        ? Result.failure(PokeApiNotFound(name))
+        : Result.ok(type);
+  }
 
   /// Slugs passed to `getItem`, in call order.
   final itemRequests = <String>[];

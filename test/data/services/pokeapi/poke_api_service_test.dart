@@ -6,6 +6,7 @@ import 'package:http/testing.dart';
 import 'package:vgc_daily_tracker/data/services/pokeapi/models/item_api_model.dart';
 import 'package:vgc_daily_tracker/data/services/pokeapi/models/pokemon_detail_api_model.dart';
 import 'package:vgc_daily_tracker/data/services/pokeapi/models/pokemon_list_api_model.dart';
+import 'package:vgc_daily_tracker/data/services/pokeapi/models/type_api_model.dart';
 import 'package:vgc_daily_tracker/data/services/pokeapi/poke_api_exception.dart';
 import 'package:vgc_daily_tracker/data/services/pokeapi/poke_api_service.dart';
 import 'package:vgc_daily_tracker/utils/result.dart';
@@ -134,6 +135,30 @@ void main() {
       final result = await service.getItem('metagrosite');
 
       expect((result as Failure).error, isA<PokeApiNotFound>());
+    });
+  });
+
+  group('getType', () {
+    test('fetches /type/{name} and parses what it hits for how much', () async {
+      final service = PokeApiService(client: fixtureClient());
+
+      final result = await service.getType('fire');
+
+      expect(
+        requested.single.toString(),
+        'https://pokeapi.co/api/v2/type/fire',
+      );
+      final type = (result as Ok<TypeApiModel>).value;
+      final hits = type.damageRelations;
+      expect(type.name, 'fire');
+      expect(hits.doubleDamageTo.map((t) => t.name), [
+        'bug',
+        'steel',
+        'grass',
+        'ice',
+      ]);
+      expect(hits.halfDamageTo.map((t) => t.name), contains('dragon'));
+      expect(hits.noDamageTo, isEmpty);
     });
   });
 

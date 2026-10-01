@@ -923,7 +923,7 @@ opponent spreads.
     survives, because Dart sorts short lists stably anyway; it stays as
     a guard.
 
-### 10.4 Type data from PokéAPI
+### ✅ 10.4 Type data from PokéAPI
 - **Service:** `PokeApiService.getType(name)` (`/type/{name}`), with a
   recorded fixture and a contract test.
 - **Repository:** a `TypeRepository` (remote with a cache, plus a fake)
@@ -932,6 +932,20 @@ opponent spreads.
   ×¼).
 - **Tests:** service, repository (mapping, caching, offline), and chart
   unit tests.
+- **As built:**
+  - `TypeApiModel` keeps only the attacking side (`*_damage_to`).
+  - There are 18 trimmed `type_*.json` fixtures, plus a live contract
+    test (`/type/ghost`).
+  - `TypeRepositoryRemote` reads memory, then device storage, then
+    PokéAPI, since the chart barely changes, and never builds a partial
+    chart.
+  - `FakeTypeRepository.realChart` was generated from the fixtures, and
+    a test checks it equals the real repository's chart.
+  - Data only (no UI yet), so the step's tests are the service,
+    repository and chart tests rather than a UI acceptance test.
+  - **Found by breaking it on purpose:** the memory-cache test only
+    counted network requests, which the stored copy already prevented.
+    It now deletes the stored copy and goes offline first.
 
 ### 10.5 Type matchups
 - **Team detail:** a weaknesses chart. For each attacking type it shows

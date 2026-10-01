@@ -1,0 +1,24 @@
+{
+  "id": 16,
+  "name": "dragon",
+  "damage_relations": {
+    "double_damage_to": [
+      {
+        "name": "dragon",
+        "url": "https://pokeapi.co/api/v2/type/16/"
+      }
+    ],
+    "half_damage_to": [
+      {
+        "name": "steel",
+        "url": "https://pokeapi.co/api/v2/type/9/"
+      }
+    ],
+    "no_damage_to": [
+      {
+        "name": "fairy",
+        "url": "https://pokeapi.co/api/v2/type/18/"
+      }
+    ]
+  }
+}
