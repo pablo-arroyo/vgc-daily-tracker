@@ -137,6 +137,7 @@ lib/
   domain/
     models/        immutable freezed domain models
     showdown/      the Showdown paste format: pure parse/export, no I/O
+    stats/         pure game formulas (stat calculator)
   routing/         go_router config, route constants
   ui/
     core/          shared widgets, theme

@@ -442,12 +442,23 @@ the device timezone (injectable, so tests pin UTC-6).
 - **Not included yet:** `PokemonSet` has no stored JSON yet. It gets
   stored JSON and a pinned-JSON test in 7.3, when teams start saving sets.
 
-### 7.2 Stat calculator
-- Level 50 (configurable level) stats from base stats + EVs + IVs + nature.
-  Mega forms use the Mega's base stats.
-- **Tests (unit):** the verified expected values (Mega Metagross 178,
-  Kleavor 137, Whimsicott 184, Mega Raichu Y 200 and Basculegion 130 Spe;
-  Kingambit 207 HP), plus nature ±10 %, 0 and 252 EVs, and flooring.
+### ✅ 7.2 Stat calculator
+- **The calculator:** `calculateStats(BaseStats, PokemonSet)` in
+  `lib/domain/stats/` returns a `StatSpread` of actual stats. It uses the
+  games' formula at the set's level (50 unless the paste says otherwise):
+  every 4th EV counts, each step rounds down, and the nature's ±10 % is
+  done in whole numbers, so 1.1 never rounds wrong. Megas get their stats
+  by passing the Mega's own base stats. Looking those up happens in 7.3.
+- **Also added:** `BaseStats.of(Stat)`.
+- **Tests (unit):**
+  - The artifact's Team 1 paste gives Kingambit 207 HP and 137 / 178 /
+    184 / 200 / 130 Spe for Kleavor, Mega Metagross, Whimsicott, Mega
+    Raichu Y and Basculegion, using PokéAPI base stats checked on
+    2026-09-30.
+  - The formula: 0 and 252 EVs, EV rounding, IVs, nature up and down with
+    rounding, and the level coming from the set.
+  - I broke each part of the formula on purpose, one at a time, and a
+    test failed every time.
 
 ### 7.3 Full team sets in the app
 - `Team` gets optional `PokemonSet`s. Teams without them keep working.

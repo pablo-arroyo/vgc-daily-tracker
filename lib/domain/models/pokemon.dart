@@ -1,5 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import 'stat.dart';
+
 part 'pokemon.freezed.dart';
 
 /// A Pokémon (or alternate form such as a Mega) as the app uses it.
@@ -35,4 +37,15 @@ abstract class BaseStats with _$BaseStats {
     required int specialDefense,
     required int speed,
   }) = _BaseStats;
+
+  const BaseStats._();
+
+  int of(Stat stat) => switch (stat) {
+    Stat.hp => hp,
+    Stat.atk => attack,
+    Stat.def => defense,
+    Stat.spa => specialAttack,
+    Stat.spd => specialDefense,
+    Stat.spe => speed,
+  };
 }

@@ -533,8 +533,8 @@ return $default(_that.hp,_that.attack,_that.defense,_that.specialAttack,_that.sp
 /// @nodoc
 
 
-class _BaseStats implements BaseStats {
-  const _BaseStats({required this.hp, required this.attack, required this.defense, required this.specialAttack, required this.specialDefense, required this.speed});
+class _BaseStats extends BaseStats {
+  const _BaseStats({required this.hp, required this.attack, required this.defense, required this.specialAttack, required this.specialDefense, required this.speed}): super._();
   
 
 @override final  int hp;
