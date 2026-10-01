@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:vgc_daily_tracker/domain/backup/backup_format.dart';
 import 'package:vgc_daily_tracker/domain/models/backup.dart';
 import 'package:vgc_daily_tracker/domain/models/game_log.dart';
+import 'package:vgc_daily_tracker/domain/models/matchup_note.dart';
 import 'package:vgc_daily_tracker/domain/models/mistake_category.dart';
 import 'package:vgc_daily_tracker/domain/models/pokemon_ref.dart';
 import 'package:vgc_daily_tracker/domain/models/pokemon_set.dart';
@@ -50,6 +51,14 @@ void main() {
     routine: const {
       '2026-09-30': ['log-fast', 'speed-order'],
     },
+    matchups: [
+      MatchupNote(
+        myTeamId: 't1',
+        opponentTeamId: 'o1',
+        notes: 'Lead Whimsicott + Kingambit.',
+        updatedAt: DateTime.utc(2026, 9, 30, 21),
+      ),
+    ],
   );
 
   String problem(String text) => switch (BackupFormat.decode(text)) {
@@ -70,6 +79,15 @@ void main() {
     expect(json['app'], 'vgc_daily_tracker');
     expect(json['format_version'], 1);
     expect(json['exported_at'], '2026-10-01T09:00:00.000Z');
+  });
+
+  test('backups made before matchup notes existed still restore', () {
+    final older = (jsonDecode(BackupFormat.encode(backup)) as Map)
+      ..remove('matchups');
+
+    final decoded = BackupFormat.decode(jsonEncode(older));
+
+    expect((decoded as Ok<Backup>).value.matchups, isEmpty);
   });
 
   test('rejects text that is not JSON', () {

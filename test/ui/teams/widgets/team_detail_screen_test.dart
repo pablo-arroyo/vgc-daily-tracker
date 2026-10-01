@@ -11,6 +11,7 @@ import 'package:vgc_daily_tracker/ui/teams/view_models/team_detail_view_model.da
 import 'package:vgc_daily_tracker/ui/teams/widgets/team_detail_screen.dart';
 import 'package:vgc_daily_tracker/utils/result.dart';
 
+import '../../../../testing/fakes/fake_matchup_repository.dart';
 import '../../../../testing/fakes/fake_pokemon_repository.dart';
 import '../../../../testing/fakes/fake_team_repository.dart';
 import '../../../../testing/showdown_pastes.dart';
@@ -43,6 +44,7 @@ void main() {
     String teamId = 't1',
     FakePokemonRepository? pokemon,
     FakeTeamRepository? teams,
+    FakeMatchupRepository? matchups,
   }) async {
     tester.view.physicalSize = const Size(1200, 4000);
     // Logical pixels: tall enough to build every lazy row.
@@ -57,6 +59,7 @@ void main() {
             teamRepository:
                 teams ?? FakeTeamRepository(teams: [imported, picked]),
             pokemonRepository: repository,
+            matchupRepository: matchups ?? FakeMatchupRepository(),
             teamId: teamId,
           )..load.execute(),
           child: const TeamDetailScreen(),
@@ -93,6 +96,64 @@ void main() {
     expect(find.bySemanticsLabel('Speed 178'), findsOneWidget);
     expect(find.bySemanticsLabel('HP 207'), findsOneWidget);
     semantics.dispose();
+  });
+
+  group('matchup notes', () {
+    final rival = Team(
+      id: 'o1',
+      name: 'Rival Grassy',
+      side: TeamSide.opponent,
+      pokemon: [ref('rillaboom')],
+    );
+
+    testWidgets("lists the other side's teams; tapping one edits its notes", (
+      tester,
+    ) async {
+      final matchups = FakeMatchupRepository();
+      await pumpDetail(
+        tester,
+        teams: FakeTeamRepository(teams: [imported, rival]),
+        matchups: matchups,
+      );
+      final row = find.widgetWithText(ListTile, 'Rival Grassy');
+      expect(
+        find.descendant(of: row, matching: find.text('No notes yet')),
+        findsOneWidget,
+      );
+
+      await tester.tap(row);
+      await tester.pumpAndSettle();
+      expect(find.text('Worlds Metagross vs Rival Grassy'), findsOneWidget);
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Game plan'),
+        'Fake Out Rillaboom turn 1.',
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.descendant(
+          of: row,
+          matching: find.text('Fake Out Rillaboom turn 1.'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        (await matchups.watchAll().first).single.notes,
+        'Fake Out Rillaboom turn 1.',
+      );
+    });
+
+    testWidgets('no teams on the other side: says how to start', (
+      tester,
+    ) async {
+      await pumpDetail(tester);
+
+      expect(
+        find.text('Save an opponent team to keep matchup notes against it.'),
+        findsOneWidget,
+      );
+    });
   });
 
   group('notes', () {
@@ -158,6 +219,7 @@ void main() {
           create: (_) => TeamDetailViewModel(
             teamRepository: FakeTeamRepository(teams: [withMegaAbility]),
             pokemonRepository: FakePokemonRepository(),
+            matchupRepository: FakeMatchupRepository(),
             teamId: 't1',
           )..load.execute(),
           child: const TeamDetailScreen(),

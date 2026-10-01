@@ -629,7 +629,7 @@ Not in the original. Added 2026-10-01 at the user's request (7.9–7.12).
   - Each rule has been checked by breaking it on purpose, and the macOS
     opponent journey saves notes.
 
-### 7.10 Matchup notes
+### ✅ 7.10 Matchup notes
 - **Model:** `MatchupNote` holds your team id, their team id, the notes
   and an updated-at time. A new `MatchupRepository` (local store
   `matchups`, keyed by the pair, plus a fake) has a shared contract
@@ -641,6 +641,20 @@ Not in the original. Added 2026-10-01 at the user's request (7.9–7.12).
   so the format stays at version 1.
 - **Tests:** the repository contract (real and fake), the view model,
   widget, backup round trip with matchups, and acceptance.
+- **As built:**
+  - `MatchupRepository` has `watchAll` and `save` (upsert by pair, using
+    `MatchupNote.keyOf`). A per-pair watch is left to 7.11, if the Log
+    Game card needs it, rather than added unused now.
+  - `TeamDetailViewModel` lists the other side's teams in name order,
+    with titles always "your team vs theirs". Saving from either side
+    stores the same orientation, trimmed.
+  - Each row opens a "Game plan" dialog, capped at 480 px.
+  - The rows are a plain column, not a lazy list: there's one per team
+    on the other side, a small number.
+  - Backup's summary mentions matchup notes only when there are some, so
+    the earlier wording didn't change.
+  - Each rule has been checked by breaking it on purpose: orientation,
+    other side only, trimming, export, and the summary.
 
 ### 7.11 Game plan in Log Game
 - Picking "Their team" shows a **Game plan** card above their slots,

@@ -36,6 +36,7 @@ GoRouter createRouter() => GoRouter(
           teamRepository: context.read(),
           gameLogRepository: context.read(),
           routineRepository: context.read(),
+          matchupRepository: context.read(),
         ),
         child: const BackupScreen(),
       ),
@@ -93,6 +94,7 @@ GoRouter createRouter() => GoRouter(
                     create: (context) => TeamDetailViewModel(
                       teamRepository: context.read(),
                       pokemonRepository: context.read(),
+                      matchupRepository: context.read(),
                       teamId: state.pathParameters['id']!,
                     )..load.execute(),
                     child: const TeamDetailScreen(),

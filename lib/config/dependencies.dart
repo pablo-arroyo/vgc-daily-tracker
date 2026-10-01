@@ -6,6 +6,8 @@ import '../data/repositories/game_log/game_log_repository.dart';
 import '../data/repositories/game_log/game_log_repository_local.dart';
 import '../data/repositories/item/item_repository.dart';
 import '../data/repositories/item/item_repository_remote.dart';
+import '../data/repositories/matchup/matchup_repository.dart';
+import '../data/repositories/matchup/matchup_repository_local.dart';
 import '../data/repositories/pokemon/pokemon_repository.dart';
 import '../data/repositories/pokemon/pokemon_repository_remote.dart';
 import '../data/repositories/routine/routine_repository.dart';
@@ -53,6 +55,9 @@ List<SingleChildWidget> providersRemote({
   ),
   Provider<RoutineRepository>(
     create: (context) => RoutineRepositoryLocal(storage: context.read()),
+  ),
+  Provider<MatchupRepository>(
+    create: (context) => MatchupRepositoryLocal(storage: context.read()),
   ),
   Provider<ImportTeamUseCase>(
     create: (context) => ImportTeamUseCase(

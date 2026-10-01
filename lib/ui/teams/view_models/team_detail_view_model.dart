@@ -1,7 +1,10 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../../data/repositories/matchup/matchup_repository.dart';
 import '../../../data/repositories/pokemon/pokemon_repository.dart';
 import '../../../data/repositories/team/team_repository.dart';
+import '../../../domain/models/matchup_note.dart';
 import '../../../domain/models/pokemon.dart';
 import '../../../domain/models/pokemon_ref.dart';
 import '../../../domain/models/pokemon_set.dart';
@@ -41,20 +44,32 @@ class TeamMemberView {
 /// One line of the Speed order list.
 typedef SpeedTier = ({String name, int speed});
 
+/// Matchup notes against one team on the other side: [title] reads
+/// "your team vs their team"; [notes] is empty when none were saved.
+typedef MatchupView = ({
+  String teamId,
+  String teamName,
+  String title,
+  String notes,
+});
+
 /// State for a team's detail screen: each member's battle form, stats, and
 /// the team's Speed order.
 class TeamDetailViewModel extends ChangeNotifier {
   TeamDetailViewModel({
     required this._teamRepository,
     required this._pokemonRepository,
+    required this._matchupRepository,
     required this._teamId,
   }) {
     load = Command0(_load)..addListener(notifyListeners);
     saveNotes = Command1(_saveNotes);
+    saveMatchupNotes = Command1(_saveMatchupNotes);
   }
 
   final TeamRepository _teamRepository;
   final PokemonRepository _pokemonRepository;
+  final MatchupRepository _matchupRepository;
   final String _teamId;
 
   /// Loads the team and looks up each member. Run it again to retry.
@@ -62,6 +77,74 @@ class TeamDetailViewModel extends ChangeNotifier {
 
   /// Saves the team's notes, trimmed.
   late final Command1<void, String> saveNotes;
+
+  /// Saves the matchup notes against the other-side team [teamId], trimmed.
+  late final Command1<void, ({String teamId, String notes})> saveMatchupNotes;
+
+  List<MatchupView> _matchups = const [];
+
+  /// Every team on the other side, in name order, with the matchup notes.
+  List<MatchupView> get matchups => _matchups;
+
+  /// Whose team this is, so the screen can say which side to add teams to.
+  TeamSide get side => _team?.side ?? TeamSide.mine;
+
+  Future<Result<void>> _saveMatchupNotes(
+    ({String teamId, String notes}) request,
+  ) async {
+    final team = _team!;
+    final mine = team.side == TeamSide.mine;
+    final notes = request.notes.trim();
+    final saved = await _matchupRepository.save(
+      MatchupNote(
+        myTeamId: mine ? team.id : request.teamId,
+        opponentTeamId: mine ? request.teamId : team.id,
+        notes: notes,
+        updatedAt: clock.now().toUtc(),
+      ),
+    );
+    if (saved is Ok) {
+      _matchups = [
+        for (final m in _matchups)
+          m.teamId == request.teamId
+              ? (
+                  teamId: m.teamId,
+                  teamName: m.teamName,
+                  title: m.title,
+                  notes: notes,
+                )
+              : m,
+      ];
+      notifyListeners();
+    }
+    return saved;
+  }
+
+  /// The other side's teams, each with the notes saved for its matchup
+  /// with [team].
+  Future<List<MatchupView>> _matchupsOf(Team team, List<Team> teams) async {
+    final mine = team.side == TeamSide.mine;
+    final notes = {
+      for (final n in await _matchupRepository.watchAll().first) n.key: n.notes,
+    };
+    return [
+      for (final other in teams)
+        if (other.side != team.side)
+          (
+            teamId: other.id,
+            teamName: other.name,
+            title: mine
+                ? '${team.name} vs ${other.name}'
+                : '${other.name} vs ${team.name}',
+            notes:
+                notes[MatchupNote.keyOf(
+                  mine ? team.id : other.id,
+                  mine ? other.id : team.id,
+                )] ??
+                '',
+          ),
+    ];
+  }
 
   Team? _team;
 
@@ -131,6 +214,7 @@ class TeamDetailViewModel extends ChangeNotifier {
       }
     }
     _team = team;
+    _matchups = await _matchupsOf(team, teams);
     _name = team.name;
     _members = members;
     _speedOrder = _sortedBySpeed(members);

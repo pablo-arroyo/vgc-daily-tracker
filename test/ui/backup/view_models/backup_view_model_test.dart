@@ -3,11 +3,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:vgc_daily_tracker/domain/backup/backup_format.dart';
 import 'package:vgc_daily_tracker/domain/models/backup.dart';
 import 'package:vgc_daily_tracker/domain/models/game_log.dart';
+import 'package:vgc_daily_tracker/domain/models/matchup_note.dart';
 import 'package:vgc_daily_tracker/domain/models/team.dart';
 import 'package:vgc_daily_tracker/ui/backup/view_models/backup_view_model.dart';
 import 'package:vgc_daily_tracker/utils/result.dart';
 
 import '../../../../testing/fakes/fake_game_log_repository.dart';
+import '../../../../testing/fakes/fake_matchup_repository.dart';
 import '../../../../testing/fakes/fake_routine_repository.dart';
 import '../../../../testing/fakes/fake_team_repository.dart';
 
@@ -30,11 +32,13 @@ void main() {
   late FakeTeamRepository teams;
   late FakeGameLogRepository games;
   late FakeRoutineRepository routine;
+  late FakeMatchupRepository matchups;
 
   setUp(() {
     teams = FakeTeamRepository();
     games = FakeGameLogRepository();
     routine = FakeRoutineRepository();
+    matchups = FakeMatchupRepository();
   });
 
   BackupViewModel create() {
@@ -42,6 +46,7 @@ void main() {
       teamRepository: teams,
       gameLogRepository: games,
       routineRepository: routine,
+      matchupRepository: matchups,
     );
     addTearDown(viewModel.dispose);
     return viewModel;
@@ -52,8 +57,15 @@ void main() {
     List<Team> teams = const [],
     List<GameLog> games = const [],
     Map<String, List<String>> routine = const {},
+    List<MatchupNote> matchups = const [],
   }) => BackupFormat.encode(
-    Backup(exportedAt: now, teams: teams, games: games, routine: routine),
+    Backup(
+      exportedAt: now,
+      teams: teams,
+      games: games,
+      routine: routine,
+      matchups: matchups,
+    ),
   );
 
   group('export', () {
@@ -85,6 +97,40 @@ void main() {
         (viewModel.export.result! as Ok<BackupExport>).value.summary,
         '0 teams, 0 games, 0 routine days',
       );
+    });
+  });
+
+  group('matchup notes', () {
+    final plan = MatchupNote(
+      myTeamId: 't1',
+      opponentTeamId: 'o1',
+      notes: 'Lead Whimsicott.',
+      updatedAt: DateTime.utc(2026, 9, 30),
+    );
+
+    test('are exported, and named in the summary', () async {
+      matchups = FakeMatchupRepository(notes: [plan]);
+      final viewModel = create();
+
+      await viewModel.export.execute();
+
+      final exported = (viewModel.export.result! as Ok<BackupExport>).value;
+      expect(
+        exported.summary,
+        '0 teams, 0 games, 0 routine days, 1 matchup note',
+      );
+      expect(
+        (BackupFormat.decode(exported.text) as Ok<Backup>).value.matchups,
+        [plan],
+      );
+    });
+
+    test('are restored, merged by pair of teams', () async {
+      final viewModel = create();
+
+      await viewModel.restore.execute(backupOf(matchups: [plan]));
+
+      expect(await matchups.watchAll().first, [plan]);
     });
   });
 

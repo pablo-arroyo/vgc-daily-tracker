@@ -34,6 +34,14 @@ _Backup _$BackupFromJson(Map<String, dynamic> json) =>
             ),
           ),
         ),
+        matchups: $checkedConvert(
+          'matchups',
+          (v) =>
+              (v as List<dynamic>?)
+                  ?.map((e) => MatchupNote.fromJson(e as Map<String, dynamic>))
+                  .toList() ??
+              const [],
+        ),
       );
       return val;
     }, fieldKeyMap: const {'exportedAt': 'exported_at'});
@@ -43,4 +51,5 @@ Map<String, dynamic> _$BackupToJson(_Backup instance) => <String, dynamic>{
   'teams': instance.teams.map((e) => e.toJson()).toList(),
   'games': instance.games.map((e) => e.toJson()).toList(),
   'routine': instance.routine,
+  'matchups': instance.matchups.map((e) => e.toJson()).toList(),
 };

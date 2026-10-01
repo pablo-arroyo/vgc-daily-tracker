@@ -8,6 +8,7 @@ import 'package:vgc_daily_tracker/ui/core/theme/app_theme.dart';
 
 import '../../../../testing/clipboard.dart';
 import '../../../../testing/fakes/fake_game_log_repository.dart';
+import '../../../../testing/fakes/fake_matchup_repository.dart';
 import '../../../../testing/fakes/fake_routine_repository.dart';
 import '../../../../testing/fakes/fake_team_repository.dart';
 
@@ -30,6 +31,7 @@ void main() {
             teamRepository: teams,
             gameLogRepository: FakeGameLogRepository(),
             routineRepository: FakeRoutineRepository(),
+            matchupRepository: FakeMatchupRepository(),
           ),
           child: const BackupScreen(),
         ),

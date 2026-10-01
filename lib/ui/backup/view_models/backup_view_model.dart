@@ -2,6 +2,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../../data/repositories/game_log/game_log_repository.dart';
+import '../../../data/repositories/matchup/matchup_repository.dart';
 import '../../../data/repositories/routine/routine_repository.dart';
 import '../../../data/repositories/team/team_repository.dart';
 import '../../../domain/backup/backup_format.dart';
@@ -19,6 +20,7 @@ class BackupViewModel extends ChangeNotifier {
     required this._teamRepository,
     required this._gameLogRepository,
     required this._routineRepository,
+    required this._matchupRepository,
   }) {
     export = Command0(_export);
     restore = Command1(_restore);
@@ -27,6 +29,7 @@ class BackupViewModel extends ChangeNotifier {
   final TeamRepository _teamRepository;
   final GameLogRepository _gameLogRepository;
   final RoutineRepository _routineRepository;
+  final MatchupRepository _matchupRepository;
 
   /// Builds the backup text of all teams, games and routine days.
   late final Command0<BackupExport> export;
@@ -51,6 +54,7 @@ class BackupViewModel extends ChangeNotifier {
         for (final MapEntry(key: day, value: checked) in days.entries)
           day: checked.toList()..sort(),
       },
+      matchups: await _matchupRepository.watchAll().first,
     );
     return Result.ok((
       text: BackupFormat.encode(backup),
@@ -85,14 +89,22 @@ class BackupViewModel extends ChangeNotifier {
       final saved = await _routineRepository.save(day, checked.toSet());
       if (saved case Failure(:final error)) return Result.failure(error);
     }
+    for (final matchup in backup.matchups) {
+      if (await _matchupRepository.save(matchup) case Failure(:final error)) {
+        return Result.failure(error);
+      }
+    }
     return Result.ok(_summary(backup));
   }
 
-  /// `2 teams, 1 game, 1 routine day`.
+  /// `2 teams, 1 game, 1 routine day`, plus matchup notes when there are
+  /// some.
   static String _summary(Backup backup) => [
     _count(backup.teams.length, 'team'),
     _count(backup.games.length, 'game'),
     _count(backup.routine.length, 'routine day'),
+    if (backup.matchups.isNotEmpty)
+      _count(backup.matchups.length, 'matchup note'),
   ].join(', ');
 
   static String _count(int n, String noun) => '$n $noun${n == 1 ? '' : 's'}';

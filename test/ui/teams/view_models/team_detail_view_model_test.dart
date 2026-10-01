@@ -1,5 +1,7 @@
+import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vgc_daily_tracker/data/services/pokeapi/poke_api_exception.dart';
+import 'package:vgc_daily_tracker/domain/models/matchup_note.dart';
 import 'package:vgc_daily_tracker/domain/models/nature.dart';
 import 'package:vgc_daily_tracker/domain/models/pokemon_set.dart';
 import 'package:vgc_daily_tracker/domain/models/stat_spread.dart';
@@ -8,6 +10,7 @@ import 'package:vgc_daily_tracker/domain/showdown/showdown_format.dart';
 import 'package:vgc_daily_tracker/ui/teams/view_models/team_detail_view_model.dart';
 import 'package:vgc_daily_tracker/utils/result.dart';
 
+import '../../../../testing/fakes/fake_matchup_repository.dart';
 import '../../../../testing/fakes/fake_pokemon_repository.dart';
 import '../../../../testing/fakes/fake_team_repository.dart';
 import '../../../../testing/showdown_pastes.dart';
@@ -40,6 +43,7 @@ void main() {
     final viewModel = TeamDetailViewModel(
       teamRepository: FakeTeamRepository(teams: [team]),
       pokemonRepository: pokemon,
+      matchupRepository: FakeMatchupRepository(),
       teamId: teamId ?? team.id,
     );
     addTearDown(viewModel.dispose);
@@ -164,6 +168,7 @@ void main() {
       final viewModel = TeamDetailViewModel(
         teamRepository: teams,
         pokemonRepository: pokemon,
+        matchupRepository: FakeMatchupRepository(),
         teamId: team.id,
       );
       addTearDown(viewModel.dispose);
@@ -197,6 +202,116 @@ void main() {
 
       expect(viewModel.saveNotes.error, isTrue);
       expect(viewModel.notes, 'Old');
+    });
+  });
+
+  group('matchup notes', () {
+    const mine = Team(id: 't1', name: 'Big Six', pokemon: []);
+    const rival = Team(
+      id: 'o1',
+      name: 'Rival Grassy',
+      pokemon: [],
+      side: TeamSide.opponent,
+    );
+    const ladder = Team(
+      id: 'o2',
+      name: 'Ladder Rain',
+      pokemon: [],
+      side: TeamSide.opponent,
+    );
+    late FakeMatchupRepository matchups;
+
+    Future<TeamDetailViewModel> open(
+      String teamId, {
+      List<MatchupNote> notes = const [],
+    }) async {
+      matchups = FakeMatchupRepository(notes: notes);
+      final viewModel = TeamDetailViewModel(
+        teamRepository: FakeTeamRepository(teams: [mine, rival, ladder]),
+        pokemonRepository: pokemon,
+        matchupRepository: matchups,
+        teamId: teamId,
+      );
+      addTearDown(viewModel.dispose);
+      await viewModel.load.execute();
+      return viewModel;
+    }
+
+    final saved = MatchupNote(
+      myTeamId: 't1',
+      opponentTeamId: 'o1',
+      notes: 'Tailwind turn 1.',
+      updatedAt: DateTime.utc(2026, 9, 30),
+    );
+
+    test('from your team: every opponent team, with its notes', () async {
+      final viewModel = await open('t1', notes: [saved]);
+
+      expect(viewModel.matchups, [
+        (
+          teamId: 'o2',
+          teamName: 'Ladder Rain',
+          title: 'Big Six vs Ladder Rain',
+          notes: '',
+        ),
+        (
+          teamId: 'o1',
+          teamName: 'Rival Grassy',
+          title: 'Big Six vs Rival Grassy',
+          notes: 'Tailwind turn 1.',
+        ),
+      ]);
+    });
+
+    test("from an opponent's team: every team of yours", () async {
+      final viewModel = await open('o1', notes: [saved]);
+
+      expect(viewModel.matchups, [
+        (
+          teamId: 't1',
+          teamName: 'Big Six',
+          title: 'Big Six vs Rival Grassy',
+          notes: 'Tailwind turn 1.',
+        ),
+      ]);
+    });
+
+    test('saving from either side stores your team vs theirs', () async {
+      final now = DateTime.utc(2026, 10, 1, 9);
+      final fromMine = await open('t1');
+      await withClock(
+        Clock.fixed(now),
+        () => fromMine.saveMatchupNotes.execute((
+          teamId: 'o1',
+          notes: '  Lead Whimsicott.  ',
+        )),
+      );
+
+      expect(await matchups.watchAll().first, [
+        MatchupNote(
+          myTeamId: 't1',
+          opponentTeamId: 'o1',
+          notes: 'Lead Whimsicott.',
+          updatedAt: now,
+        ),
+      ]);
+      expect(fromMine.matchups.last.notes, 'Lead Whimsicott.');
+
+      final fromTheirs = await open('o1');
+      await fromTheirs.saveMatchupNotes.execute((teamId: 't1', notes: 'X'));
+
+      final [stored] = await matchups.watchAll().first;
+      expect((stored.myTeamId, stored.opponentTeamId), ('t1', 'o1'));
+    });
+
+    test('a failed save keeps the old notes', () async {
+      final viewModel = await open('t1', notes: [saved]);
+      matchups.failWith = Exception('disk full');
+
+      await viewModel.saveMatchupNotes.execute((teamId: 'o1', notes: 'New'));
+
+      expect(viewModel.saveMatchupNotes.error, isTrue);
+      expect(viewModel.matchups.last.notes, 'Tailwind turn 1.');
     });
   });
 }

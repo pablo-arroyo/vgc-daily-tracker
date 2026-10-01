@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../../domain/models/stat.dart';
 import '../../../domain/models/stat_spread.dart';
+import '../../../domain/models/team.dart';
 import '../../../utils/command.dart';
 import '../../core/pokemon_avatar.dart';
 import '../../core/type_badge.dart';
@@ -69,6 +70,10 @@ class _TeamDetail extends StatelessWidget {
         const SliverPadding(
           padding: EdgeInsets.fromLTRB(16, 16, 16, 0),
           sliver: SliverToBoxAdapter(child: _NotesCard()),
+        ),
+        const SliverPadding(
+          padding: EdgeInsets.fromLTRB(16, 16, 16, 0),
+          sliver: SliverToBoxAdapter(child: _MatchupNotesCard()),
         ),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -184,6 +189,140 @@ class _NotesCardState extends State<_NotesCard> {
           ),
         ),
       );
+  }
+}
+
+/// Matchup notes against each team on the other side; tap one to edit.
+class _MatchupNotesCard extends StatelessWidget {
+  const _MatchupNotesCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final viewModel = context.read<TeamDetailViewModel>();
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: ListenableBuilder(
+          listenable: viewModel,
+          builder: (context, _) {
+            final matchups = viewModel.matchups;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Text(
+                    'Matchup notes',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                if (matchups.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    child: Text(
+                      viewModel.side == TeamSide.mine
+                          ? 'Save an opponent team to keep matchup notes '
+                                'against it.'
+                          : 'Save a team of yours to keep matchup notes '
+                                'against it.',
+                    ),
+                  ),
+                // Few teams per side, so a plain column is fine here.
+                for (final matchup in matchups)
+                  ListTile(
+                    title: Text(matchup.teamName),
+                    subtitle: Text(
+                      matchup.notes.isEmpty ? 'No notes yet' : matchup.notes,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    trailing: const Icon(Icons.edit_outlined),
+                    onTap: () => _edit(context, matchup),
+                  ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Future<void> _edit(BuildContext context, MatchupView matchup) async {
+    final save = context.read<TeamDetailViewModel>().saveMatchupNotes;
+    final messenger = ScaffoldMessenger.of(context);
+    final notes = await showDialog<String>(
+      context: context,
+      builder: (context) =>
+          _MatchupNotesDialog(title: matchup.title, initial: matchup.notes),
+    );
+    if (notes == null) return;
+
+    await save.execute((teamId: matchup.teamId, notes: notes));
+    if (save.error) {
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text("Couldn't save the matchup notes. Try again."),
+          ),
+        );
+    }
+  }
+}
+
+/// Edits one matchup's game plan; pops with the text, or null on Cancel.
+class _MatchupNotesDialog extends StatefulWidget {
+  const _MatchupNotesDialog({required this.title, required this.initial});
+
+  final String title;
+  final String initial;
+
+  @override
+  State<_MatchupNotesDialog> createState() => _MatchupNotesDialogState();
+}
+
+class _MatchupNotesDialogState extends State<_MatchupNotesDialog> {
+  late final _notes = TextEditingController(text: widget.initial);
+
+  @override
+  void dispose() {
+    _notes.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.title),
+      // A comfortable writing width; narrow screens still clamp it.
+      content: SizedBox(
+        width: 480,
+        child: TextField(
+          controller: _notes,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: 'Game plan',
+            hintText: 'Leads, what to watch for, who to save for the back…',
+            alignLabelWithHint: true,
+            border: OutlineInputBorder(),
+          ),
+          minLines: 4,
+          maxLines: 10,
+          keyboardType: TextInputType.multiline,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, _notes.text),
+          child: const Text('Save'),
+        ),
+      ],
+    );
   }
 }
 

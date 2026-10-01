@@ -17,7 +17,9 @@ T _$identity<T>(T value) => value;
 mixin _$Backup {
 
  DateTime get exportedAt; List<Team> get teams; List<GameLog> get games;/// Ticked routine item ids per local day, e.g. `2026-09-30`.
- Map<String, List<String>> get routine;
+ Map<String, List<String>> get routine;/// Game plans per pair of teams. Missing in backups made before matchup
+/// notes existed, which still restore.
+ List<MatchupNote> get matchups;
 /// Create a copy of Backup
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -31,20 +33,20 @@ $BackupCopyWith<Backup> get copyWith => _$BackupCopyWithImpl<Backup>(this as Bac
 @override
 bool operator ==(Object other) {
   final _this = this as Backup;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Backup&&(identical(other.exportedAt, _this.exportedAt) || other.exportedAt == _this.exportedAt)&&const DeepCollectionEquality().equals(other.teams, _this.teams)&&const DeepCollectionEquality().equals(other.games, _this.games)&&const DeepCollectionEquality().equals(other.routine, _this.routine));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Backup&&(identical(other.exportedAt, _this.exportedAt) || other.exportedAt == _this.exportedAt)&&const DeepCollectionEquality().equals(other.teams, _this.teams)&&const DeepCollectionEquality().equals(other.games, _this.games)&&const DeepCollectionEquality().equals(other.routine, _this.routine)&&const DeepCollectionEquality().equals(other.matchups, _this.matchups));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as Backup;
-  return Object.hash(runtimeType,_this.exportedAt,const DeepCollectionEquality().hash(_this.teams),const DeepCollectionEquality().hash(_this.games),const DeepCollectionEquality().hash(_this.routine));
+  return Object.hash(runtimeType,_this.exportedAt,const DeepCollectionEquality().hash(_this.teams),const DeepCollectionEquality().hash(_this.games),const DeepCollectionEquality().hash(_this.routine),const DeepCollectionEquality().hash(_this.matchups));
 }
 
 @override
 String toString() {
   final _this = this as Backup;
-  return 'Backup(exportedAt: ${_this.exportedAt}, teams: ${_this.teams}, games: ${_this.games}, routine: ${_this.routine})';
+  return 'Backup(exportedAt: ${_this.exportedAt}, teams: ${_this.teams}, games: ${_this.games}, routine: ${_this.routine}, matchups: ${_this.matchups})';
 }
 
 
@@ -55,7 +57,7 @@ abstract mixin class $BackupCopyWith<$Res>  {
   factory $BackupCopyWith(Backup value, $Res Function(Backup) _then) = _$BackupCopyWithImpl;
 @useResult
 $Res call({
- DateTime exportedAt, List<Team> teams, List<GameLog> games, Map<String, List<String>> routine
+ DateTime exportedAt, List<Team> teams, List<GameLog> games, Map<String, List<String>> routine, List<MatchupNote> matchups
 });
 
 
@@ -72,13 +74,14 @@ class _$BackupCopyWithImpl<$Res>
 
 /// Create a copy of Backup
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? exportedAt = null,Object? teams = null,Object? games = null,Object? routine = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? exportedAt = null,Object? teams = null,Object? games = null,Object? routine = null,Object? matchups = null,}) {
   return _then(Backup(
 exportedAt: null == exportedAt ? _self.exportedAt : exportedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,teams: null == teams ? _self.teams : teams // ignore: cast_nullable_to_non_nullable
 as List<Team>,games: null == games ? _self.games : games // ignore: cast_nullable_to_non_nullable
 as List<GameLog>,routine: null == routine ? _self.routine : routine // ignore: cast_nullable_to_non_nullable
-as Map<String, List<String>>,
+as Map<String, List<String>>,matchups: null == matchups ? _self.matchups : matchups // ignore: cast_nullable_to_non_nullable
+as List<MatchupNote>,
   ));
 }
 
@@ -163,10 +166,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DateTime exportedAt,  List<Team> teams,  List<GameLog> games,  Map<String, List<String>> routine)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DateTime exportedAt,  List<Team> teams,  List<GameLog> games,  Map<String, List<String>> routine,  List<MatchupNote> matchups)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Backup() when $default != null:
-return $default(_that.exportedAt,_that.teams,_that.games,_that.routine);case _:
+return $default(_that.exportedAt,_that.teams,_that.games,_that.routine,_that.matchups);case _:
   return orElse();
 
 }
@@ -184,10 +187,10 @@ return $default(_that.exportedAt,_that.teams,_that.games,_that.routine);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DateTime exportedAt,  List<Team> teams,  List<GameLog> games,  Map<String, List<String>> routine)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DateTime exportedAt,  List<Team> teams,  List<GameLog> games,  Map<String, List<String>> routine,  List<MatchupNote> matchups)  $default,) {final _that = this;
 switch (_that) {
 case _Backup():
-return $default(_that.exportedAt,_that.teams,_that.games,_that.routine);case _:
+return $default(_that.exportedAt,_that.teams,_that.games,_that.routine,_that.matchups);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -204,10 +207,10 @@ return $default(_that.exportedAt,_that.teams,_that.games,_that.routine);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DateTime exportedAt,  List<Team> teams,  List<GameLog> games,  Map<String, List<String>> routine)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DateTime exportedAt,  List<Team> teams,  List<GameLog> games,  Map<String, List<String>> routine,  List<MatchupNote> matchups)?  $default,) {final _that = this;
 switch (_that) {
 case _Backup() when $default != null:
-return $default(_that.exportedAt,_that.teams,_that.games,_that.routine);case _:
+return $default(_that.exportedAt,_that.teams,_that.games,_that.routine,_that.matchups);case _:
   return null;
 
 }
@@ -219,7 +222,7 @@ return $default(_that.exportedAt,_that.teams,_that.games,_that.routine);case _:
 @JsonSerializable()
 
 class _Backup implements Backup {
-  const _Backup({required this.exportedAt, required  List<Team> teams, required  List<GameLog> games, required  Map<String, List<String>> routine}): _teams = teams,_games = games,_routine = routine;
+  const _Backup({required this.exportedAt, required  List<Team> teams, required  List<GameLog> games, required  Map<String, List<String>> routine,  List<MatchupNote> matchups = const []}): _teams = teams,_games = games,_routine = routine,_matchups = matchups;
   factory _Backup.fromJson(Map<String, dynamic> json) => _$BackupFromJson(json);
 
 @override final  DateTime exportedAt;
@@ -246,6 +249,17 @@ class _Backup implements Backup {
   return EqualUnmodifiableMapView(_routine);
 }
 
+/// Game plans per pair of teams. Missing in backups made before matchup
+/// notes existed, which still restore.
+ final  List<MatchupNote> _matchups;
+/// Game plans per pair of teams. Missing in backups made before matchup
+/// notes existed, which still restore.
+@override@JsonKey() List<MatchupNote> get matchups {
+  if (_matchups is EqualUnmodifiableListView) return _matchups;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_matchups);
+}
+
 
 /// Create a copy of Backup
 /// with the given fields replaced by the non-null parameter values.
@@ -260,18 +274,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Backup&&(identical(other.exportedAt, exportedAt) || other.exportedAt == exportedAt)&&const DeepCollectionEquality().equals(other.teams, _teams)&&const DeepCollectionEquality().equals(other.games, _games)&&const DeepCollectionEquality().equals(other.routine, _routine));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Backup&&(identical(other.exportedAt, exportedAt) || other.exportedAt == exportedAt)&&const DeepCollectionEquality().equals(other.teams, _teams)&&const DeepCollectionEquality().equals(other.games, _games)&&const DeepCollectionEquality().equals(other.routine, _routine)&&const DeepCollectionEquality().equals(other.matchups, _matchups));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,exportedAt,const DeepCollectionEquality().hash(_teams),const DeepCollectionEquality().hash(_games),const DeepCollectionEquality().hash(_routine));
+    return Object.hash(runtimeType,exportedAt,const DeepCollectionEquality().hash(_teams),const DeepCollectionEquality().hash(_games),const DeepCollectionEquality().hash(_routine),const DeepCollectionEquality().hash(_matchups));
 }
 
 @override
 String toString() {
-    return 'Backup(exportedAt: $exportedAt, teams: $teams, games: $games, routine: $routine)';
+    return 'Backup(exportedAt: $exportedAt, teams: $teams, games: $games, routine: $routine, matchups: $matchups)';
 }
 
 
@@ -282,7 +296,7 @@ abstract mixin class _$BackupCopyWith<$Res> implements $BackupCopyWith<$Res> {
   factory _$BackupCopyWith(_Backup value, $Res Function(_Backup) _then) = __$BackupCopyWithImpl;
 @override @useResult
 $Res call({
- DateTime exportedAt, List<Team> teams, List<GameLog> games, Map<String, List<String>> routine
+ DateTime exportedAt, List<Team> teams, List<GameLog> games, Map<String, List<String>> routine, List<MatchupNote> matchups
 });
 
 
@@ -299,13 +313,14 @@ class __$BackupCopyWithImpl<$Res>
 
 /// Create a copy of Backup
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? exportedAt = null,Object? teams = null,Object? games = null,Object? routine = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? exportedAt = null,Object? teams = null,Object? games = null,Object? routine = null,Object? matchups = null,}) {
   return _then(_Backup(
 exportedAt: null == exportedAt ? _self.exportedAt : exportedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,teams: null == teams ? _self._teams : teams // ignore: cast_nullable_to_non_nullable
 as List<Team>,games: null == games ? _self._games : games // ignore: cast_nullable_to_non_nullable
 as List<GameLog>,routine: null == routine ? _self._routine : routine // ignore: cast_nullable_to_non_nullable
-as Map<String, List<String>>,
+as Map<String, List<String>>,matchups: null == matchups ? _self._matchups : matchups // ignore: cast_nullable_to_non_nullable
+as List<MatchupNote>,
   ));
 }
 
