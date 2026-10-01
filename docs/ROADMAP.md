@@ -797,8 +797,26 @@ Not in the original. Added 2026-10-01 at the user's request (7.9–7.12).
   a GitHub Actions workflow running `flutter analyze`, `flutter test`
   and the integration tests on macOS. Pick it up whenever the project
   uses a hosted remote for CI.
-- **8.6 App identity and README:** app name and icon, and a README with
-  setup, commands and architecture overview.
+- ✅ **8.6 App identity and README:**
+  - **Name:** every platform shows "VGC Daily Tracker": Android label,
+    iOS display and bundle names, macOS product name (the app is now
+    `VGC Daily Tracker.app`), web title and manifest, and the Windows
+    and Linux window titles. `test/config/app_identity_test.dart` reads
+    each platform's files to check.
+  - **Icon:** a calendar page with a check mark in the app's indigo. It's
+    drawn by `tool/app_icon/render_app_icon_test.dart` (full-bleed, macOS
+    rounded, and Android adaptive foreground) and generated for every
+    platform with `flutter_launcher_icons`, a dev dependency added with
+    the user's OK.
+  - **A tool bug, fixed and guarded:** `flutter_launcher_icons` 0.14
+    rewrote an iOS project setting
+    (`ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS`) to
+    "AppIcon". That was reverted, and a test now guards it.
+  - **README:** features per tab, setup, commands, tests, an architecture
+    overview, and how the project is worked on.
+  - **One flaky run:** the first macOS journey run after the rename had
+    one failure ("log game: create a team, then log a game with it").
+    The next three runs passed. It's noted here, not explained.
 
 ## Phase 9 (optional, later): Cloud sync
 

@@ -62,6 +62,7 @@ dev_dependencies:
   # Profile-mode frame timing via `flutter drive` (step 8.3); test-only.
   flutter_driver:
     sdk: flutter
+  flutter_launcher_icons: ^0.14.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -104,3 +105,24 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# App icon (step 8.6). Sources are drawn and rendered by
+# tool/app_icon/render_app_icon_test.dart; regenerate every platform with:
+#   dart run flutter_launcher_icons
+flutter_launcher_icons:
+  image_path: assets/icon/app_icon.png
+  android: true
+  adaptive_icon_background: "#5B5BD6"
+  adaptive_icon_foreground: assets/icon/app_icon_foreground.png
+  ios: true
+  remove_alpha_ios: true
+  macos:
+    generate: true
+    image_path: assets/icon/app_icon_macos.png
+  web:
+    generate: true
+    background_color: "#F7F7FB"
+    theme_color: "#5B5BD6"
+  windows:
+    generate: true
+    icon_size: 48

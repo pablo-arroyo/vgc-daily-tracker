@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="vgc_daily_tracker"
+        android:label="VGC Daily Tracker"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
