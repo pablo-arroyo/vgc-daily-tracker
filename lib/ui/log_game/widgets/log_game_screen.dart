@@ -461,8 +461,7 @@ class _OpponentTeamPicker extends StatelessWidget {
     return ListenableBuilder(
       listenable: viewModel,
       builder: (context, _) {
-        if (viewModel.opponentTeams.isEmpty) return const SizedBox.shrink();
-        return Padding(
+        final dropdown = Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: DropdownButtonFormField<Team?>(
             initialValue: viewModel.selectedOpponentTeam,
@@ -478,6 +477,16 @@ class _OpponentTeamPicker extends StatelessWidget {
             ],
             onChanged: viewModel.selectOpponentTeam,
           ),
+        );
+        if (viewModel.opponentTeams.isNotEmpty) return dropdown;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            dropdown,
+            const _Hint(
+              'No saved opponent teams yet. Add one in Teams → Opponents.',
+            ),
+          ],
         );
       },
     );

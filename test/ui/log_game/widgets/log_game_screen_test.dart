@@ -118,10 +118,22 @@ void main() {
         .controller!
         .text;
 
-    testWidgets('no saved opponent teams: no picker', (tester) async {
+    const noTeamsHint =
+        'No saved opponent teams yet. Add one in Teams → Opponents.';
+
+    testWidgets('no saved opponent teams: the picker still shows, with a '
+        'hint on how to add one', (tester) async {
       await pumpScreen(tester);
 
-      expect(find.text('Their team'), findsNothing);
+      expect(find.text('Their team'), findsOneWidget);
+      expect(find.text(noTeamsHint), findsOneWidget);
+    });
+
+    testWidgets('with a saved opponent team there is no hint', (tester) async {
+      await pumpScreen(tester, extraTeams: [rival]);
+
+      expect(find.text('Their team'), findsOneWidget);
+      expect(find.text(noTeamsHint), findsNothing);
     });
 
     testWidgets('picking one fills the six opponent fields, which stay '

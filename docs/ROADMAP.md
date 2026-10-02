@@ -5,7 +5,7 @@ backed by PokéAPI. It also turns the **Reg M-C Teams: EVs & Analysis**
 artifact into a real feature: team import plus stat and speed analysis.
 
 **Status (2026-10-01): version 1 is complete.** Phases 0–8 and 10 are
-done. Cloud sync (Phase 9) is left out of the first version; data stays on
+done; later improvements go in Phase 11. Cloud sync (Phase 9) is left out of the first version; data stays on
 the device, and Backup & restore moves it.
 
 How to use this plan:
@@ -973,6 +973,21 @@ opponent spreads.
   - Mutation checks: the their-side filter, the ×int format and clearing
     the rows when a side is removed (this one needed a new test) all fail
     a test.
+
+## Phase 11: After version 1
+
+Improvements requested after version 1, one step each.
+
+### ✅ 11.1 Always show the Their team picker
+- Before, Log Game hid the **Their team** dropdown until an opponent team
+  was saved, so it was easy to miss that it exists.
+- Now it always shows. With no saved opponent teams it only offers "Not a
+  saved team", with the hint "No saved opponent teams yet. Add one in
+  Teams → Opponents."
+- **Tests:** widget (the old "no picker" test was replaced on purpose,
+  since the requirement changed, plus a no-hint-once-saved test) and
+  acceptance. Mutation checks: hint always shown, picker hidden again;
+  both fail a test.
 
 ## Phase 9 (not in version 1): Cloud sync
 
