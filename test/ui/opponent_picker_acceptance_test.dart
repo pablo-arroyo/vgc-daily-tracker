@@ -12,9 +12,7 @@ void main() {
 
       expect(find.text('Their team'), findsOneWidget);
       expect(
-        find.text(
-          'No saved opponent teams yet. Add one in Teams → Opponents.',
-        ),
+        find.text('No saved opponent teams yet. Add one in Teams → Opponents.'),
         findsOneWidget,
       );
     },
