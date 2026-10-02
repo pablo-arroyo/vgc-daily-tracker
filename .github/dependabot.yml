@@ -1,0 +1,12 @@
+# Weekly update PRs for the CI actions (their pinned SHAs) and the Dart
+# packages. Security fixes come separately, as soon as an alert opens.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: pub
+    directory: /
+    schedule:
+      interval: weekly
