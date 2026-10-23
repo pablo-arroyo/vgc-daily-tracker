@@ -56,7 +56,7 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   build_runner: ^2.16.1
   freezed: ^4.0.2
-  json_serializable: ^6.14.1
+  json_serializable: ^6.15.2
   integration_test:
     sdk: flutter
   # Profile-mode frame timing via `flutter drive` (step 8.3); test-only.
